@@ -1,0 +1,48 @@
+﻿@model Project24.Models.Customer
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Thêm Hồ sơ</h1>
+
+<h4>Khách Hàng</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label class="control-label">Mã Khách hàng</label>
+                <input class="form-control" disabled value="@ViewData["NextPatientId"]" />
+                @*<span asp-validation-for="UniqueId" class="text-danger"></span>*@
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label">Họ và Tên</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address" class="control-label">Địa chỉ</label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CustomerProfileId" class="control-label">Mã hồ sơ</label>
+                <input asp-for="CustomerProfileId" class="form-control" />
+                <span asp-validation-for="CustomerProfileId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Thêm" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

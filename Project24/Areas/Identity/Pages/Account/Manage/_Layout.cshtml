@@ -1,0 +1,43 @@
+﻿
+@using Project24
+@{
+  if (ViewData.TryGetValue("ParentLayout", out var parentLayout))
+  {
+    Layout = (string)parentLayout;
+  }
+  else
+  {
+    Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+  }
+}
+
+<h2>Thông tin tài khoản</h2>
+
+<div>
+  <h4>Thay đổi các thiết lập tài khoản</h4>
+  <hr />
+  <div class="row">
+
+    @{
+      if (User.IsInRole(Constants.ROLE_POWER) && false)
+      {
+        <h1>Power cannot change Account Settings.</h1>
+      }
+      else
+      {
+        <div class="col-md-3">
+
+          <partial name="_ManageNav" />
+
+        </div>
+        <div class="col-md-9">
+          @RenderBody()
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@section Scripts {
+  @RenderSection("Scripts", required: false)
+}

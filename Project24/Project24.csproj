@@ -1,0 +1,106 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>aspnet-Project24-0059BB15-91C7-4DAF-9038-AB9A60512256</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <Authors>Arime-chan</Authors>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Data\Migrations\20220907171511_P24CustomerManagementExp.cs" />
+    <Compile Remove="Data\Migrations\20220907171511_P24CustomerManagementExp.Designer.cs" />
+    <Compile Remove="Data\Migrations\20220907171642_P24CustomerManagementExp.cs" />
+    <Compile Remove="Data\Migrations\20220907171642_P24CustomerManagementExp.Designer.cs" />
+    <Compile Remove="Data\Migrations\20220908074845_P24AddService.cs" />
+    <Compile Remove="Data\Migrations\20220908074845_P24AddService.Designer.cs" />
+    <Compile Remove="Data\Migrations\20220909132001_P24AddCustomerDev.cs" />
+    <Compile Remove="Data\Migrations\20220909132001_P24AddCustomerDev.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_WebToolingArtifacts Remove="Properties\PublishProfiles\rel_linux-arm64_self-contain.pubxml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" Version="1.1.1" />
+    <PackageReference Include="Markdig.Signed" Version="0.30.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.27" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.25" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.25" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.25" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.25">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.5" />
+      <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.7" />
+      <PackageReference Include="tusdotnet" Version="2.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\ServiceProfileManagement\" />
+    <Folder Include="Data\Migrations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="App\Versioning.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Versioning.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App\Versioning.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Versioning.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v16.0\TextTemplating\Microsoft.TextTemplating.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $(IsPublish) != 'true'" />
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="$(SolutionDir)VersioningHelper/bin/Debug/netcoreapp3.1/VersioningHelper.exe $(TargetDir) $(TargetFileName)" />
+  </Target>
+
+  <Target Name="BeforePublish">
+    <PropertyGroup>
+      <IsPublish>true</IsPublish>
+    </PropertyGroup>
+  </Target>
+  
+  <Target Name="AfterPublishEx" AfterTargets="AfterPublish">
+    <Exec Command="copy /v $(PublishDir)..\\version.xml $(PublishDir)version.xml" />
+    <Exec Command="del /f $(PublishDir)appsettings.Development.json" />
+    <Exec Command="del /f $(PublishDir)VersioningHelper*" />
+    <PropertyGroup>
+      <IsPublish>false</IsPublish>
+    </PropertyGroup>
+  </Target>
+
+  <PropertyGroup>
+    <TransformOnBuild>true</TransformOnBuild>
+  </PropertyGroup>
+
+</Project>

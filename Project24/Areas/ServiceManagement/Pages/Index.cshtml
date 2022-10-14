@@ -1,0 +1,66 @@
+﻿@*  Index.cshtml
+  *  Version: 1.0 (2022.09.08)
+  *
+  *  Contributor
+  *      Arime-chan
+*@
+
+@page
+@using Project24.Areas.ServiceManagement.Pages
+@using System.Globalization
+@model IndexModel
+
+@{
+  ViewData["Title"] = "Quản lý dịch vụ";
+  Layout = "_Layout";
+
+  bool isPower = User.IsInRole(Constants.ROLE_POWER);
+  bool isManagerOrHigher = isPower || User.IsInRole(Constants.ROLE_ADMIN) || User.IsInRole(Constants.ROLE_MANAGER);
+}
+
+<h1>Danh sách dịch vụ</h1>
+@if (isManagerOrHigher)
+{
+  <form method="get">
+    <button type="submit" asp-page="./Create" class="btn btn-primary">Thêm dịch vụ mới</button>
+  </form>
+  <br>
+}
+
+@if (Model.Data.Services == null)
+{
+  <h3 class="text-danger">Không tìm thấy dịch vụ.</h3>
+}
+else
+{
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Mã dịch vụ</th>
+        <th>Tên dịch vụ</th>
+        <th>Giá</th>
+        <th>Ngày cập nhật</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var service in Model.Data.Services)
+      {
+        string strPrice = string.Format(CultureInfo.CreateSpecificCulture("vi-VN"), "{0:#,###} VND", service.Price);
+        <tr>
+          <td>@service.ServiceCode</td>
+          <td>@service.Name</td>
+          <td>@strPrice</td>
+          <td>@service.UpdatedDate</td>
+          <td>
+            <button type="button" onclick="location.href='/ServiceManagement/Detail?_id=@service.Id'" class="btn btn-primary">Chi tiết</button>
+            @*<form method="get">
+              <button type="submit" asp-page="./Detail" asp-route-_id="@service.Id" class="btn btn-primary">Thêm dịch vụ mới</button>
+              <button type="submit" asp-page="./Detail" asp-route-_id="@service.Id" class="btn btn-primary">Thêm dịch vụ mới</button>
+            </form>*@
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

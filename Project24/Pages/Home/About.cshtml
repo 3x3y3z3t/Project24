@@ -1,0 +1,80 @@
+﻿@*  About.cshtml
+    *  Version: 1.0 (2022.10.15)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+@model Project24.Pages.AboutModel
+@{
+    ViewData["Title"] = "About";
+    Layout = "_HomeLayout";
+}
+
+<div id="about-p24">
+    <h2>About Project24</h2>
+    <hr />
+
+    <p>
+        This is <b>Project24</b> (or more precisely, <b>Project24b</b>), a web application that I made out of free time
+        while waiting for the 2023 Monbukagakusho (MEXT) scholarship's Secondary Screening result.
+    </p>
+    <p>
+        The project started out on 31 August 2022 as "<i>Project24</i>", after I had enough with how my father manage his
+        clinic. In 4 weeks after that, many planned features had been scrapped (due to my lack of skill in this field)
+        but a big feature was added (despite my lack of skill). On 3rd October I decided to change the project to be
+        <i>my</i> NAS manager and demote my father's clinic manager to be a "feature", renaming the project to be "<i>Project24b</i>".
+    </p>
+    <p>
+        If you landed on this About page, you must have been <i>my father</i>, <i>my mother</i>, <i>my brother</i>,
+        one of my approved-NAS-user, or you just happened to land here through Google Search. Regardless of who you are,
+        I hope you find our resource useful and have a good time here.
+    </p>
+    <br />
+    <p>
+        If you encounter any bug, please send a <i>Bug Report</i> ticket using the planned link below.
+        <br />
+        If you just want to send feedback, or request something, please send a <i>Feedback/Request</i> ticket using the
+        planned link below (feature request and resource request all accepted).
+    </p>
+    <p>
+        This project is open-source under the GPL v3 license. You will be able to access the source code <b>here</b> in
+        a near future.
+        <br />
+        You can also contact me via
+        <span><a href="mailto:recette.lemongrass95@gmail.com" target="_blank">Email</a></span>,
+        <span><a href="https://discordapp.com/users/303194608186163221" target="_blank">Discord at <code><b>Arime-chan#3508</b></code></a></span>, and
+        <span><a href="https://twitter.com/9Dxa8JDIdSgmtm0" target="_blank">Twitter</a></span>
+    </p>
+    <p>
+        Current version: <b>@Model.CurrentVersion</b> (<a href="#release-note">Release Note</a>)
+    </p>
+
+</div>
+<br />
+
+<div id="about-us">
+    <h2>About us</h2>
+    <hr />
+
+    (Not Available)
+
+</div>
+<br />
+
+<div>
+    <h2>Update</h2>
+    <hr />
+
+    (Update Not available)
+
+</div>
+<br />
+
+<div id="release-note">
+    <h2>Release Note</h2>
+    <hr />
+    @Model.ChangelogContentAsHtmlString
+</div>
+

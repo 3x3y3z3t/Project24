@@ -1,0 +1,113 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+root {
+    --breakpoint-2xl: 1366px;
+    --breakpoint-3xl: 1600px;
+    --breakpoint-4xl: 1920px;
+}
+
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1280px;
+    }
+}
+
+@media (min-width: 1366px) {
+    .container {
+        max-width: 1280px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .container {
+        max-width: 1366px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1600px;
+    }
+}
+
+
+tr.row-nas:hover {
+    background-color: #fafafa;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+tr.row-nas td:hover {
+}
+
+
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+  color: #0366d6;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  font-size: 14px;
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.border-top {
+  border-top: 1px solid #e5e5e5;
+}
+.border-bottom {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+  font-size: 1rem;
+  line-height: inherit;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px; /* Vertically center the text there */
+}

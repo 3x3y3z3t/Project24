@@ -1,0 +1,67 @@
+﻿@*  Create.cshtml
+  *  Version: 1.0 (2022.09.08)
+  *
+  *  Contributor
+  *      Arime-chan
+*@
+
+@page
+@using Project24.Areas.ServiceManagement.Pages
+@model CreateModel
+
+@{
+  ViewData["Title"] = "Thêm dịch vụ mới";
+  Layout = "_Layout";
+
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="row">
+  <div class="col-md-4">
+    @*<form asp-route-returnUrl="@Model.ReturnUrl" method="post">*@
+    <form method="post">
+      <h4>Thêm dịch vụ mới.</h4>
+      <hr />
+      <div asp-validation-summary="All" class="text-danger"></div>
+      <div class="form-group">
+        <label asp-for="Data.ServiceCode">Mã dịch vụ</label>
+        <input asp-for="Data.ServiceCode" class="form-control" />
+        <span asp-validation-for="Data.ServiceCode" class="text-danger"></span>
+      </div>
+      <div class="form-group">
+        <label asp-for="Data.ServiceName">Tên dịch vụ</label>
+        <input asp-for="Data.ServiceName" class="form-control" />
+        <span asp-validation-for="Data.ServiceName" class="text-danger"></span>
+      </div>
+      <div class="form-group">
+        <label asp-for="Data.Price">Giá dịch vụ</label>
+        <div class="input-group">
+          <div class="input-group-prepend"><span class="input-group-text">VND</span></div>
+          <input asp-for="Data.Price" class="form-control" id="add-service-input-price" />
+        </div>
+        <span asp-validation-for="Data.Price" class="text-danger"></span>
+      </div>
+
+      <hr />
+      <div class="form-group">
+        <label asp-for="Data.ManagerPassword">Xác nhận Mật khẩu người quản lý</label>
+        <input asp-for="Data.ManagerPassword" class="form-control" />
+        <span asp-validation-for="Data.ManagerPassword" class="text-danger"></span>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Thêm dịch vụ</button>
+      <button type="button" onclick="location.href='./Index'" class="btn btn-secondary">Hủy bỏ</button>
+
+      @Html.AntiForgeryToken()
+    </form>
+
+  </div>
+
+</div>
+
+@section Scripts {
+<script src="~/js/userManager-addUser.js"></script>
+  @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

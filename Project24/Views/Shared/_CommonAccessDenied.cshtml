@@ -1,0 +1,22 @@
+﻿
+@model Project24.Models.AccessDeniedModel
+
+@{
+  ViewData["Title"] = "Truy cập bị từ chối";
+  Layout = "_Layout";
+}
+
+<div>
+
+  <h1 class="text-danger">@ViewData["Title"]</h1>
+  <h4 class="text-danger">Bạn không có đủ quyền để truy cập tài nguyên này.</h4>
+  @{
+    if (Model != null && !string.IsNullOrEmpty(Model.Reason))
+    {
+      <br />
+      <h6>Chi tiết:</h6>
+      <p>@Model.Reason</p>
+    }
+  }
+
+</div>

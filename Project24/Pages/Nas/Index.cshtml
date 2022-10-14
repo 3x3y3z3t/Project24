@@ -1,0 +1,87 @@
+﻿@*  Index.cshtml
+  *  Version: 1.0 (2022.10.04)
+  *
+  *  Contributor
+  *      Arime-chan
+*@
+
+@page "{handler?}/{_id?}"
+
+@model Project24.Pages.Nas.IndexModel
+@{
+  ViewData["Title"] = "Index";
+  Layout = "_HomeLayout";
+}
+
+<div class="text-center">
+
+  <h5 class="text-left">
+    Path:
+
+    @for (int i = 0; i < Model.Data.PathLayer.Count; ++i)
+    {
+      @if (i == 0)
+      {
+        <span><a href="/Nas/Explore/">Root /</a></span>
+      }
+      else if (i == Model.Data.PathLayer.Count - 1)
+      {
+        <span>@Model.Data.PathLayer[i] /</span>
+      }
+      else
+      {
+        <span><a href="/Nas/Explore/-@i">@Model.Data.PathLayer[i] /</a></span>
+      }
+    }
+  </h5>
+
+
+
+
+
+  <div>@Model.Data.FullPath</div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-left">Icon</th>
+        <th class="text-left">Filename</th>
+        <th class="text-left">Latest Modified</th>
+        <th class="text-left">Size</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (int i = 0; i < Model.Data.Files.Count; ++i)
+      {
+        var file = Model.Data.Files[i];
+        string href = "";
+
+        if (file.FileType == Project24.Pages.Nas.IndexModel.FileType.Directory)
+        {
+          href = "/Nas/Explore/" + i;
+        }
+        else if (file.FileType == Project24.Pages.Nas.IndexModel.FileType.File)
+        {
+          href = "/Nas/Download/" + i;
+        }
+        else
+        { }
+
+        <tr class="row-nas" onclick="location.href='@href'">
+          <td class="text-left"></td>
+          <td class="text-left">@file.Name</td>
+          <td class="text-left">@file.LastModified</td>
+          <td class="text-right">@file.Size</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+
+
+  <div class="alert-danger">Có lỗi!</div>
+
+
+
+
+</div>

@@ -1,0 +1,52 @@
+﻿@*  _UserInfo.cshtml
+    *  Version: 1.1 (2022.10.14)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@using Microsoft.AspNetCore.Identity
+@using Project24.Identity
+@inject SignInManager<P24IdentityUser> _signInManager
+@inject UserManager<P24IdentityUser> _userManager
+
+<ul class="navbar-nav">
+
+    @if (_signInManager.IsSignedIn(User))
+    {
+        P24IdentityUser p24user = await _userManager.GetUserAsync(User);
+        string welcomeString;
+
+        if (User.IsInRole(P24Role_.Power))
+        {
+            welcomeString = P24Role_.Power;
+        }
+        else
+        {
+            welcomeString = p24user.UserName;
+        }
+
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Xin chào, <span class="font-weight-bold">@welcomeString</span>!</a>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-dark">Đăng xuất</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        if (false)
+        {
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="Home" asp-page="/RequestAccess">Yêu cầu truy cập</a>
+            </li>
+        }
+
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Home" asp-page="/Index">Đăng nhập</a>
+        </li>
+    }
+
+</ul>

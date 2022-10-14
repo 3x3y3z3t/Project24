@@ -1,0 +1,87 @@
+﻿@*  Index.cshtml
+    *  Version: 1.1 (2022.10.14)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+@using Project24
+@using System.Globalization
+
+@model Project24.Pages.ClinicManager.IndexModel
+@{
+    ViewData["Title"] = "Quản lý bệnh nhân";
+    Layout = "_CMLayout";
+}
+
+<h1>Danh sách bệnh nhân</h1>
+
+<form method="get">
+    <button type="submit" asp-page="./Create" class="btn btn-primary">Đăng ký bệnh nhân mới</button>
+</form>
+<br />
+
+<h5>Tổng số bệnh nhân: <span class="font-weight-bold">@string.Format(CultureInfo.CreateSpecificCulture("vi-VN"), "{0:#,##0}", Model.Data.Customers.Count)</span></h5>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mã bệnh nhân</th>
+            <th>Họ và Tên</th>
+            <th>Địa chỉ</th>
+            <th>Số điện thoại</th>
+            <th>Cập nhật lần cuối</th>
+
+            <th><div style="max-width: 120px;">Ảnh đã tải lên</div></th>
+            <th><div style="max-width: 165px;" /></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var customer in Model.Data.Customers)
+        {
+            <tr>
+                <td>@customer.CustomerCode</td>
+                <td>@customer.FullName</td>
+                <td>@customer.Address</td>
+                <td>@customer.PhoneNumber</td>
+                <td>@customer.LastUpdated</td>
+
+                <td class="text-center">
+                    <div style="max-width: 120px;">
+                        <div>
+                            @customer.ImageCount ảnh
+                            @if (customer.ImageCount != 0)
+                            {
+                                <span>(<a asp-page="./Details" asp-route-_code="@customer.CustomerCode">Xem</a>)</span>
+                            }
+                            else
+                            {
+                                <span>(<a asp-page="./Details" asp-route-_code="@customer.CustomerCode" asp-route-_mode="AddImage">Thêm</a>)</span>
+                            }
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="text-center" style="max-width: 165px;">
+                        <div>
+                            <a asp-page="./Edit" asp-route-_code="@customer.CustomerCode">Sửa thông tin</a> |
+                            <a asp-page="./Details" asp-route-_code="@customer.CustomerCode">Chi tiết</a>
+                        </div>
+                        <div>
+                            <a asp-page="./Delete" asp-route-_code="@customer.CustomerCode" class="text-danger font-weight-bold">Xóa</a>
+                        </div>
+                        @*<form>
+                            <button type="submit" asp-page="./Details" asp-route-_code="@customer.CustomerCode" class="btn btn-primary">Chi tiết</button>
+                            </form>*@
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+Constants.WorkingDir = @Constants.WorkingDir

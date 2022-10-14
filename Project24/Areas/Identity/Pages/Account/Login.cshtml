@@ -1,0 +1,57 @@
+﻿
+@page
+@model LoginModel
+
+@{
+  ViewData["Title"] = "Đăng nhập";
+  Layout = "_LoginLayout";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>Đăng nhập bằng tài khoản nhân viên.</h4>
+<hr />
+
+<div class="row">
+  <div class="col-md-4">
+    <section>
+      <form id="account" method="post">
+        <h5>Nếu bạn chưa có tài khoản nhân viên, vui lòng liên hệ với quản lý.</h5>
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="form-group">
+          <label asp-for="Input.Username">Tên đăng nhập</label>
+          <input asp-for="Input.Username" class="form-control" />
+          <span asp-validation-for="Input.Username" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+          <label asp-for="Input.Password">Mật khẩu</label>
+          <input asp-for="Input.Password" class="form-control" />
+          <span asp-validation-for="Input.Password" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+          <div class="checkbox">
+            <label asp-for="Input.RememberLogin">
+              <input asp-for="Input.RememberLogin" />
+              Lưu phiên đăng nhập
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Đăng nhập</button>
+        </div>
+        <div class="form-group">
+          <p>
+            <a id="forgot-password" asp-page="./ForgotPassword">Quên mật khẩu?</a>
+          </p>
+
+        </div>
+      </form>
+    </section>
+  </div>
+  <div class="col-md-6 col-md-offset-2">
+
+  </div>
+</div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+}

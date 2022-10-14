@@ -1,0 +1,103 @@
+﻿@*  Index.cshtml.cs
+  *  Version: 1.1 (2022.09.07)
+  *
+  *  Contributor
+  *      Arime-chan
+*@
+
+@page
+@using Project24
+@using Project24.Pages.UserManagement
+@model IndexModel
+
+@{
+  ViewData["Title"] = "Quản lý nhân viên";
+  Layout = "_Layout";
+
+  bool isManagerOrHigher = User.IsInRole(Constants.ROLE_ADMIN) || User.IsInRole(Constants.ROLE_MANAGER);
+  bool isPower = User.IsInRole(Constants.ROLE_POWER);
+}
+
+<h1>Danh sách nhân viên</h1>
+@{
+  if (isManagerOrHigher)
+  {
+    <form method="get">
+      <button type="submit" asp-page="./AddUser" class="btn btn-primary">Thêm nhân viên mới</button>
+    </form>
+  }
+}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Mã nhân viên</th>
+      <th>Họ và Tên</th>
+      <th>Trạng thái chấm công</th>
+      <th>Quyên</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var user in Model.Data.EmployeeList)
+    {
+      if (user.Role.Contains(Constants.ROLE_EMPLOYEE))
+      {
+        <tr>
+          <td>@user.Username</td>
+          <td>@user.FullName</td>
+          <td>@user.AttendanceProfileId</td>
+          <td>@user.Role</td>
+          <td>
+            <form>
+              <button type="submit" asp-page="./AddUser" class="btn btn-primary" disabled>Chi tiết</button>
+            </form>
+          </td>
+        </tr>
+      }
+    }
+  </tbody>
+</table>
+
+<hr />
+<br />
+
+<h1>Danh sách quản lý</h1>
+@{
+  if (isPower)
+  {
+    <form method="get">
+      <button type="submit" asp-page="./AddUser" class="btn btn-primary">Thêm quản lý mới</button>
+    </form>
+  }
+}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Mã quản lý</th>
+      <th>Họ và Tên</th>
+      <th>Role</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var user in Model.Data.EmployeeList)
+    {
+      if (user.Role.Contains(Constants.ROLE_POWER)
+      || user.Role.Contains(Constants.ROLE_ADMIN)
+      || user.Role.Contains(Constants.ROLE_MANAGER))
+      {
+        <tr>
+          <td>@user.Username</td>
+          <td>@user.FullName</td>
+          <td>@user.Role</td>
+          <td>
+            <form>
+              <button type="submit" asp-page="./AddUser" class="btn btn-primary">Thêm nhân viên mới</button>
+            </form>
+          </td>
+        </tr>
+      }
+    }
+  </tbody>
+</table>
