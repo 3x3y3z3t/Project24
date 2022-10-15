@@ -1,5 +1,5 @@
 ﻿/*  Utils.cs
- *  Version: 1.7 (2022.10.14)
+ *  Version: 1.8 (2022.10.15)
  *
  *  Contributor
  *      Arime-chan
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Project24
 {
-    public static class P24Role_
+    public static class P24Roles
     {
         public const string Power = "Arime";
         public const string Admin = "Admin";
@@ -51,6 +51,16 @@ namespace Project24
             };
         }
 
+        private static readonly Dictionary<string, int> m_RoleLevel = new Dictionary<string, int>()
+        {
+            { Power, 0 },
+            { Admin, 1 },
+            { Manager, 2 },
+            { Employee, 3 },
+            { User, 999 },
+            { NasUser, 4 },
+        };
+
         private static readonly Dictionary<string, string> m_Vie_Localized = new Dictionary<string, string>()
         {
             { Power, Vie_Power },
@@ -62,17 +72,8 @@ namespace Project24
         };
     }
 
-    public partial class Constants
+    public class Constants
     {
-        public class UserCredential
-        {
-            public string Username = null;
-            public string Password = null;
-        }
-
-        public static UserCredential PowerUser { get; private set; }
-        public static UserCredential ArimeUser { get; private set; }
-        public static UserCredential DefaultClinicManager { get; private set; }
 
 
         public static string WorkingDir { get; private set; } = System.IO.Directory.GetCurrentDirectory();

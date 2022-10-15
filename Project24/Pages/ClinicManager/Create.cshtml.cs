@@ -21,7 +21,7 @@ using Project24.Models;
 
 namespace Project24.Pages.ClinicManager
 {
-    [Authorize(Roles = P24Role_.Manager)]
+    [Authorize(Roles = P24Roles.Manager)]
     [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024L * 1024L)]
     public class CreateModel : PageModel
     {

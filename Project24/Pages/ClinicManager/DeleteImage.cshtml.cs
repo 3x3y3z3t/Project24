@@ -20,7 +20,7 @@ using Project24.Models;
 
 namespace Project24.Pages.ClinicManager
 {
-    [Authorize(Roles = P24Role_.Manager)]
+    [Authorize(Roles = P24Roles.Manager)]
     public class DeleteImageModel : PageModel
     {
         public DeleteImageModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager)

@@ -1,14 +1,15 @@
 ﻿/*  DriveUtils.cs
- *  Version: 1.0 (2022.10.10)
+ *  Version: 1.1 (2022.10.15)
  *
  *  Contributor
  *      Arime-chan
  */
+
 using System;
 using System.IO;
 using System.Text;
 
-namespace Project24.App
+namespace Project24.App.Utils
 {
     public class NasDriveUtils
     {
@@ -76,11 +77,11 @@ namespace Project24.App
             //fileContent += "Total:      999.9 GB      99.99%    2147147147147147\r\n\r\n";
 
             fileContent += string.Format("Total:{0,14}        {1,24}\r\n",
-                Utils.FormatDataSize(DriveInfo.TotalSize), DriveInfo.TotalSize);
+                Project24.Utils.FormatDataSize(DriveInfo.TotalSize), DriveInfo.TotalSize);
             fileContent += string.Format("  Used:{0,13}{1,11:#0.00}%{2,20}\r\n",
-                Utils.FormatDataSize(DriveInfo.TotalSize), usedPercent * 100.0f, used);
+                Project24.Utils.FormatDataSize(DriveInfo.TotalSize), usedPercent * 100.0f, used);
             fileContent += string.Format("  Free:{0,13}{1,11:#0.00}%{2,20}\r\n",
-                Utils.FormatDataSize(DriveInfo.TotalSize), DriveInfo.TotalFreeSpace * 100.0f / DriveInfo.TotalSize, DriveInfo.TotalFreeSpace);
+                Project24.Utils.FormatDataSize(DriveInfo.TotalSize), DriveInfo.TotalFreeSpace * 100.0f / DriveInfo.TotalSize, DriveInfo.TotalFreeSpace);
 
             return fileContent;
         }

@@ -17,9 +17,9 @@
         P24IdentityUser p24user = await _userManager.GetUserAsync(User);
         string welcomeString;
 
-        if (User.IsInRole(P24Role_.Power))
+        if (User.IsInRole(P24Roles.Power))
         {
-            welcomeString = P24Role_.Power;
+            welcomeString = P24Roles.Power;
         }
         else
         {

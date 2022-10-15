@@ -16,7 +16,7 @@ using Project24.Data;
 
 namespace Project24.Pages.ClinicManager
 {
-    [Authorize(Roles = P24Role_.Manager)]
+    [Authorize(Roles = P24Roles.Manager)]
     public class IndexModel : PageModel
     {
         public class DataModel

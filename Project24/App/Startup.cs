@@ -23,7 +23,7 @@ using tusdotnet;
 using System.IO;
 using tusdotnet.Stores;
 using Microsoft.Extensions.FileProviders;
-using Project24.App;
+using Project24.App.Utils;
 
 namespace Project24
 {
@@ -210,72 +210,74 @@ namespace Project24
 
             UserManager<P24IdentityUser> userManager = _serviceProvider.GetRequiredService<UserManager<P24IdentityUser>>();
             await CreateDefaultUsers(userManager);
-           
+
         }
 
+        #region Initialize Roles
         private async Task CreateRolesAsync(RoleManager<P24IdentityRole> _roleManager)
         {
             m_Logger.LogInformation("Adding Roles..");
 
-            for (int i = 0; i < Constants.s_Roles.Length; ++i)
+            foreach (string role in P24Roles.GetAllRoles())
             {
-                P24IdentityRole role = await _roleManager.FindByNameAsync(Constants.s_Roles[i]);
-                if (role == null)
+                P24IdentityRole p24Role = await _roleManager.FindByNameAsync(role);
+                if (p24Role == null)
                 {
-                    role = new P24IdentityRole() { Name = Constants.s_Roles[i], Level = i };
-                    var result = await _roleManager.CreateAsync(role);
-                    if (!result.Succeeded)
+                    p24Role = new P24IdentityRole() { Name = role, Level = 0 };
+                    var status = await _roleManager.CreateAsync(p24Role);
+                    if (!status.Succeeded)
                     {
-                        m_Logger.LogError($"Could not add role {Constants.s_Roles[i]}.");
+                        m_Logger.LogError("Could not add role " + role + ".");
                     }
                 }
                 else
                 {
-                    if (role.Level == i)
+                    if (p24Role.Level == 0)
                         continue;
 
-                    var result = await _roleManager.DeleteAsync(role);
-                    if (!result.Succeeded)
+                    p24Role.Level = 0;
+                    var status = await _roleManager.UpdateAsync(p24Role);
+                    if (!status.Succeeded)
                     {
-                        m_Logger.LogError($"Could not delete role {role.Name} for correction.");
-                        continue;
-                    }
-
-                    role.Level = i;
-                    result = await _roleManager.CreateAsync(role);
-                    if (!result.Succeeded)
-                    {
-                        m_Logger.LogError($"Could not add corrected role {role.Name}.");
+                        m_Logger.LogError("Could not update corrected role " + role + ".");
                     }
                 }
             }
 
             m_Logger.LogInformation("Done.");
         }
+        #endregion
 
         private async Task CreateDefaultUsers(UserManager<P24IdentityUser> _userManager)
         {
-            if (Constants.PowerUser != null)
-                await CreatePower(_userManager);
+            if (DefaultUsers.PowerUser != null)
+                await CreatePower(DefaultUsers.PowerUser, _userManager);
 
+            if (DefaultUsers.ArimeUser != null)
+                await CreateArime(DefaultUsers.ArimeUser, _userManager);
+
+            if (DefaultUsers.DefaultClinicManager != null)
+                await CreateDefaultClinicManager(DefaultUsers.DefaultClinicManager, _userManager);
 
 
 
 
         }
 
-        private async Task CreatePower(UserManager<P24IdentityUser> _userManager)
+        #region Initialize Default Users - Power
+        private async Task CreatePower(DefaultUsers.UserCredential _user, UserManager<P24IdentityUser> _userManager)
         {
             m_Logger.LogInformation("Adding Power..");
 
             const string power = "POWER";
 
-            P24IdentityUser user = await _userManager.FindByNameAsync(Constants.PowerUser.Username);
+            P24IdentityUser user = await _userManager.FindByNameAsync(_user.Username);
             if (user == null)
             {
                 user = new P24IdentityUser()
                 {
-                    UserName = Constants.PowerUser.Username,
+                    UserName = _user.Username,
+                    Email = "hnt.exw@gmail.com",
                     EmailConfirmed = true,
                     LastName = power,
                     JoinDateTime = new DateTime(2022, 8, 31, 2, 18, 37, 135),
@@ -283,7 +285,7 @@ namespace Project24
                     AttendanceProfileId = null,
                 };
 
-                var status = await _userManager.CreateAsync(user, Constants.PowerUser.Password);
+                var status = await _userManager.CreateAsync(user, _user.Password);
                 if (!status.Succeeded)
                 {
                     m_Logger.LogWarning("Could not create Power.");
@@ -294,78 +296,198 @@ namespace Project24
             {
                 if (user.LastName != power)
                 {
-                    var result = await _userManager.DeleteAsync(user);
-                    if (!result.Succeeded)
+                    user.LastName = power;
+                    var status = await _userManager.UpdateAsync(user);
+                    if (!status.Succeeded)
                     {
-                        m_Logger.LogWarning("Could not delete Power for correction.");
-                    }
-                    else
-                    {
-                        user.LastName = power;
-
-                        result = await _userManager.CreateAsync(user);
-                        if (!result.Succeeded)
-                        {
-                            m_Logger.LogWarning("Could not add corrected Power.");
-                            return;
-                        }
+                        m_Logger.LogWarning("Could not update corrected Power.");
                     }
                 }
-
             }
 
-            if (!await _userManager.CheckPasswordAsync(user, Constants.PowerUser.Password))
+            if (!await _userManager.CheckPasswordAsync(user, _user.Password))
             {
-                var result = await _userManager.RemovePasswordAsync(user);
-                if (!result.Succeeded)
+                var status = await _userManager.RemovePasswordAsync(user);
+                if (!status.Succeeded)
                 {
                     m_Logger.LogWarning("Could not remove Power password for correction.");
                 }
                 else
                 {
-                    result = await _userManager.AddPasswordAsync(user, Constants.PowerUser.Password);
-                    if (!result.Succeeded)
+                    status = await _userManager.AddPasswordAsync(user, _user.Password);
+                    if (!status.Succeeded)
                     {
                         m_Logger.LogWarning("Could not add Power password.");
                     }
                 }
             }
 
-            foreach (var role in Constants.s_Roles)
+            foreach (string role in P24Roles.GetAllRoles())
             {
-                if (!(await _userManager.GetRolesAsync(user)).Contains(role))
+                if (!await _userManager.IsInRoleAsync(user, role))
                 {
-                    var result = await _userManager.AddToRoleAsync(user, role);
-                    if (!result.Succeeded)
+                    var status = await _userManager.AddToRoleAsync(user, role);
+                    if (!status.Succeeded)
                     {
-                        m_Logger.LogWarning($"Could not add role {role} for Power.");
+                        m_Logger.LogWarning("Could not add role " + role + " for Power.");
                     }
                 }
             }
 
-            // adding one user user;
-            m_Logger.LogInformation("Try add User User..");
-            if (await _userManager.FindByNameAsync("hungnt") == null)
+            m_Logger.LogInformation("Done.");
+        }
+        #endregion
+
+        #region Initialize Default Users - Arime
+        private async Task CreateArime(DefaultUsers.UserCredential _user, UserManager<P24IdentityUser> _userManager)
+        {
+            m_Logger.LogInformation("Adding Arime..");
+
+            const string name = "アリメちゃん";
+
+            P24IdentityUser user = await _userManager.FindByNameAsync(_user.Username);
+            if (user == null)
             {
-
-                var userUser = new P24IdentityUser()
+                user = new P24IdentityUser()
                 {
-                    UserName = "hungnt",
-                    FamilyName = "Nguyễn",
-                    MiddleName = "Trọng",
-                    LastName = "Hưng",
+                    UserName = _user.Username,
+                    Email = "recette.lemongrass95@gmail.com",
                     EmailConfirmed = true,
-                    JoinDateTime = DateTime.Now,
+                    LastName = name,
+                    JoinDateTime = new DateTime(2022, 8, 31, 2, 18, 37, 135),
+                    LeaveDateTime = new DateTime(2022, 8, 31, 2, 18, 37, 136),
+                    AttendanceProfileId = null,
                 };
-                await _userManager.CreateAsync(userUser);
-                await _userManager.AddPasswordAsync(userUser, Constants.DEFAULT_PASSWORD);
 
-                await _userManager.AddToRoleAsync(userUser, P24Role_.Manager);
-                m_Logger.LogInformation("Added.");
+                var status = await _userManager.CreateAsync(user, _user.Password);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not create Arime.");
+                    return;
+                }
+            }
+            else
+            {
+                if (user.LastName != name)
+                {
+                    user.LastName = name;
+                    var status = await _userManager.UpdateAsync(user);
+                    if (!status.Succeeded)
+                    {
+                        m_Logger.LogWarning("Could not update corrected Arime.");
+                    }
+                }
+            }
+
+            if (!await _userManager.CheckPasswordAsync(user, _user.Password))
+            {
+                var status = await _userManager.RemovePasswordAsync(user);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not remove Arime password for correction.");
+                }
+                else
+                {
+                    status = await _userManager.AddPasswordAsync(user, _user.Password);
+                    if (!status.Succeeded)
+                    {
+                        m_Logger.LogWarning("Could not add Arime password.");
+                    }
+                }
+            }
+
+            foreach (string role in P24Roles.GetAllRoles())
+            {
+                if (role == P24Roles.Power)
+                    continue;
+
+                if (!await _userManager.IsInRoleAsync(user, role))
+                {
+                    var status = await _userManager.AddToRoleAsync(user, role);
+                    if (!status.Succeeded)
+                    {
+                        m_Logger.LogWarning("Could not add role " + role + " for Arime.");
+                    }
+                }
             }
 
             m_Logger.LogInformation("Done.");
         }
+        #endregion
+
+        #region Initialize Default Users - Default User 1
+        private async Task CreateDefaultClinicManager(DefaultUsers.UserCredential _user, UserManager<P24IdentityUser> _userManager)
+        {
+            m_Logger.LogInformation("Adding Default User 1..");
+
+            const string fname = "Nguyễn";
+            const string mname = "Trọng";
+            const string lname = "Hưng";
+
+            P24IdentityUser user = await _userManager.FindByNameAsync(_user.Username);
+            if (user == null)
+            {
+                user = new P24IdentityUser()
+                {
+                    UserName = _user.Username,
+                    EmailConfirmed = true,
+                    FamilyName = fname,
+                    MiddleName = mname,
+                    LastName = lname,
+                    JoinDateTime = new DateTime(2022, 10, 4, 12, 22, 08, 135),
+                    AttendanceProfileId = null,
+                };
+
+                var status = await _userManager.CreateAsync(user, _user.Password);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not create Default User 1.");
+                    return;
+                }
+            }
+            else
+            {
+                if (user.FamilyName != fname || user.MiddleName != mname || user.LastName != lname)
+                {
+                    user.FamilyName = fname;
+                    user.MiddleName = mname;
+                    user.LastName = lname;
+
+                    var status = await _userManager.UpdateAsync(user);
+                    if (!status.Succeeded)
+                    {
+                        m_Logger.LogWarning("Could not update corrected Default User 1.");
+                    }
+                }
+            }
+
+            if (!await _userManager.CheckPasswordAsync(user, _user.Password))
+            {
+                var status = await _userManager.RemovePasswordAsync(user);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not remove Default User 1 password for correction.");
+                }
+                else
+                {
+                    status = await _userManager.AddPasswordAsync(user, _user.Password);
+                    if (!status.Succeeded)
+                    {
+                        m_Logger.LogWarning("Could not add Default User 1 password.");
+                    }
+                }
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, P24Roles.Manager);
+            if (!result.Succeeded)
+            {
+                m_Logger.LogWarning("Could not add role " + P24Roles.Manager + " for Default User 1.");
+            }
+
+            m_Logger.LogInformation("Done.");
+        }
+        #endregion
+
 
         private ILogger<Startup> m_Logger;
     }
