@@ -1,20 +1,14 @@
 /*  About.cshtml.cs
- *  Version: 1.0 (2022.10.15)
+ *  Version: 1.1 (2022.10.16)
  *
  *  Contributor
  *      Arime-chan
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Project24.App;
 
@@ -41,7 +35,7 @@ namespace Project24.Pages
 
             ChangelogContentAsHtmlString = new HtmlString(html);
 
-            Regex regex = new Regex(@"\A(### v[0-9]+\.[0-9]+\.[0-9]+)");
+            Regex regex = new Regex(@"\A(#+ v[0-9]+\.[0-9]+\.[0-9]+)");
 
             Match match = regex.Match(markdown);
             if (match.Success)
