@@ -1,15 +1,18 @@
 ﻿/*  Utils.cs
- *  Version: 1.8 (2022.10.15)
+ *  Version: 1.9 (2022.10.16)
  *
  *  Contributor
  *      Arime-chan
  */
 
+using Microsoft.AspNetCore.Hosting;
 using Project24.Data;
 using Project24.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Project24
@@ -91,6 +94,8 @@ namespace Project24
          */
         public static string NasRoot { get; set; }
         public static string DataRoot { get; set; }
+
+        public static string CurrentVersion { get; set; }
 
 
         //public const string NAS_ROOT = "./../../../wwwNas/";
@@ -192,6 +197,26 @@ namespace Project24
             }
 
             return string.Format("{0:##0.0}   B", (float)_size);
+        }
+
+        public static async Task UpdateCurrentVersion(IWebHostEnvironment _webHostEnv)
+        {
+            string webRootPath = _webHostEnv.WebRootPath;
+
+            string markdown = await System.IO.File.ReadAllTextAsync(webRootPath + "/ReleaseNote.md", Encoding.UTF8);
+            string html = App.MarkdownParser.ToHtml(markdown);
+
+            Regex regex = new Regex(@"\A(#+ v[0-9]+\.[0-9]+\.[0-9]+)");
+
+            var match = regex.Match(markdown);
+            if (match.Success)
+            {
+                Constants.CurrentVersion = match.Value[4..]; // equivalent to .Substring(4);
+            }
+            else
+            {
+                Constants.CurrentVersion = "Unknown";
+            }
         }
 
 
