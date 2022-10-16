@@ -181,22 +181,22 @@ namespace Project24
 
             if (_size >= oneTiB)
             {
-                return string.Format("{0:##0.0} TB", (float)_size / oneTiB);
+                return string.Format("{0:##0.00} TB", (float)_size / oneTiB);
             }
             else if (_size >= oneGiB)
             {
-                return string.Format("{0:##0.0} GB", (float)_size / oneGiB);
+                return string.Format("{0:##0.00} GB", (float)_size / oneGiB);
             }
             else if (_size >= oneMiB)
             {
-                return string.Format("{0:##0.0} MB", (float)_size / oneMiB);
+                return string.Format("{0:##0.00} MB", (float)_size / oneMiB);
             }
             else if (_size >= oneKiB)
             {
-                return string.Format("{0:##0.0} KB", (float)_size / oneKiB);
+                return string.Format("{0:##0.00} KB", (float)_size / oneKiB);
             }
 
-            return string.Format("{0:##0.0}   B", (float)_size);
+            return string.Format("{0:##0.00}   B", (float)_size);
         }
 
         public static async Task UpdateCurrentVersion(IWebHostEnvironment _webHostEnv)

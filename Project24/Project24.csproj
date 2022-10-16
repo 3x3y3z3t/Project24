@@ -28,10 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <_WebToolingArtifacts Remove="Properties\PublishProfiles\rel_linux-arm64_self-contain.pubxml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="1.1.1" />
     <PackageReference Include="Markdig.Signed" Version="0.30.4" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.27" />
@@ -47,6 +43,13 @@
       <PackageReference Include="tusdotnet" Version="2.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\**\*.css" CopyToPublishDirectory="never" />
+    <Content Update="wwwroot\**\*.min.css" CopyToPublishDirectory="always" />
+    <Content Update="wwwroot\**\*.js" CopyToPublishDirectory="never" />
+    <Content Update="wwwroot\**\*.min.js" CopyToPublishDirectory="always" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Folder Include="Areas\ServiceProfileManagement\" />
     <Folder Include="Data\Migrations\" />

@@ -89,7 +89,7 @@ namespace Project24
 
             NasDriveUtils.Init();
             NasDriveUtils.WriteStatsFile();
-            _logger.LogInformation("NasDriveInfo: \n" + NasDriveUtils.GetStatsString());
+            _logger.LogInformation(NasDriveUtils.GetStatsString());
 
             MigrateDatabase(_serviceProvider, _dbContext, _logger).Wait();
 
@@ -478,10 +478,13 @@ namespace Project24
                 }
             }
 
-            var result = await _userManager.AddToRoleAsync(user, P24Roles.Manager);
-            if (!result.Succeeded)
+            if (!await _userManager.IsInRoleAsync(user, P24Roles.Manager))
             {
-                m_Logger.LogWarning("Could not add role " + P24Roles.Manager + " for Default User 1.");
+                var status = await _userManager.AddToRoleAsync(user, P24Roles.Manager);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not add role " + P24Roles.Manager + " for Default User 1.");
+                }
             }
 
             m_Logger.LogInformation("Done.");

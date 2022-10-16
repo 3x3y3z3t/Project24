@@ -74,50 +74,17 @@ namespace Project24.App.Utils
                 bars);
 
             //fileContent += "|   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |       |\r\n";
-            //fileContent += "Total:      999.9 GB      99.99%    2147147147147147\r\n\r\n";
+            //fileContent += "Total:     999.99 GB      99.99%    2147147147147147\r\n\r\n";
 
             fileContent += string.Format("Total:{0,14}        {1,24}\r\n",
                 Project24.Utils.FormatDataSize(DriveInfo.TotalSize), DriveInfo.TotalSize);
             fileContent += string.Format("  Used:{0,13}{1,11:#0.00}%{2,20}\r\n",
-                Project24.Utils.FormatDataSize(DriveInfo.TotalSize), usedPercent * 100.0f, used);
+                Project24.Utils.FormatDataSize(used), usedPercent * 100.0f, used);
             fileContent += string.Format("  Free:{0,13}{1,11:#0.00}%{2,20}\r\n",
-                Project24.Utils.FormatDataSize(DriveInfo.TotalSize), DriveInfo.TotalFreeSpace * 100.0f / DriveInfo.TotalSize, DriveInfo.TotalFreeSpace);
+                Project24.Utils.FormatDataSize(DriveInfo.TotalFreeSpace), DriveInfo.TotalFreeSpace * 100.0f / DriveInfo.TotalSize, DriveInfo.TotalFreeSpace);
 
             return fileContent;
         }
     }
 
 }
-
-//private void WriteDriveStatsFile(bool _force = true)
-//{
-//    string statusFileFullname = Path.GetFullPath(Constants.NasRoot, Constants.WorkingDir) + "/stats.txt";
-
-//    if (_force || !System.IO.File.Exists(statusFileFullname))
-//    {
-
-//        string fileContent = "";
-
-//        DriveInfo[] dis = DriveInfo.GetDrives();
-//        foreach (var di in dis)
-//        {
-//            if (di.RootDirectory.ToString() == dirRoot)
-//            {
-//                fileContent += "NAS stats:\r\n";
-
-//                fileContent += "Total:                  " + di.TotalSize + "\r\n";
-//                fileContent += "    Used:               " + (di.TotalSize - di.AvailableFreeSpace) + "\r\n";
-//                fileContent += "    Free:               " + di.AvailableFreeSpace + "\r\n";
-
-//                break;
-//            }
-//        }
-
-//        try
-//        {
-//            System.IO.File.WriteAllText(statusFileFullname, fileContent, System.Text.Encoding.UTF8);
-//        }
-//        catch (Exception _e)
-//        { }
-//    }
-//}
