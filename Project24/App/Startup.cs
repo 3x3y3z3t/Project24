@@ -24,6 +24,7 @@ using System.IO;
 using tusdotnet.Stores;
 using Microsoft.Extensions.FileProviders;
 using Project24.App.Utils;
+using System.Text;
 
 namespace Project24
 {
@@ -138,20 +139,22 @@ namespace Project24
             // tus upload;
             _app.UseTus(_httpContext =>
             {
+                string nasRootAbsPath = Path.GetFullPath(Constants.NasRoot, Constants.WorkingDir);
+
                 return new tusdotnet.Models.DefaultTusConfiguration()
                 {
                     // This method is called on each request so different configurations can be returned per user, domain, path etc.
                     // Return null to disable tusdotnet for the current request.
 
                     // c:\tusfiles is where to store files
-                    Store = new TusDiskStore(Constants.WorkingDir + Constants.NasRoot),
+                    Store = new TusDiskStore(nasRootAbsPath, true),
                     // On what url should we listen for uploads?
-                    UrlPath = "/Nas/Upload",
+                    UrlPath = "/Nas/Upload0",
                     Events = new tusdotnet.Models.Configuration.Events
                     {
                         OnBeforeCreateAsync = (_eventContext) =>
                         {
-                            if (!_eventContext.Metadata.ContainsKey("name"))
+                            if (!_eventContext.Metadata.ContainsKey("fileName"))
                             {
                                 _eventContext.FailRequest("name metadata must be specified. ");
                             }
@@ -161,17 +164,67 @@ namespace Project24
                                 _eventContext.FailRequest("contentType metadata must be specified. ");
                             }
 
+                            string filePath = "";
+                            if (_eventContext.Metadata.ContainsKey("filePath"))
+                            {
+                                filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
+                            }
+
+                            try
+                            {
+                                string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
+                                if (!uploadLocationAbsPath.Contains("wwwNas"))
+                                {
+                                    _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
+                                }
+                            }
+                            catch (Exception _e)
+                            {
+                                _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
+                            }
+
                             return Task.CompletedTask;
                         },
 
+                        OnCreateCompleteAsync = (_eventContext) =>
+                        {
+
+                            //string filePath = "";
+                            //if (_eventContext.Metadata.ContainsKey("filePath"))
+                            //{
+                            //    filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
+                            //}
+
+                            //string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
+                            //TusDotNetUtils.AddOrReplace(_eventContext.FileId, new TusDotNetUtils.FileMetadata()
+                            //{
+                            //    Path = uploadLocationAbsPath,
+                            //    Filename = _eventContext.Metadata["fileName"].GetString(Encoding.UTF8)
+                            //});
+
+                            return Task.CompletedTask;
+                        },
 
                         OnFileCompleteAsync = async (_eventContext) =>
                         {
                             tusdotnet.Interfaces.ITusFile file = await _eventContext.GetFileAsync();
                             Dictionary<string, tusdotnet.Models.Metadata> metadata = await file.GetMetadataAsync(_eventContext.CancellationToken);
-                            using Stream content = await file.GetContentAsync(_eventContext.CancellationToken);
+                            Stream content = await file.GetContentAsync(_eventContext.CancellationToken);
 
-                            // TODO: write file to disk;
+                            // write file to disk;
+                            string filePath = "";
+                            if (metadata.ContainsKey("filePath"))
+                            {
+                                filePath = metadata["filePath"].GetString(Encoding.UTF8);
+                            }
+
+                            string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
+                            string fileName = metadata["fileName"].GetString(Encoding.UTF8);
+                            Directory.CreateDirectory(uploadLocationAbsPath);
+
+                            FileStream fileStream = new FileStream(uploadLocationAbsPath + fileName, FileMode.Create);
+                            await content.CopyToAsync(fileStream);
+                            await fileStream.DisposeAsync();
 
                             await content.DisposeAsync();
 

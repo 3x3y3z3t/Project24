@@ -51,8 +51,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Folder Include="App\TusDotNetExt\" />
     <Folder Include="Areas\ServiceProfileManagement\" />
     <Folder Include="Data\Migrations\" />
+    <Folder Include="wwwroot\lib\tus-js-client\" />
   </ItemGroup>
 
   <ItemGroup>

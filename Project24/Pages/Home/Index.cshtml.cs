@@ -35,7 +35,8 @@ namespace Project24.Pages.Home
 
             if (HttpContext.User.IsInRole(Constants.ROLE_ADMIN))
             {
-                return RedirectToPage("../ClinicManager/Index");
+                return RedirectToPage("../Nas/Upload");
+                //return RedirectToPage("../ClinicManager/Index");
                 //return RedirectToPage("About");
                 //return Partial("_Navigator");
             }

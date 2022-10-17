@@ -183,15 +183,18 @@ namespace Project24
             {
                 return string.Format("{0:##0.00} TB", (float)_size / oneTiB);
             }
-            else if (_size >= oneGiB)
+
+            if (_size >= oneGiB)
             {
                 return string.Format("{0:##0.00} GB", (float)_size / oneGiB);
             }
-            else if (_size >= oneMiB)
+
+            if (_size >= oneMiB)
             {
                 return string.Format("{0:##0.00} MB", (float)_size / oneMiB);
             }
-            else if (_size >= oneKiB)
+
+            if (_size >= oneKiB)
             {
                 return string.Format("{0:##0.00} KB", (float)_size / oneKiB);
             }
@@ -206,7 +209,7 @@ namespace Project24
             string markdown = await System.IO.File.ReadAllTextAsync(webRootPath + "/ReleaseNote.md", Encoding.UTF8);
             string html = App.MarkdownParser.ToHtml(markdown);
 
-            Regex regex = new Regex(@"\A(#+ v[0-9]+\.[0-9]+\.[0-9]+)");
+            Regex regex = new Regex(@"\A(#+ v[0-9]+\.[0-9]+\.[0-9]+-[a-z]+)");
 
             var match = regex.Match(markdown);
             if (match.Success)
