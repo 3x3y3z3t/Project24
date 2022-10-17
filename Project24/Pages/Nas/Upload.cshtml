@@ -1,5 +1,5 @@
 ﻿@*  Upload.cshtml
-    *  Version: 1.0 (2022.10.16)
+    *  Version: 1.1 (2022.10.18)
     *
     *  Contributor
     *      Arime-chan
@@ -14,31 +14,66 @@
     Layout = "_HomeLayout";
 }
 
-NAS Upload
+<div class="d-flex flex-wrap">
 
+    <div class="col-12 col-lg-6 col-xl-6 px-3 border-left">
+        NAS Details goes here;
+        <hr />
 
-<div class="mb-2">
-    <div class="mb-2">
-        <span id="progress-status"> </span>
-        <span id="progress-status-2" class="text-danger" style="display: inline;">(Paused)</span>
-        <div id="progress-bar-wrapper" class="progress">
-            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                 role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
     </div>
 
-    <button type="button" id="button-pause" class="btn btn-danger">Pause</button>
-    <button type="button" id="button-resume" class="btn btn-info">Resume</button>
+    <div class="col-12 col-lg-6 col-xl-6 px-3 border-left border-primary" style="border-left-width: thick;">
+        <h4>NAS Upload</h4>
+        <hr />
+
+        <div class="mb-2">
+            <div>Upload location: <span id="upload-location" class="font-italic">root/</span></div>
+            <p>Uploading: <span id="current-file-name" class="font-weight-bold">None</span></p>
+
+            <div class="mb-2">
+                <span id="current-progress-info">Current: None</span>
+                <span id="current-progress-info-status" class="text-danger" style="display: inline;">(Paused)</span>
+
+                <div id="current-progress-bar-wrapper" class="progress">
+                    <div id="current-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
+                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <span id="total-progress-info">Total: None</span>
+                <span id="total-progress-info-status" class="text-danger" style="display: inline;">(Paused)</span>
+
+                <div id="total-progress-bar-wrapper" class="progress">
+                    <div id="total-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
+                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+
+            <div class="my-3">
+                <button type="button" id="button-pause" class="btn btn-danger">Pause</button>
+                <button type="button" id="button-resume" class="btn btn-info">Resume</button>
+            </div>
+
+        </div>
+        <hr />
+
+        <form id="upload-form">
+            <label>File(s):</label>
+            <input type="file" id="input-files" name="file" multiple />
+            <br />
+
+            <button type="button" id="button-upload" class="btn btn-success">Upload</button>
+        </form>
+        <hr />
+
+        <p id="files-list-overview">Total: 0 file</p>
+        <div id="files-list" class="ml-3">
+        </div>
+
+    </div>
+
 </div>
-
-<form id="upload-form">
-    <label>File:</label>
-    <input type="file" id="input-file" name="file" />
-    <br />
-
-    <button type="button" id="button-upload" class="btn btn-success" onclick="startUpload();">Upload</button>
-</form>
-
 
 @section Scripts {
 <script src="~/js/nas-upload.js"></script>

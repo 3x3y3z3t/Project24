@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.2 (2022.10.10)
+ *  Version: 1.3 (2022.10.18)
  *
  *  Contributor
  *      Arime-chan
@@ -172,7 +172,7 @@ namespace Project24
 
                             try
                             {
-                                string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
+                                string uploadLocationAbsPath = Path.GetFullPath(filePath.Remove(0, 5), nasRootAbsPath);
                                 if (!uploadLocationAbsPath.Contains("wwwNas"))
                                 {
                                     _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
@@ -215,7 +215,7 @@ namespace Project24
                             string filePath = "";
                             if (metadata.ContainsKey("filePath"))
                             {
-                                filePath = metadata["filePath"].GetString(Encoding.UTF8);
+                                filePath = metadata["filePath"].GetString(Encoding.UTF8).Remove(0, 5);
                             }
 
                             string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
