@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.5 (2022.10.18)
+ *  Version: 1.6 (2022.10.19)
  *
  *  Contributor
  *      Arime-chan
@@ -25,6 +25,8 @@ using tusdotnet.Stores;
 using Microsoft.Extensions.FileProviders;
 using Project24.App.Utils;
 using System.Text;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Project24
 {
@@ -71,6 +73,11 @@ namespace Project24
             services.AddRazorPages(_options =>
             {
                 _options.Conventions.AddPageRoute("/Home/Index", "/");
+            });
+
+            services.Configure<KestrelServerOptions>(_options =>
+            {
+                _options.Limits.MaxRequestBodySize = 64L * 1024L * 1024L;
             });
 
         }
@@ -148,6 +155,7 @@ namespace Project24
             });
 
 
+            _logger.LogInformation(">> Configuring done. App ready. <<\n");
         }
 
         #region TusDotNet Event Handlers

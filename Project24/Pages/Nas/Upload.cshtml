@@ -1,5 +1,5 @@
 ﻿@*  Upload.cshtml
-    *  Version: 1.2 (2022.10.18)
+    *  Version: 1.3 (2022.10.18)
     *
     *  Contributor
     *      Arime-chan
@@ -35,7 +35,9 @@
                 <span id="current-progress-info-status" class="text-danger" style="display: inline;">(Paused)</span>
 
                 <div id="current-progress-bar-wrapper" class="progress">
-                    <div id="current-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
+                    <div id="current-accepted-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
+                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div id="current-sent-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="transition-duration: 0.1s;"
                          role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
@@ -45,7 +47,9 @@
                 <span id="total-progress-info-status" class="text-danger" style="display: inline;">(Paused)</span>
 
                 <div id="total-progress-bar-wrapper" class="progress">
-                    <div id="total-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
+                    <div id="total-accepted-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
+                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div id="total-sent-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="transition-duration: 0.1s;"
                          role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
