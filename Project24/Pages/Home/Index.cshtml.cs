@@ -41,6 +41,11 @@ namespace Project24.Pages.Home
                 //return Partial("_Navigator");
             }
 
+            if (HttpContext.User.IsInRole(P24Roles.NasTester))
+            {
+                return RedirectToPage("../Nas/Upload");
+            }
+
             if (HttpContext.User.IsInRole(Constants.ROLE_NAS_USER))
             {
                 return RedirectToPage("../Nas/Index");
@@ -50,8 +55,8 @@ namespace Project24.Pages.Home
             {
                 return RedirectToPage("../ClinicManager/Index");
             }
-
-            return Page();
+            
+            return Page(); // TODO: maybe redirect to access denied page;
         }
 
 

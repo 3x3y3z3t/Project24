@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.2 (2022.10.09)
+ *  Version: 1.3 (2022.10.18)
  *
  *  Contributor
  *      Arime-chan
@@ -39,6 +39,8 @@ namespace Project24.Models
             public const string UpdateVisitingProfile = "Update Visiting Profile";
             public const string DetailVisitingProfile = "Detail Visiting Profile";
 
+
+            public const string UploadNasFile = "UploadNasFile";
 
         }
 

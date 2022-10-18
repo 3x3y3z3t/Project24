@@ -1,5 +1,5 @@
 ﻿/*  Utils.cs
- *  Version: 1.9 (2022.10.16)
+ *  Version: 1.10 (2022.10.18)
  *
  *  Contributor
  *      Arime-chan
@@ -25,6 +25,7 @@ namespace Project24
         public const string Employee = "Employee";
         public const string User = "User";
         public const string NasUser = "NasUser";
+        public const string NasTester = "NasTester";
 
         public const string Vie_Power = "Arime";
         public const string Vie_Admin = "Admin";
@@ -32,6 +33,7 @@ namespace Project24
         public const string Vie_Employee = "Nhân viên";
         public const string Vie_User = "Người dùng";
         public const string Vie_NasUser = "Người dùng NAS";
+        public const string Vie_NasTester = "Người test NAS";
 
         public static string Vie_GetLocalized(string _role)
         {
@@ -50,7 +52,7 @@ namespace Project24
         {
             return new List<string>()
             {
-                Power, Admin, Manager, Employee, User, NasUser
+                Power, Admin, Manager, Employee, User, NasTester
             };
         }
 
@@ -61,7 +63,7 @@ namespace Project24
             { Manager, 2 },
             { Employee, 3 },
             { User, 999 },
-            { NasUser, 4 },
+            { NasTester, 4 },
         };
 
         private static readonly Dictionary<string, string> m_Vie_Localized = new Dictionary<string, string>()
@@ -71,7 +73,7 @@ namespace Project24
             { Manager, Vie_Manager },
             { Employee, Vie_Employee },
             { User, Vie_User },
-            { NasUser, Vie_NasUser },
+            { NasTester, Vie_NasTester },
         };
     }
 

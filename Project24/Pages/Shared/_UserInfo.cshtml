@@ -1,5 +1,5 @@
 ﻿@*  _UserInfo.cshtml
-    *  Version: 1.1 (2022.10.14)
+    *  Version: 1.2 (2022.10.18)
     *
     *  Contributor
     *      Arime-chan
@@ -12,7 +12,7 @@
 
 <ul class="navbar-nav">
 
-    @if (_signInManager.IsSignedIn(User))
+    @if (User.Identity.IsAuthenticated)
     {
         P24IdentityUser p24user = await _userManager.GetUserAsync(User);
         string welcomeString;
@@ -23,7 +23,7 @@
         }
         else
         {
-            welcomeString = p24user.UserName;
+            welcomeString = p24user?.UserName;
         }
 
         <li class="nav-item">

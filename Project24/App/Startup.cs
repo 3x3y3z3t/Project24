@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.3 (2022.10.18)
+ *  Version: 1.4 (2022.10.18)
  *
  *  Contributor
  *      Arime-chan
@@ -210,6 +210,7 @@ namespace Project24
                             tusdotnet.Interfaces.ITusFile file = await _eventContext.GetFileAsync();
                             Dictionary<string, tusdotnet.Models.Metadata> metadata = await file.GetMetadataAsync(_eventContext.CancellationToken);
                             Stream content = await file.GetContentAsync(_eventContext.CancellationToken);
+                            long contentLength = content.Length;
 
                             // write file to disk;
                             string filePath = "";
@@ -231,6 +232,13 @@ namespace Project24
                             var terminationStore = (tusdotnet.Interfaces.ITusTerminationStore)_eventContext.Store;
                             await terminationStore.DeleteFileAsync(_eventContext.FileId, _eventContext.CancellationToken);
 
+                            await Utils.RecordAction(
+                                _eventContext.HttpContext.User.Identity.Name,
+                                Models.ActionRecord.Operation_.UploadNasFile,
+                                Models.ActionRecord.OperationStatus_.Success,
+                                "path=" + filePath + ";file=" + fileName + ";size=" + contentLength
+                            );
+
                             // TODO: refresh page;
                             //await DoSomeProcessing(content, metadata);
                         }
@@ -251,6 +259,10 @@ namespace Project24
 
 
         }
+
+        #region TusDotNet Event Handlers
+
+        #endregion
 
         private async Task MigrateDatabase(IServiceProvider _serviceProvider, ApplicationDbContext _dbContext, ILogger<Startup> _logger)
         {
@@ -312,7 +324,7 @@ namespace Project24
             if (DefaultUsers.DefaultClinicManager != null)
                 await CreateDefaultClinicManager(DefaultUsers.DefaultClinicManager, _userManager);
 
-
+            await CreateDefaultNasTester(_userManager);
 
 
         }
@@ -537,6 +549,79 @@ namespace Project24
                 if (!status.Succeeded)
                 {
                     m_Logger.LogWarning("Could not add role " + P24Roles.Manager + " for Default User 1.");
+                }
+            }
+
+            m_Logger.LogInformation("Done.");
+        }
+        #endregion
+
+        #region Initialize Default Users - NAS Tester
+        private async Task CreateDefaultNasTester(UserManager<P24IdentityUser> _userManager)
+        {
+            m_Logger.LogInformation("Adding Default Nas Tester..");
+
+            const string username = "nas-tester1";
+            const string password = "nas-tester1";
+
+            const string lname = "Nas Tester";
+
+            P24IdentityUser user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                user = new P24IdentityUser()
+                {
+                    UserName = username,
+                    EmailConfirmed = true,
+                    LastName = lname,
+                    JoinDateTime = new DateTime(2022, 10, 18, 6, 54, 08, 135),
+                    AttendanceProfileId = null,
+                };
+
+                var status = await _userManager.CreateAsync(user, password);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not create Default Nas Tester.");
+                    return;
+                }
+            }
+            else
+            {
+                if (user.LastName != lname)
+                {
+                    user.LastName = lname;
+
+                    var status = await _userManager.UpdateAsync(user);
+                    if (!status.Succeeded)
+                    {
+                        m_Logger.LogWarning("Could not update corrected Default Nas Tester.");
+                    }
+                }
+            }
+
+            if (!await _userManager.CheckPasswordAsync(user, password))
+            {
+                var status = await _userManager.RemovePasswordAsync(user);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not remove Default Nas Tester password for correction.");
+                }
+                else
+                {
+                    status = await _userManager.AddPasswordAsync(user, password);
+                    if (!status.Succeeded)
+                    {
+                        m_Logger.LogWarning("Could not add Default Nas Tester password.");
+                    }
+                }
+            }
+
+            if (!await _userManager.IsInRoleAsync(user, P24Roles.NasTester))
+            {
+                var status = await _userManager.AddToRoleAsync(user, P24Roles.NasTester);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not add role " + P24Roles.NasTester + " for Default Nas Tester.");
                 }
             }
 

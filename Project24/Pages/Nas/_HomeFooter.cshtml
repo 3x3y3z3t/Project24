@@ -1,12 +1,23 @@
 ﻿@*  _Footer.cshtml
-  *  Version: 1.0 (2022.09.06)
+  *  Version: 1.1 (2022.10.18)
   *
   *  Contributor
   *      Arime-chan
 *@
 
+
 <footer class="border-top footer text-muted">
-  <div class="container">
-    &copy; 2022 - Project24 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-  </div>
+
+    <div class="container d-flex">
+        <div class="mr-2">
+            &copy; 2022 ExWorkshop - Project24
+        </div>
+        <div class="mx-2">
+            <a asp-page="/Home/Privacy">Privacy</a>
+        </div>
+        <div class="mx-2">
+            <a asp-page="/Home/About">About</a>
+        </div>
+    </div>
+
 </footer>

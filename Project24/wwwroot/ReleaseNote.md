@@ -1,5 +1,6 @@
-﻿#### v0.7.1 (2022.10.18)
+﻿#### v0.7.2 (2022.10.18)
 - Update NAS Upload function using [tus protocol](https://tus.io/). Currently every file is uploaded to root directory.
+- Added NAS Tester user for NAS upload function testing. Default username is `nas-tester`, password is `nas-tester1`.
 
 #### v0.6.13 (2022.10.16)
 - Updated Release Notes fetching logic on About page.
