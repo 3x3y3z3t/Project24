@@ -1,5 +1,5 @@
 ﻿/*  DriveUtils.cs
- *  Version: 1.1 (2022.10.15)
+ *  Version: 1.2 (2022.10.18)
  *
  *  Contributor
  *      Arime-chan
@@ -38,7 +38,7 @@ namespace Project24.App.Utils
                 Init();
 
             string nasPath = Path.GetFullPath(Constants.WorkingDir + "/" + Constants.NasRoot);
-            string statusFileFullname = nasPath + "/stats/txt";
+            string statusFileFullname = nasPath + "stats.txt";
             if (_force || !File.Exists(statusFileFullname))
             {
                 string fileContent = GetStatsString();

@@ -1,5 +1,5 @@
 ﻿/*  nas-upload.js
- *  Version: 1.1 (2022.10.18)
+ *  Version: 1.2 (2022.10.18)
  *
  *  Contributor
  *      Arime-chan
@@ -197,7 +197,7 @@ function tryStartUpload(_index) {
     g_ActiveTusUpload = new tus.Upload(g_FilesToUpload[_index], {
         endpoint: "/Nas/Upload0",                           // Endpoint is the upload creation URL from your tus server
         retryDelays: [0, 3000, 5000, 10000, 20000],         // Retry delays will enable tus-js-client to automatically retry on errors
-        chunkSize: 10 * 1024 * 1024,                        // Set chunk size to 10MiB;
+        chunkSize: 64 * 1024 * 1024,                        // Set chunk size to 64MiB;
 
         metadata: {
             fileName: file.name,

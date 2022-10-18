@@ -44,10 +44,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\**\*.css" CopyToPublishDirectory="never" />
-    <Content Update="wwwroot\**\*.min.css" CopyToPublishDirectory="always" />
-    <Content Update="wwwroot\**\*.js" CopyToPublishDirectory="never" />
-    <Content Update="wwwroot\**\*.min.js" CopyToPublishDirectory="always" />
+    <Content Update="wwwroot\lib\**\*.css" CopyToPublishDirectory="never" />
+    <Content Update="wwwroot\lib\**\*.min.css" CopyToPublishDirectory="always" />
+    <Content Update="wwwroot\lib\**\*.js" CopyToPublishDirectory="never" />
+    <Content Update="wwwroot\lib\**\*.min.js" CopyToPublishDirectory="always" />
   </ItemGroup>
   
   <ItemGroup>

@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.4 (2022.10.18)
+ *  Version: 1.5 (2022.10.18)
  *
  *  Contributor
  *      Arime-chan
@@ -129,125 +129,15 @@ namespace Project24
             _app.UseRouting();
 
             _app.UseAuthentication();
-            _app.UseAuthorization();
 
             /*  ! The request timeout middleware is only needed when running directly on Kestrel. 
              *  In other circumstances the reverse proxy will handle the request timeout 
              *  and notify tusdotnet that the client has disconnected.
              */
-
             // tus upload;
-            _app.UseTus(_httpContext =>
-            {
-                string nasRootAbsPath = Path.GetFullPath(Constants.NasRoot, Constants.WorkingDir);
+            _app.UseTus(ConfigTusDotNet);
 
-                return new tusdotnet.Models.DefaultTusConfiguration()
-                {
-                    // This method is called on each request so different configurations can be returned per user, domain, path etc.
-                    // Return null to disable tusdotnet for the current request.
-
-                    // c:\tusfiles is where to store files
-                    Store = new TusDiskStore(nasRootAbsPath, true),
-                    // On what url should we listen for uploads?
-                    UrlPath = "/Nas/Upload0",
-                    Events = new tusdotnet.Models.Configuration.Events
-                    {
-                        OnBeforeCreateAsync = (_eventContext) =>
-                        {
-                            if (!_eventContext.Metadata.ContainsKey("fileName"))
-                            {
-                                _eventContext.FailRequest("name metadata must be specified. ");
-                            }
-
-                            if (!_eventContext.Metadata.ContainsKey("contentType"))
-                            {
-                                _eventContext.FailRequest("contentType metadata must be specified. ");
-                            }
-
-                            string filePath = "";
-                            if (_eventContext.Metadata.ContainsKey("filePath"))
-                            {
-                                filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
-                            }
-
-                            try
-                            {
-                                string uploadLocationAbsPath = Path.GetFullPath(filePath.Remove(0, 5), nasRootAbsPath);
-                                if (!uploadLocationAbsPath.Contains("wwwNas"))
-                                {
-                                    _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
-                                }
-                            }
-                            catch (Exception _e)
-                            {
-                                _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
-                            }
-
-                            return Task.CompletedTask;
-                        },
-
-                        OnCreateCompleteAsync = (_eventContext) =>
-                        {
-
-                            //string filePath = "";
-                            //if (_eventContext.Metadata.ContainsKey("filePath"))
-                            //{
-                            //    filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
-                            //}
-
-                            //string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
-                            //TusDotNetUtils.AddOrReplace(_eventContext.FileId, new TusDotNetUtils.FileMetadata()
-                            //{
-                            //    Path = uploadLocationAbsPath,
-                            //    Filename = _eventContext.Metadata["fileName"].GetString(Encoding.UTF8)
-                            //});
-
-                            return Task.CompletedTask;
-                        },
-
-                        OnFileCompleteAsync = async (_eventContext) =>
-                        {
-                            tusdotnet.Interfaces.ITusFile file = await _eventContext.GetFileAsync();
-                            Dictionary<string, tusdotnet.Models.Metadata> metadata = await file.GetMetadataAsync(_eventContext.CancellationToken);
-                            Stream content = await file.GetContentAsync(_eventContext.CancellationToken);
-                            long contentLength = content.Length;
-
-                            // write file to disk;
-                            string filePath = "";
-                            if (metadata.ContainsKey("filePath"))
-                            {
-                                filePath = metadata["filePath"].GetString(Encoding.UTF8).Remove(0, 5);
-                            }
-
-                            string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
-                            string fileName = metadata["fileName"].GetString(Encoding.UTF8);
-                            Directory.CreateDirectory(uploadLocationAbsPath);
-
-                            FileStream fileStream = new FileStream(uploadLocationAbsPath + fileName, FileMode.Create);
-                            await content.CopyToAsync(fileStream);
-                            await fileStream.DisposeAsync();
-
-                            await content.DisposeAsync();
-
-                            var terminationStore = (tusdotnet.Interfaces.ITusTerminationStore)_eventContext.Store;
-                            await terminationStore.DeleteFileAsync(_eventContext.FileId, _eventContext.CancellationToken);
-
-                            await Utils.RecordAction(
-                                _eventContext.HttpContext.User.Identity.Name,
-                                Models.ActionRecord.Operation_.UploadNasFile,
-                                Models.ActionRecord.OperationStatus_.Success,
-                                "path=" + filePath + ";file=" + fileName + ";size=" + contentLength
-                            );
-
-                            // TODO: refresh page;
-                            //await DoSomeProcessing(content, metadata);
-                        }
-                    },
-
-                    MaxAllowedUploadSizeInBytesLong = 10L * 1024L * 1024L * 1024L, /* allow 10GiB */
-                    Expiration = new tusdotnet.Models.Expiration.SlidingExpiration(new TimeSpan(3, 0, 0, 0)),
-                };
-            });
+            _app.UseAuthorization();
 
             _app.UseEndpoints(endpoints =>
             {
@@ -261,7 +151,120 @@ namespace Project24
         }
 
         #region TusDotNet Event Handlers
+        private tusdotnet.Models.DefaultTusConfiguration ConfigTusDotNet(Microsoft.AspNetCore.Http.HttpContext _httpContext)
+        {
+            string nasRootAbsPath = Path.GetFullPath(Constants.NasRoot, Constants.WorkingDir);
 
+            return new tusdotnet.Models.DefaultTusConfiguration()
+            {
+                // This method is called on each request so different configurations can be returned per user, domain, path etc.
+                // Return null to disable tusdotnet for the current request.
+
+                // c:\tusfiles is where to store files
+                Store = new TusDiskStore(nasRootAbsPath, true),
+                // On what url should we listen for uploads?
+                UrlPath = "/Nas/Upload0",
+                Events = new tusdotnet.Models.Configuration.Events
+                {
+                    OnBeforeCreateAsync = (_eventContext) =>
+                    {
+                        if (!_eventContext.Metadata.ContainsKey("fileName"))
+                        {
+                            _eventContext.FailRequest("name metadata must be specified. ");
+                        }
+
+                        if (!_eventContext.Metadata.ContainsKey("contentType"))
+                        {
+                            _eventContext.FailRequest("contentType metadata must be specified. ");
+                        }
+
+                        string filePath = "";
+                        if (_eventContext.Metadata.ContainsKey("filePath"))
+                        {
+                            filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
+                        }
+
+                        try
+                        {
+                            string uploadLocationAbsPath = Path.GetFullPath(filePath.Remove(0, 5), nasRootAbsPath);
+                            if (!uploadLocationAbsPath.Contains("wwwNas"))
+                            {
+                                _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
+                            }
+                        }
+                        catch (Exception _e)
+                        {
+                            _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
+                        }
+
+                        return Task.CompletedTask;
+                    },
+
+                    OnCreateCompleteAsync = (_eventContext) =>
+                    {
+
+                        //string filePath = "";
+                        //if (_eventContext.Metadata.ContainsKey("filePath"))
+                        //{
+                        //    filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
+                        //}
+
+                        //string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
+                        //TusDotNetUtils.AddOrReplace(_eventContext.FileId, new TusDotNetUtils.FileMetadata()
+                        //{
+                        //    Path = uploadLocationAbsPath,
+                        //    Filename = _eventContext.Metadata["fileName"].GetString(Encoding.UTF8)
+                        //});
+
+                        return Task.CompletedTask;
+                    },
+
+                    OnFileCompleteAsync = async (_eventContext) =>
+                    {
+                        tusdotnet.Interfaces.ITusFile file = await _eventContext.GetFileAsync();
+                        Dictionary<string, tusdotnet.Models.Metadata> metadata = await file.GetMetadataAsync(_eventContext.CancellationToken);
+                        Stream content = await file.GetContentAsync(_eventContext.CancellationToken);
+                        long contentLength = content.Length;
+
+                        // write file to disk;
+                        string filePath = "";
+                        if (metadata.ContainsKey("filePath"))
+                        {
+                            filePath = metadata["filePath"].GetString(Encoding.UTF8).Remove(0, 5);
+                        }
+
+                        string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
+                        string fileName = metadata["fileName"].GetString(Encoding.UTF8);
+                        Directory.CreateDirectory(uploadLocationAbsPath);
+
+                        FileStream fileStream = new FileStream(uploadLocationAbsPath + fileName, FileMode.Create);
+                        await content.CopyToAsync(fileStream);
+                        await fileStream.DisposeAsync();
+
+                        await content.DisposeAsync();
+
+                        var terminationStore = (tusdotnet.Interfaces.ITusTerminationStore)_eventContext.Store;
+                        await terminationStore.DeleteFileAsync(_eventContext.FileId, _eventContext.CancellationToken);
+
+                        ApplicationDbContext dbContext = _eventContext.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+                        var username = _eventContext.HttpContext.User.Identity.Name;
+                        await Utils.RecordAction(
+                            dbContext,
+                            _eventContext.HttpContext.User.Identity.Name,
+                            Models.ActionRecord.Operation_.UploadNasFile,
+                            Models.ActionRecord.OperationStatus_.Success,
+                            "path=" + filePath + ";file=" + fileName + ";size=" + contentLength
+                        );
+
+                        // TODO: refresh page;
+                        //await DoSomeProcessing(content, metadata);
+                    }
+                },
+
+                MaxAllowedUploadSizeInBytesLong = 10L * 1024L * 1024L * 1024L, /* allow 10GiB */
+                Expiration = new tusdotnet.Models.Expiration.SlidingExpiration(new TimeSpan(3, 0, 0, 0)),
+            };
+        } 
         #endregion
 
         private async Task MigrateDatabase(IServiceProvider _serviceProvider, ApplicationDbContext _dbContext, ILogger<Startup> _logger)
