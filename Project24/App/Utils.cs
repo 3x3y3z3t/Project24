@@ -1,5 +1,5 @@
 ﻿/*  Utils.cs
- *  Version: 1.11 (2022.10.19)
+ *  Version: 1.12 (2022.10.19)
  *
  *  Contributor
  *      Arime-chan
@@ -231,7 +231,7 @@ namespace Project24
 
             string markdown = await System.IO.File.ReadAllTextAsync(webRootPath + "/ReleaseNote.md", Encoding.UTF8);
 
-            Regex regex = new Regex(@"\A(#+ v[0-9]+\.[0-9]+\.[0-9]+-*([a-z0-9])*)");
+            Regex regex = new Regex(@"#+ v[0-9]+\.[0-9]+\.[0-9]+-*([a-z0-9])*");
 
             var match = regex.Match(markdown);
             if (match.Success)

@@ -1,5 +1,5 @@
 ﻿
-#### v0.7.4-alpha (2022.10.19)
+#### v0.7.5-alpha (2022.10.19)
 - Reworked NAS Browser function.
 - Reworked NAS Download function.
 - Minor refactor.
