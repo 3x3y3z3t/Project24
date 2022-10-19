@@ -1,5 +1,5 @@
 /*  About.cshtml.cs
- *  Version: 1.2 (2022.10.16)
+ *  Version: 1.3 (2022.10.19)
  *
  *  Contributor
  *      Arime-chan
@@ -26,7 +26,7 @@ namespace Project24.Pages
 
         public async Task OnGetAsync()
         {
-            await Utils.UpdateCurrentVersion(m_WebHostEnv);
+
         }
 
         public async Task<IActionResult> OnGetReleaseNoteAsync()

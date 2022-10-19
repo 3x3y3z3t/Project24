@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.6 (2022.10.19)
+ *  Version: 1.7 (2022.10.19)
  *
  *  Contributor
  *      Arime-chan
@@ -34,9 +34,17 @@ namespace Project24
     {
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration _configuration)
         {
-            Configuration = configuration;
+            Configuration = _configuration;
+
+            Constants.DataRoot = _configuration["RootDirs:DataRoot"];
+            Constants.NasRoot = _configuration["RootDirs:NasRoot"];
+
+            Utils.DataRoot = _configuration["RootDirs:DataRoot"];
+            Utils.NasRoot = _configuration["RootDirs:NasRoot"];
+            Utils.TmpRoot = _configuration["RootDirs:TmpRoot"];
+
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -92,12 +100,14 @@ namespace Project24
         {
             m_Logger = _logger;
 
-            Constants.DataRoot = Configuration["RootDirs:DataRoot"];
-            Constants.NasRoot = Configuration["RootDirs:NasRoot"];
+            Utils.AppRoot = _env.ContentRootPath;
 
             NasDriveUtils.Init();
             NasDriveUtils.WriteStatsFile();
             _logger.LogInformation(NasDriveUtils.GetStatsString());
+
+            Utils.UpdateCurrentVersion(_env).Wait();
+            _logger.LogInformation("App version: " + Utils.CurrentVersion);
 
             MigrateDatabase(_serviceProvider, _dbContext, _logger).Wait();
 
@@ -148,10 +158,13 @@ namespace Project24
 
             _app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
+
+                //endpoints.MapControllerRoute(
+                //    name: "static",
+                //    pattern: "/Nas/Upload/{*_path}",
+                //    defaults: new { page = "/Nas/Upload", action = "OnGetAsync" });
+
             });
 
 

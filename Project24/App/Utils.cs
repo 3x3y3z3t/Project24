@@ -1,5 +1,5 @@
 ﻿/*  Utils.cs
- *  Version: 1.10 (2022.10.18)
+ *  Version: 1.11 (2022.10.19)
  *
  *  Contributor
  *      Arime-chan
@@ -77,6 +77,16 @@ namespace Project24
         };
     }
 
+    public enum P24Module
+    {
+        Home = 0,
+        Home_Navigate,
+
+        ClinicManager,
+
+        Nas,
+    }
+
     public class Constants
     {
 
@@ -93,11 +103,12 @@ namespace Project24
          *  |           |---data                <- (contains Clinic Manager related data, mostly image)
          *  |           |---[MySQL db files]    <- (db)
          *  |---wwwNas                          <- (contains NAS files)
+         *  |---wwwTmp
+         *  |   |---p24-next                    <- (next version of the app, contains the 'publish' directory)
          */
         public static string NasRoot { get; set; }
         public static string DataRoot { get; set; }
 
-        public static string CurrentVersion { get; set; }
 
 
         //public const string NAS_ROOT = "./../../../wwwNas/";
@@ -174,6 +185,16 @@ namespace Project24
 
     public static class Utils
     {
+        
+        /* This is equivalent to Directory.GetCurrentDirectory() */
+        public static string AppRoot { get; set; } 
+
+        public static string DataRoot { get; set; }
+        public static string NasRoot { get; set; }
+        public static string TmpRoot { get; set; }
+
+        public static string CurrentVersion { get; set; }
+
         public static string FormatDataSize(long _size)
         {
             const long oneKiB = 1024L;
@@ -209,18 +230,17 @@ namespace Project24
             string webRootPath = _webHostEnv.WebRootPath;
 
             string markdown = await System.IO.File.ReadAllTextAsync(webRootPath + "/ReleaseNote.md", Encoding.UTF8);
-            string html = App.MarkdownParser.ToHtml(markdown);
 
-            Regex regex = new Regex(@"\A(#+ v[0-9]+\.[0-9]+\.[0-9]+-[a-z]+)");
+            Regex regex = new Regex(@"\A(#+ v[0-9]+\.[0-9]+\.[0-9]+-*([a-z0-9])*)");
 
             var match = regex.Match(markdown);
             if (match.Success)
             {
-                Constants.CurrentVersion = match.Value[4..]; // equivalent to .Substring(4);
+                Utils.CurrentVersion = match.Value[4..]; // equivalent to .Substring(4);
             }
             else
             {
-                Constants.CurrentVersion = "Unknown";
+                Utils.CurrentVersion = "Unknown";
             }
         }
 

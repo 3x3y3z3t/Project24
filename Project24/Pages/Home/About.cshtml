@@ -1,11 +1,12 @@
 ﻿@*  About.cshtml
-    *  Version: 1.1 (2022.10.16)
+    *  Version: 1.2 (2022.10.19)
     *
     *  Contributor
     *      Arime-chan
  *@
 
 @page "{handler?}"
+@using Project24
 @model Project24.Pages.AboutModel
 @{
     ViewData["Title"] = "About";
@@ -44,7 +45,7 @@
         <b><a href="https://github.com/3x3y3z3t/Project24" target="_blank">here</a></b>.
     </p>
     <p>
-        Current version: <b>@Constants.CurrentVersion</b> (<a href="#release-note" id="rel-note-anchor">Release Note</a>)
+        Current version: <b>@Utils.CurrentVersion</b> (<a href="#release-note" id="rel-note-anchor">Release Note</a>)
     </p>
 
 </div>

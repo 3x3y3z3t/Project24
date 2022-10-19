@@ -1,0 +1,91 @@
+﻿@using Project24.App.Utils
+@*  NasBrowser.cshtml
+    *  Version: 1.0 (2022.10.19)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@model Project24.Pages.Nas.IndexModel
+@{
+    Layout = "_Layout";
+}
+
+
+<div class="text-center">
+
+    <div class="text-left col-12 col-md-6 col-lg-5 col-xl-4 m-2">
+        @{
+            long used = NasDriveUtils.TotalSize - NasDriveUtils.TotalFreeSpace;
+            float percent = used * 100.0f / NasDriveUtils.TotalSize;
+
+            string colorClassname = "";
+            if (percent < 75.0f)
+                colorClassname = "bg-success";
+            else if (percent < 90.0f)
+                colorClassname = "bg-warning";
+            else
+                colorClassname = "bg-danger";
+
+            string strFreeSpace = Utils.FormatDataSize(NasDriveUtils.TotalFreeSpace);
+            string strTotalSpace = Utils.FormatDataSize(NasDriveUtils.TotalSize);
+            string strUsedPercent = string.Format("{0:0.00}%", percent);
+        }
+
+        <div id="progress-bar-wrapper" class="progress">
+            <div id="progress-bar" class="progress-bar @colorClassname" style="width: @strUsedPercent"
+                 role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-value="@percent"></div>
+        </div>
+        <div>@strFreeSpace free of @strTotalSpace (@strUsedPercent used)</div>
+    </div>
+
+    <h4 class="d-flex font-weight-normal text-left">
+        <span><a href="/Nas">root/</a></span>
+
+        @{
+            string pathArg = "";
+            for (int i = 0; i < Model.Data.PathLayers.Count; ++i)
+            {
+                pathArg += @Model.Data.PathLayers[i] + "/";
+
+                if (i == Model.Data.PathLayers.Count - 1)
+                {
+                    <span>@Model.Data.PathLayers[i]/</span>
+                }
+                else
+                {
+                    string href = "/Nas/Index/" + pathArg.TrimEnd('/');
+                    <span><a href="@href">@Model.Data.PathLayers[i]/</a></span>
+                }
+            }
+        }
+    </h4>
+
+    <table class="table table-sm table-hover">
+        <thead>
+            <tr>
+                <th class="text-left" style="max-width: 64px;">Icon</th>
+                <th class="text-left">Filename</th>
+                <th class="text-left" style="max-width: 512px;">Latest Modified</th>
+                <th class="text-left" style="max-width: 256px;">Size</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Data.Files.Count; ++i)
+            {
+                var file = Model.Data.Files[i];
+                string href = "/Nas/" + file.RelativePath + file.Name;
+
+                <tr class="">
+                    <td class="text-left"></td>
+                    <td class="text-left"><a href="@href">@file.Name</a></td>
+                    <td class="text-left">@file.LastModified</td>
+                    <td class="text-right">@Utils.FormatDataSize(file.Size)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+

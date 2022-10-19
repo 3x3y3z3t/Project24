@@ -1,19 +1,20 @@
 ﻿@*  Details.cshtml
-    *  Version: 1.3 (2022.10.14)
+    *  Version: 1.4 (2022.10.19)
     *
     *  Contributor
     *      Arime-chan
 *@
 
 @page "{_code?}/{_mode?}"
+@using Project24
 @model Project24.Pages.ClinicManager.DetailsModel
 
 @{
     ViewData["Title"] = "Chi tiết thông tin bệnh nhân";
     Layout = "_CMLayout";
 
-    string dirRoot = System.IO.Directory.GetDirectoryRoot(Constants.WorkingDir);
-    string dataRoot = System.IO.Path.GetFullPath(Constants.DataRoot, Constants.WorkingDir);
+    string dirRoot = System.IO.Directory.GetDirectoryRoot(Utils.AppRoot);
+    string dataRoot = System.IO.Path.GetFullPath(Utils.DataRoot, Utils.AppRoot);
 }
 
 <h1>@ViewData["Title"]</h1>

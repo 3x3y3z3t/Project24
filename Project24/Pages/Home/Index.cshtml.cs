@@ -35,7 +35,7 @@ namespace Project24.Pages.Home
 
             if (HttpContext.User.IsInRole(Constants.ROLE_ADMIN))
             {
-                return RedirectToPage("../Nas/Upload");
+                return RedirectToPage("../Nas/Index");
                 //return RedirectToPage("../ClinicManager/Index");
                 //return RedirectToPage("About");
                 //return Partial("_Navigator");
@@ -43,7 +43,7 @@ namespace Project24.Pages.Home
 
             if (HttpContext.User.IsInRole(P24Roles.NasTester))
             {
-                return RedirectToPage("../Nas/Upload");
+                return RedirectToPage("../Nas/Index");
             }
 
             if (HttpContext.User.IsInRole(Constants.ROLE_NAS_USER))

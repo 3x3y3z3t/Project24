@@ -1,16 +1,16 @@
 ﻿@*  Index.cshtml
-  *  Version: 1.0 (2022.10.04)
+  *  Version: 1.1 (2022.10.19)
   *
   *  Contributor
   *      Arime-chan
 *@
 
-@page "{handler?}/{_id?}"
+@page "{*_path}"
 
 @model Project24.Pages.Nas.IndexModel
 @{
   ViewData["Title"] = "Index";
-  Layout = "_HomeLayout";
+  Layout = "_Layout";
 }
 
 <div class="text-center">
@@ -18,19 +18,19 @@
   <h5 class="text-left">
     Path:
 
-    @for (int i = 0; i < Model.Data.PathLayer.Count; ++i)
+    @for (int i = 0; i < Model.Data.PathLayers.Count; ++i)
     {
       @if (i == 0)
       {
         <span><a href="/Nas/Explore/">Root /</a></span>
       }
-      else if (i == Model.Data.PathLayer.Count - 1)
+      else if (i == Model.Data.PathLayers.Count - 1)
       {
-        <span>@Model.Data.PathLayer[i] /</span>
+        <span>@Model.Data.PathLayers[i] /</span>
       }
       else
       {
-        <span><a href="/Nas/Explore/-@i">@Model.Data.PathLayer[i] /</a></span>
+        <span><a href="/Nas/Explore/-@i">@Model.Data.PathLayers[i] /</a></span>
       }
     }
   </h5>
@@ -39,7 +39,7 @@
 
 
 
-  <div>@Model.Data.FullPath</div>
+  <div>@Model.Data.Path</div>
 
   <table class="table">
     <thead>
