@@ -1,5 +1,5 @@
 ﻿@*  Details.cshtml
-    *  Version: 1.4 (2022.10.19)
+    *  Version: 1.5 (2022.10.22)
     *
     *  Contributor
     *      Arime-chan
@@ -11,10 +11,10 @@
 
 @{
     ViewData["Title"] = "Chi tiết thông tin bệnh nhân";
-    Layout = "_CMLayout";
+    Layout = "_Layout";
 
     string dirRoot = System.IO.Directory.GetDirectoryRoot(Utils.AppRoot);
-    string dataRoot = System.IO.Path.GetFullPath(Utils.DataRoot, Utils.AppRoot);
+    string dataRoot = System.IO.Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.DataRoot);
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -37,22 +37,22 @@
             <dd class="col-sm-10">@Model.CustomerProfile.CustomerCode</dd>
 
             <dt class="col-sm-2">Họ và Tên bệnh nhân:</dt>
-            <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.FullName)</dd>
+            <dd class="col-sm-10">@Model.CustomerProfile.FullName</dd>
 
             <dt class="col-sm-2">Địa chỉ:</dt>
-            <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.Address)</dd>
+            <dd class="col-sm-10">@Model.CustomerProfile.Address</dd>
 
             <dt class="col-sm-2">Số điện thoại:</dt>
-            <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.PhoneNumber)</dd>
+            <dd class="col-sm-10">@Model.CustomerProfile.PhoneNumber</dd>
 
             <dt class="col-sm-2">Ghi chú:</dt>
-            <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.Notes)</dd>
+            <dd class="col-sm-10">@Model.CustomerProfile.Notes</dd>
 
             <dt class="col-sm-2">Ngày đăng ký:</dt>
-            <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.AddedDate) (bởi @Html.DisplayFor(model => model.CustomerProfile.AddedUser.UserName))</dd>
+            <dd class="col-sm-10">@Model.CustomerProfile.AddedDate (bởi @Model.CustomerProfile.AddedUser.UserName)</dd>
 
             <dt class="col-sm-2">Cập nhật lần cuối:</dt>
-            <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.UpdatedDate) (bởi @Html.DisplayFor(model => model.CustomerProfile.UpdatedUser.UserName))</dd>
+            <dd class="col-sm-10">@Model.CustomerProfile.UpdatedDate (bởi @Model.CustomerProfile.UpdatedUser.UserName)</dd>
         </dl>
 
         <hr />
@@ -74,7 +74,7 @@
         {
             <h5 class="text-bold">Ảnh (@Model.CustomerImages.Count ảnh) | <a onclick="toggleAddImageForm()" href="#">Thêm ảnh</a></h5>
         }
-        
+
         <form method="post" enctype="multipart/form-data" id="add-image-form" style="@ViewData["AddImgFormStyle"]">
             <hr />
             <div asp-validation-summary="All" class="text-danger"></div>
@@ -108,17 +108,16 @@
             <hr />
 
             <div class="d-flex flex-wrap">
-                @foreach (Project24.Models.CustomerImageDev image in Model.CustomerImages)
+                @foreach (Project24.Models.CustomerImage image in Model.CustomerImages)
                 {
                     <figure class="figure m-2">
-                        <img src="@string.Concat("../../data/", image.Filepath)" class="figure-img img-fluid" style="max-height:200px;" />
+                        <img src="@string.Concat("/data", image.Filepath)" class="figure-img img-fluid" style="max-height:200px;" />
                         <figcaption class="figure-caption">@image.Filepath</figcaption>
-                        <a href="../DeleteImage/@Model.CustomerProfile.CustomerCode/@image.Id">Xóa</a>
+                        <a href="" onclick="@string.Concat("sendAjaxRequestForDeletingImage('" + Model.CustomerProfile.CustomerCode + "', '" + image.Id + "')")">Xóa</a>
                     </figure>
                 }
             </div>
         }
-
     }
 
 </div>
@@ -131,6 +130,30 @@
 
     function hideAddImageForm() {
         $('#add-image-form').hide();
+    }
+
+    function sendAjaxRequestForDeletingImage(_customerCode, _imageId) {
+        var token = $("input[name='__RequestVerificationToken']").val();
+
+        $.ajax({
+            type: 'POST',
+            url: '/ClinicManager/DeleteImage',
+            headers: {
+                "RequestVerificationToken": token
+            },
+            data: JSON.stringify({
+                CustomerCode: _customerCode,
+                ImageId: _imageId
+            }),
+            contentType: "application/json; charset=utf-8",
+            processData: false,
+            success: function(_returnMsg) {
+                console.log("DeleteImage returns " + _returnMsg)
+                //location.reload();
+            },
+            error: function() { window.alert("Error!"); }
+        });
+
     }
 </script>
 

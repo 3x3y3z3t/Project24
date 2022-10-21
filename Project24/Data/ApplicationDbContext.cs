@@ -1,48 +1,68 @@
 ﻿/*  ApplicationDbContext.cs
- *  Version: 1.6 (2022.10.08)
+ *  Version: 1.7 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
  */
+
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Project24.Identity;
 using Project24.Models;
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Project24.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
-        public static ApplicationDbContext Instance { get; protected set; }
-
 
         public DbSet<P24IdentityUser> P24Users { get; set; }
-        public DbSet<P24IdentityRole> P24Roles { get; set; }
-        public DbSet<Project24.Models.Customer> Customer { get; set; }
+        public DbSet<CustomerProfile> CustomerProfiles { get; set; }
+        public DbSet<CustomerImage> CustomerImages { get; set; }
+
         public DbSet<ActionRecord> ActionRecords { get; set; }
-
-
-        public DbSet<ServiceDev> ServicesDev { get; set; }
-
-        public DbSet<CustomerProfileDev> CustomerProfilesDev { get; set; }
-        public DbSet<CustomerProfileDev2> CustomerProfilesDev2 { get; set; }
-        public DbSet<CustomerImageDev> CustomerImageDev { get; set; }
-        public DbSet<VisitingProfileDev> VisitingProfilesDev { get; set; }
-        public DbSet<ServiceUsageProfileDev> ServiceUsageProfilessDev { get; set; }
-
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-            Instance = this;
+
+        }
+
+        public async Task RecordChanges(
+            string _username,
+            string _operation,
+            string _status,
+            Dictionary<string, string> _customInfo = null)
+        {
+            string customInfo = null;
+            if (_customInfo != null)
+                JsonSerializer.Serialize(_customInfo);
+
+            ActionRecord record = new ActionRecord()
+            {
+                Timestamp = DateTime.Now,
+                Username = _username,
+                Operation = _operation,
+                OperationStatus = _status,
+                CustomInfo = customInfo
+            };
+            await AddAsync(record);
+            await SaveChangesAsync();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder _optionsBuilder)
         {
             //_optionsBuilder.UseSnakeCaseNamingConvention();
+            _optionsBuilder.EnableSensitiveDataLogging();
+            _optionsBuilder.EnableDetailedErrors();
+
 
         }
+
 
     }
 

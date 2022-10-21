@@ -1,10 +1,11 @@
 ﻿/*  Login.cshtml.cs
- *  Version: 1.2 (2022.10.03)
+ *  Version: 1.3 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
  */
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +33,6 @@ namespace Project24.Pages.Home
 
             public bool RememberLogin { get; set; }
 
-
             public DataModel()
             { }
         }
@@ -40,14 +40,16 @@ namespace Project24.Pages.Home
         [BindProperty]
         public DataModel Data { get; set; } = null;
 
-        public string ErrorMessage { get; set; }
+        public string StatusMessage { get; protected set; }
 
 
-        public LoginModel(SignInManager<P24IdentityUser> _signInManager, ILogger<LoginModel> _logger)
+        public LoginModel(ApplicationDbContext _dbContext, SignInManager<P24IdentityUser> _signInManager, ILogger<LoginModel> _logger)
         {
+            m_DbContext = _dbContext;
             m_SignInManager = _signInManager;
             m_Logger = _logger;
         }
+
 
         public async Task OnGetAsync()
         {
@@ -56,45 +58,48 @@ namespace Project24.Pages.Home
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await m_SignInManager.PasswordSignInAsync(Data.Username, Data.Password, Data.RememberLogin, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    await Utils.RecordAction(ApplicationDbContext.Instance,
-                        Data.Username,
-                        ActionRecord.Operation_.AttemptLogin,
-                        ActionRecord.OperationStatus_.Success
-                    );
-
-                    return LocalRedirect("/");
-                }
-
-                await Utils.RecordAction(ApplicationDbContext.Instance,
+                await m_DbContext.RecordChanges(
                     Data.Username,
                     ActionRecord.Operation_.AttemptLogin,
-                    ActionRecord.OperationStatus_.Failed
+                    ActionRecord.OperationStatus_.UnexpectedError,
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Error, Project24.ErrorMessage.InvalidModelState }
+                    }
                 );
-
-                ErrorMessage = "Đăng nhập thất bại.";
 
                 return Page();
             }
 
-            await Utils.RecordAction(ApplicationDbContext.Instance,
+            // This doesn't count login failures towards account lockout
+            // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+            var result = await m_SignInManager.PasswordSignInAsync(Data.Username, Data.Password, Data.RememberLogin, lockoutOnFailure: false);
+            if (result.Succeeded)
+            {
+                await m_DbContext.RecordChanges(
+                    Data.Username,
+                    ActionRecord.Operation_.AttemptLogin,
+                    ActionRecord.OperationStatus_.Success
+                );
+
+                return LocalRedirect("/");
+            }
+
+            await m_DbContext.RecordChanges(
                 Data.Username,
                 ActionRecord.Operation_.AttemptLogin,
-                ActionRecord.OperationStatus_.UnexpectedError,
-                "Invalid Model State"
+                ActionRecord.OperationStatus_.Failed
             );
 
-            // If we got this far, something failed, redisplay form
-            return Page();
+            StatusMessage = "Đăng nhập thất bại.";
 
+            return Page();
         }
 
+
+        private readonly ApplicationDbContext m_DbContext;
         private readonly SignInManager<P24IdentityUser> m_SignInManager;
         private readonly ILogger<LoginModel> m_Logger;
     }

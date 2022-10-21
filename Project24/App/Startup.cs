@@ -1,9 +1,10 @@
 ﻿/*  Startup.cs
- *  Version: 1.7 (2022.10.19)
+ *  Version: 1.8 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
  */
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Project24.Data;
@@ -25,7 +26,6 @@ using tusdotnet.Stores;
 using Microsoft.Extensions.FileProviders;
 using Project24.App.Utils;
 using System.Text;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Project24
@@ -38,12 +38,11 @@ namespace Project24
         {
             Configuration = _configuration;
 
-            Constants.DataRoot = _configuration["RootDirs:DataRoot"];
-            Constants.NasRoot = _configuration["RootDirs:NasRoot"];
+            App.DriveUtils.Init();
+            App.DriveUtils.FixDirectoryStructure();
+            App.DriveUtils.WriteStatFile();
 
-            Utils.DataRoot = _configuration["RootDirs:DataRoot"];
-            Utils.NasRoot = _configuration["RootDirs:NasRoot"];
-            Utils.TmpRoot = _configuration["RootDirs:TmpRoot"];
+
 
         }
 
@@ -55,12 +54,11 @@ namespace Project24
             //        Configuration.GetConnectionString("DefaultConnection")));
 
             string mySqlConnectionStr = Configuration.GetConnectionString("DefaultConnection");
-
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(mySqlConnectionStr, opts => opts.ServerVersion(ServerVersion.AutoDetect(mySqlConnectionStr)))
             );
 
-            services.AddIdentity<P24IdentityUser, P24IdentityRole>((_options) =>
+            services.AddIdentity<P24IdentityUser, IdentityRole>((_options) =>
             {
                 _options.SignIn.RequireConfirmedAccount = true;
                 _options.SignIn.RequireConfirmedEmail = false;
@@ -100,11 +98,19 @@ namespace Project24
         {
             m_Logger = _logger;
 
-            Utils.AppRoot = _env.ContentRootPath;
+            {
+                string logStr = "Nas Stats:\r\n\r\n";
 
-            NasDriveUtils.Init();
-            NasDriveUtils.WriteStatsFile();
-            _logger.LogInformation(NasDriveUtils.GetStatsString());
+                logStr += "App Drive:\r\n";
+                logStr += App.DriveUtils.AppDriveUtils.GetFormattedDetailInfo();
+                logStr += "\r\n";
+
+                logStr += "Nas Drive:\r\n";
+                logStr += App.DriveUtils.NasDriveUtils.GetFormattedDetailInfo();
+                logStr += "\r\n";
+
+                _logger.LogInformation(logStr);
+            }
 
             Utils.UpdateCurrentVersion(_env).Wait();
             _logger.LogInformation("App version: " + Utils.CurrentVersion);
@@ -130,14 +136,11 @@ namespace Project24
                 _app.UseHsts();
             }
 
-            _logger.LogInformation(Constants.WorkingDir);
-
-            Directory.CreateDirectory(Constants.WorkingDir + "/" + Constants.DataRoot);
-
             _app.UseStaticFiles();
+
             _app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Constants.WorkingDir + "/" + Constants.DataRoot),
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.DataRoot)),
                 RequestPath = "/data"
             });
 
@@ -174,7 +177,7 @@ namespace Project24
         #region TusDotNet Event Handlers
         private tusdotnet.Models.DefaultTusConfiguration ConfigTusDotNet(Microsoft.AspNetCore.Http.HttpContext _httpContext)
         {
-            string nasRootAbsPath = Path.GetFullPath(Constants.NasRoot, Constants.WorkingDir);
+            string nasRootAbsPath = Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.NasRoot);
 
             return new tusdotnet.Models.DefaultTusConfiguration()
             {
@@ -208,7 +211,7 @@ namespace Project24
                         try
                         {
                             string uploadLocationAbsPath = Path.GetFullPath(filePath.Remove(0, 5), nasRootAbsPath);
-                            if (!uploadLocationAbsPath.Contains("wwwNas"))
+                            if (!uploadLocationAbsPath.Contains("nasData"))
                             {
                                 _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
                             }
@@ -258,7 +261,7 @@ namespace Project24
                         string fileName = metadata["fileName"].GetString(Encoding.UTF8);
                         Directory.CreateDirectory(uploadLocationAbsPath);
 
-                        FileStream fileStream = new FileStream(uploadLocationAbsPath + fileName, FileMode.Create);
+                        FileStream fileStream = new FileStream(uploadLocationAbsPath + "/" + fileName, FileMode.Create);
                         await content.CopyToAsync(fileStream);
                         await fileStream.DisposeAsync();
 
@@ -269,12 +272,16 @@ namespace Project24
 
                         ApplicationDbContext dbContext = _eventContext.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
                         var username = _eventContext.HttpContext.User.Identity.Name;
-                        await Utils.RecordAction(
-                            dbContext,
+                        await dbContext.RecordChanges(
                             _eventContext.HttpContext.User.Identity.Name,
                             Models.ActionRecord.Operation_.UploadNasFile,
                             Models.ActionRecord.OperationStatus_.Success,
-                            "path=" + filePath + ";file=" + fileName + ";size=" + contentLength
+                            new Dictionary<string, string>()
+                            {
+                                { "path", filePath },
+                                { "file", fileName },
+                                { "size", contentLength.ToString() }
+                            }
                         );
 
                         // TODO: refresh page;
@@ -285,7 +292,7 @@ namespace Project24
                 MaxAllowedUploadSizeInBytesLong = 10L * 1024L * 1024L * 1024L, /* allow 10GiB */
                 Expiration = new tusdotnet.Models.Expiration.SlidingExpiration(new TimeSpan(3, 0, 0, 0)),
             };
-        } 
+        }
         #endregion
 
         private async Task MigrateDatabase(IServiceProvider _serviceProvider, ApplicationDbContext _dbContext, ILogger<Startup> _logger)
@@ -294,7 +301,7 @@ namespace Project24
 
             _dbContext.Database.Migrate();
 
-            RoleManager<P24IdentityRole> roleManager = _serviceProvider.GetRequiredService<RoleManager<P24IdentityRole>>();
+            RoleManager<IdentityRole> roleManager = _serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             await CreateRolesAsync(roleManager);
 
             UserManager<P24IdentityUser> userManager = _serviceProvider.GetRequiredService<UserManager<P24IdentityUser>>();
@@ -303,32 +310,20 @@ namespace Project24
         }
 
         #region Initialize Roles
-        private async Task CreateRolesAsync(RoleManager<P24IdentityRole> _roleManager)
+        private async Task CreateRolesAsync(RoleManager<IdentityRole> _roleManager)
         {
             m_Logger.LogInformation("Adding Roles..");
 
             foreach (string role in P24Roles.GetAllRoles())
             {
-                P24IdentityRole p24Role = await _roleManager.FindByNameAsync(role);
+                IdentityRole p24Role = await _roleManager.FindByNameAsync(role);
                 if (p24Role == null)
                 {
-                    p24Role = new P24IdentityRole() { Name = role, Level = 0 };
+                    p24Role = new IdentityRole() { Name = role };
                     var status = await _roleManager.CreateAsync(p24Role);
                     if (!status.Succeeded)
                     {
                         m_Logger.LogError("Could not add role " + role + ".");
-                    }
-                }
-                else
-                {
-                    if (p24Role.Level == 0)
-                        continue;
-
-                    p24Role.Level = 0;
-                    var status = await _roleManager.UpdateAsync(p24Role);
-                    if (!status.Succeeded)
-                    {
-                        m_Logger.LogError("Could not update corrected role " + role + ".");
                     }
                 }
             }
@@ -363,15 +358,12 @@ namespace Project24
             P24IdentityUser user = await _userManager.FindByNameAsync(_user.Username);
             if (user == null)
             {
-                user = new P24IdentityUser()
+                user = new P24IdentityUser(new DateTime(2022, 8, 31, 2, 18, 37, 135))
                 {
                     UserName = _user.Username,
                     Email = "hnt.exw@gmail.com",
                     EmailConfirmed = true,
                     LastName = power,
-                    JoinDateTime = new DateTime(2022, 8, 31, 2, 18, 37, 135),
-                    LeaveDateTime = new DateTime(2022, 8, 31, 2, 18, 37, 136),
-                    AttendanceProfileId = null,
                 };
 
                 var status = await _userManager.CreateAsync(user, _user.Password);
@@ -437,15 +429,12 @@ namespace Project24
             P24IdentityUser user = await _userManager.FindByNameAsync(_user.Username);
             if (user == null)
             {
-                user = new P24IdentityUser()
+                user = new P24IdentityUser(new DateTime(2022, 8, 31, 2, 18, 37, 135))
                 {
                     UserName = _user.Username,
                     Email = "recette.lemongrass95@gmail.com",
                     EmailConfirmed = true,
                     LastName = name,
-                    JoinDateTime = new DateTime(2022, 8, 31, 2, 18, 37, 135),
-                    LeaveDateTime = new DateTime(2022, 8, 31, 2, 18, 37, 136),
-                    AttendanceProfileId = null,
                 };
 
                 var status = await _userManager.CreateAsync(user, _user.Password);
@@ -509,22 +498,18 @@ namespace Project24
         {
             m_Logger.LogInformation("Adding Default User 1..");
 
-            const string fname = "Nguyễn";
-            const string mname = "Trọng";
+            const string fname = "Nguyễn Trọng";
             const string lname = "Hưng";
 
             P24IdentityUser user = await _userManager.FindByNameAsync(_user.Username);
             if (user == null)
             {
-                user = new P24IdentityUser()
+                user = new P24IdentityUser(new DateTime(2022, 10, 4, 12, 22, 08, 135))
                 {
                     UserName = _user.Username,
                     EmailConfirmed = true,
-                    FamilyName = fname,
-                    MiddleName = mname,
+                    FirstName = fname,
                     LastName = lname,
-                    JoinDateTime = new DateTime(2022, 10, 4, 12, 22, 08, 135),
-                    AttendanceProfileId = null,
                 };
 
                 var status = await _userManager.CreateAsync(user, _user.Password);
@@ -536,10 +521,9 @@ namespace Project24
             }
             else
             {
-                if (user.FamilyName != fname || user.MiddleName != mname || user.LastName != lname)
+                if (user.FirstName != fname || user.LastName != lname)
                 {
-                    user.FamilyName = fname;
-                    user.MiddleName = mname;
+                    user.FirstName = fname;
                     user.LastName = lname;
 
                     var status = await _userManager.UpdateAsync(user);
@@ -593,13 +577,11 @@ namespace Project24
             P24IdentityUser user = await _userManager.FindByNameAsync(username);
             if (user == null)
             {
-                user = new P24IdentityUser()
+                user = new P24IdentityUser(new DateTime(2022, 10, 18, 6, 54, 08, 135))
                 {
                     UserName = username,
                     EmailConfirmed = true,
                     LastName = lname,
-                    JoinDateTime = new DateTime(2022, 10, 18, 6, 54, 08, 135),
-                    AttendanceProfileId = null,
                 };
 
                 var status = await _userManager.CreateAsync(user, password);

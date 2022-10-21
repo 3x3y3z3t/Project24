@@ -1,5 +1,5 @@
 ﻿/*  Index.cshtml.cs
- *  Version: 1.2 (2022.10.15)
+ *  Version: 1.3 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
@@ -30,7 +30,6 @@ namespace Project24.Pages.ClinicManager
                 public DateTime LastUpdated { get; set; }
                 public int ImageCount { get; set; }
 
-
                 public CustomerViewModel()
                 { }
             }
@@ -55,12 +54,13 @@ namespace Project24.Pages.ClinicManager
             m_Logger = _logger;
         }
 
+
         // async this method will cause NRE since data won't make it to the client (customerViews.Count);
         public void OnGet()
         {
             Data = new DataModel();
 
-            var customers = from _customers in m_DbContext.CustomerProfilesDev2
+            var customers = from _customers in m_DbContext.CustomerProfiles
                             where _customers.DeletedDate == DateTime.MinValue
                             select new DataModel.CustomerViewModel()
                             {
@@ -69,7 +69,7 @@ namespace Project24.Pages.ClinicManager
                                 Address = _customers.Address,
                                 PhoneNumber = _customers.PhoneNumber,
                                 LastUpdated = _customers.UpdatedDate,
-                                ImageCount = (from _images in m_DbContext.CustomerImageDev
+                                ImageCount = (from _images in m_DbContext.CustomerImages
                                               where _images.OwnedCustomerId == _customers.Id && _images.DeletedDate == DateTime.MinValue
                                               select _images.Id).Count()
                             };
@@ -78,6 +78,7 @@ namespace Project24.Pages.ClinicManager
 
             Data.Customers = customerViews;
         }
+
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly ILogger<IndexModel> m_Logger;

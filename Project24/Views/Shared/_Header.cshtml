@@ -26,7 +26,7 @@
           </li>
 
           @{
-            if (User.Identity.IsAuthenticated && User.IsInRole(Constants.ROLE_MANAGER))
+            if (User.Identity.IsAuthenticated && User.IsInRole(P24RoleName.Manager))
             {
               <li class="nav-item">
                 <a class="nav-link text-dark" asp-area="" asp-controller="Customers" asp-action="Index">Khách Hàng</a>

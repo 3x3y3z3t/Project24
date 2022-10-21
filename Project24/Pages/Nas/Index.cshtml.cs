@@ -1,5 +1,5 @@
 /*  Index.cshtml.cs
- *  Version: 1.1 (2022.10.19)
+ *  Version: 1.3 (2022.10.22)
  *
  *  Contributor
  *      Arime-chan
@@ -75,10 +75,10 @@ namespace Project24.Pages.Nas
                 return Partial("_NasUploader", this);
             }
 
-            string absPath = Utils.AppRoot + "/" + Utils.NasRoot + _path;
-            absPath = Path.GetFullPath(absPath).Replace('\\', '/');
+            string absPath = Utils.AppRoot + "/" + AppConfig.NasRoot + "/" + _path;
+            absPath = Path.GetFullPath(absPath).Replace('\\', '/').TrimEnd('/');
 
-            if (!absPath.Contains("wwwNas"))
+            if (!absPath.Contains("nasData"))
             {
                 Data = new DataModel();
                 return Partial("_NasBrowser", this);
@@ -89,7 +89,7 @@ namespace Project24.Pages.Nas
             {
                 await ProcessDownloadRequest(absPath);
 
-                int startIndex = absPath.IndexOf("wwwNas") + 7;
+                int startIndex = absPath.IndexOf("nasData") + 7;
                 int length = absPath.LastIndexOf('/') - startIndex;
                 if (length <= 0)
                     return await OnGetAsync("");
@@ -125,7 +125,7 @@ namespace Project24.Pages.Nas
 
         private IList<FileModel> GetFilesInDirectory(string _absPath)
         {
-            int pos = _absPath.IndexOf("wwwNas") + 7;
+            int pos = _absPath.IndexOf("nasData") + 7;
             string relativePath = _absPath.Substring(pos);
             if (relativePath.Length != 0)
                 relativePath += "/";
@@ -170,9 +170,11 @@ namespace Project24.Pages.Nas
         {
             FileInfo fi = new FileInfo(_absPath);
 
+            string encoded = System.Web.HttpUtility.UrlPathEncode(fi.Name);
+
             Response.Clear();
 
-            Response.Headers.Add("Content-Disposition", string.Format("attachment; filename={0}", fi.Name));
+            Response.Headers.Add("Content-Disposition", string.Format("attachment; filename={0}", encoded));
             Response.Headers.Add("Content-Length", fi.Length.ToString());
             Response.ContentType = System.Net.Mime.MediaTypeNames.Application.Octet;
 

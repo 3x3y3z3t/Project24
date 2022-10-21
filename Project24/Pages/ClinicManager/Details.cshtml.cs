@@ -1,5 +1,5 @@
 ﻿/*  Details.cshtml.cs
- *  Version: 1.2 (2022.10.15)
+ *  Version: 1.3 (2022.10.22)
  *
  *  Contributor
  *      Arime-chan
@@ -25,11 +25,11 @@ using Project24.Models;
 namespace Project24.Pages.ClinicManager
 {
     [Authorize(Roles = P24Roles.Manager)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 32L * 1024L * 1024L)]
     public class DetailsModel : PageModel
     {
         public class DataModel
         {
-            [Required(ErrorMessage = Constants.ERROR_EMPTY_CUSTOMER_ID)]
             public string CustomerCode { get; set; }
 
             [DataType(DataType.Upload)]
@@ -49,8 +49,8 @@ namespace Project24.Pages.ClinicManager
 
         public string StatusMessage { get; set; }
 
-        public CustomerProfileDev2 CustomerProfile { get; set; }
-        public List<CustomerImageDev> CustomerImages { get; set; }
+        public CustomerProfile CustomerProfile { get; set; }
+        public List<CustomerImage> CustomerImages { get; set; }
 
 
         public DetailsModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager)
@@ -58,6 +58,7 @@ namespace Project24.Pages.ClinicManager
             m_DbContext = _context;
             m_UserManager = _userManager;
         }
+
 
         public async Task<IActionResult> OnGetAsync(string? _code, string? _mode = null)
         {
@@ -80,7 +81,7 @@ namespace Project24.Pages.ClinicManager
                 return Page();
             }
 
-            var customers = from _customers in m_DbContext.CustomerProfilesDev2.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
+            var customers = from _customers in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
                             where _customers.CustomerCode == _code
                             select _customers;
 
@@ -90,35 +91,24 @@ namespace Project24.Pages.ClinicManager
                 return Page();
             }
 
-            if (customers.Count() != 1)
-            {
-                await Utils.RecordAction(
-                    null,
-                    ActionRecord.Operation_.DetailCustomer,
-                    ActionRecord.OperationStatus_.UnexpectedError,
-                    "code=" + _code + ";count=" + customers.Count()
-                );
-
-                TempData["Error"] = "true";
-                TempData["CustomerCode"] = _code;
-                return Page();
-            }
-
             CustomerProfile = customers.First();
 
             if (CustomerProfile.DeletedDate != DateTime.MinValue)
             {
-                await Utils.RecordAction(
+                await m_DbContext.RecordChanges(
                     currentUser.UserName,
                     ActionRecord.Operation_.DetailCustomer,
                     ActionRecord.OperationStatus_.Failed,
-                    "Already deleted on " + CustomerProfile.DeletedDate.ToString()
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Message, "Already deleted on " + CustomerProfile.DeletedDate.ToString() }
+                    }
                 );
 
                 return RedirectToPage("./Index");
             }
 
-            var images = from _images in m_DbContext.CustomerImageDev
+            var images = from _images in m_DbContext.CustomerImages
                          where _images.OwnedCustomerId == CustomerProfile.Id && _images.DeletedDate == DateTime.MinValue
                          select _images;
 
@@ -138,11 +128,14 @@ namespace Project24.Pages.ClinicManager
 
             if (!ModelState.IsValid)
             {
-                await Utils.RecordAction(
+                await m_DbContext.RecordChanges(
                     currentUser.UserName,
                     ActionRecord.Operation_.DetailCustomer_AddImage,
                     ActionRecord.OperationStatus_.Failed,
-                    Constants.ERROR_MODEL_STATE_INVALID
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
+                    }
                 );
 
                 return Page();
@@ -164,27 +157,61 @@ namespace Project24.Pages.ClinicManager
             }
 #endif
 
-            var customer = await m_DbContext.CustomerProfilesDev2.FirstOrDefaultAsync(_customer => _customer.CustomerCode == Data.CustomerCode);
+            var customer = await m_DbContext.CustomerProfiles.FirstOrDefaultAsync(_customer => _customer.CustomerCode == Data.CustomerCode);
             if (customer == null)
             {
-                await Utils.RecordAction(
+                await m_DbContext.RecordChanges(
                     currentUser.UserName,
                     ActionRecord.Operation_.DetailCustomer_AddImage,
                     ActionRecord.OperationStatus_.Failed,
-                    Constants.ERROR_NOT_FOUND_CUSTOMER + ";" + Data.CustomerCode
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Error, ErrorMessage.CustomerNotFound },
+                        { CustomInfoKey.CustomerCode, Data.CustomerCode }
+                    }
                 );
 
                 return await OnGetAsync(Data.CustomerCode);
             }
 
-            Dictionary<string, int> malfunctionRecord = new Dictionary<string, int>();
-            bool hasUpload = false;
-            string addedList = "";
+            Dictionary<string, string> customInfo = ProcessUpload(customer);
+
+            customer.UpdatedUser = currentUser;
+            m_DbContext.Update(customer);
+
+            string opStatus = ActionRecord.OperationStatus_.Success;
+            if (customInfo.ContainsKey(CustomInfoKey.AddedList))
+            {
+                opStatus += ", " + ActionRecord.OperationStatus_.HasUpload;
+            }
+            if (customInfo.ContainsKey(CustomInfoKey.Malfunctions))
+            {
+                opStatus += ", " + ActionRecord.OperationStatus_.HasMalfunction;
+            }
+
+            await m_DbContext.RecordChanges(
+                currentUser.UserName,
+                ActionRecord.Operation_.DetailCustomer_AddImage,
+                opStatus,
+                customInfo
+            );
+
+            //await m_DbContext.SaveChangesAsync();
+
+            return await OnGetAsync(Data.CustomerCode);
+        }
+
+        private Dictionary<string, string> ProcessUpload(CustomerProfile _customer)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            result["customerCode"] = _customer.CustomerCode;
+
             if (Data.FileUploads != null && Data.FileUploads.Length != 0)
             {
-                hasUpload = true;
+                string addedList = "";
+                Dictionary<string, int> malfunctionRecord = new Dictionary<string, int>();
+                List<CustomerImage> images = new List<CustomerImage>();
 
-                List<CustomerImageDev> images = new List<CustomerImageDev>();
                 foreach (var file in Data.FileUploads)
                 {
                     string[] contentType = file.ContentType.Split('/');
@@ -198,21 +225,19 @@ namespace Project24.Pages.ClinicManager
                         continue;
                     }
 
-                    string dirRoot = Directory.GetDirectoryRoot(Constants.WorkingDir);
-                    string dataRoot = Path.GetFullPath(Constants.DataRoot, Constants.WorkingDir);
-                    string path = Data.CustomerCode + "/" + file.FileName;
-
-                    Directory.CreateDirectory(dataRoot + Data.CustomerCode);
-                    using (FileStream stream = new FileStream(dataRoot + path, FileMode.Create))
+                    string fullPath = Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.DataRoot + "/" + Data.CustomerCode);
+                    Directory.CreateDirectory(fullPath);
+                    using (FileStream stream = new FileStream(fullPath + "/" + file.FileName, FileMode.Create))
                     {
-                        await file.CopyToAsync(stream);
+                        file.CopyTo(stream);
 
                         //TODO: check file signature;
                     }
 
-                    CustomerImageDev image = new CustomerImageDev()
+                    string path = "/" + Data.CustomerCode + "/" + file.FileName;
+                    CustomerImage image = new CustomerImage()
                     {
-                        OwnedCustomer = customer,
+                        OwnedCustomer = _customer,
                         Filepath = path
                     };
                     images.Add(image);
@@ -221,44 +246,25 @@ namespace Project24.Pages.ClinicManager
                 }
 
                 m_DbContext.AddRange(images);
-            }
+                _customer.UpdatedDate = DateTime.Now;
 
-            customer.UpdatedDate = DateTime.Now;
-            customer.UpdatedUser = currentUser;
-            m_DbContext.Update(customer);
+                result[CustomInfoKey.AddedList] = addedList;
 
-            await m_DbContext.SaveChangesAsync();
-
-
-            string opStatus = ActionRecord.OperationStatus_.Success;
-            string description = null;
-
-            if (hasUpload)
-            {
-                opStatus += ActionRecord.OperationStatus_.HasUpload;
-            }
-
-            if (malfunctionRecord.Count > 0)
-            {
-                description = "";
-                foreach (var pair in malfunctionRecord)
+                if (malfunctionRecord.Count > 0)
                 {
-                    description += pair.Key + "=" + pair.Value + "; ";
+                    string malfunctions = "";
+                    foreach (var pair in malfunctionRecord)
+                    {
+                        malfunctions += pair.Value + " " + pair.Key + "; ";
+                    }
+
+                    result[CustomInfoKey.Malfunctions] = malfunctions;
                 }
-                opStatus += ActionRecord.OperationStatus_.MalfunctionUploadAttempted;
             }
 
-            description += "added=" + addedList;
-
-            await Utils.RecordAction(
-                currentUser.UserName,
-                ActionRecord.Operation_.DetailCustomer_AddImage,
-                opStatus,
-                "CustomerCode=" + customer.CustomerCode + ";" + description
-            );
-
-            return await OnGetAsync(Data.CustomerCode);
+            return result;
         }
+
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;

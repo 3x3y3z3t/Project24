@@ -1,11 +1,12 @@
-﻿@using Project24.App.Utils
-@*  NasBrowser.cshtml
-    *  Version: 1.0 (2022.10.19)
+﻿@*  _NasBrowser.cshtml
+    *  Version: 1.1 (2022.10.21)
     *
     *  Contributor
     *      Arime-chan
 *@
 
+@using Project24.App
+@using Project24.App.Utils
 @model Project24.Pages.Nas.IndexModel
 @{
     Layout = "_Layout";
@@ -16,8 +17,7 @@
 
     <div class="text-left col-12 col-md-6 col-lg-5 col-xl-4 m-2">
         @{
-            long used = NasDriveUtils.TotalSize - NasDriveUtils.TotalFreeSpace;
-            float percent = used * 100.0f / NasDriveUtils.TotalSize;
+            float percent = DriveUtils.NasDriveUtils.UsedRatio * 100.0f;
 
             string colorClassname = "";
             if (percent < 75.0f)
@@ -27,8 +27,8 @@
             else
                 colorClassname = "bg-danger";
 
-            string strFreeSpace = Utils.FormatDataSize(NasDriveUtils.TotalFreeSpace);
-            string strTotalSpace = Utils.FormatDataSize(NasDriveUtils.TotalSize);
+            string strFreeSpace = Utils.FormatDataSize(DriveUtils.NasDriveUtils.FreeSpace);
+            string strTotalSpace = Utils.FormatDataSize(DriveUtils.NasDriveUtils.TotalSize);
             string strUsedPercent = string.Format("{0:0.00}%", percent);
         }
 

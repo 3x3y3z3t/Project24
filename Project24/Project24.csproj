@@ -17,17 +17,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <Compile Remove="Data\Migrations\20220907171511_P24CustomerManagementExp.cs" />
-    <Compile Remove="Data\Migrations\20220907171511_P24CustomerManagementExp.Designer.cs" />
-    <Compile Remove="Data\Migrations\20220907171642_P24CustomerManagementExp.cs" />
-    <Compile Remove="Data\Migrations\20220907171642_P24CustomerManagementExp.Designer.cs" />
-    <Compile Remove="Data\Migrations\20220908074845_P24AddService.cs" />
-    <Compile Remove="Data\Migrations\20220908074845_P24AddService.Designer.cs" />
-    <Compile Remove="Data\Migrations\20220909132001_P24AddCustomerDev.cs" />
-    <Compile Remove="Data\Migrations\20220909132001_P24AddCustomerDev.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="1.1.1" />
     <PackageReference Include="Markdig.Signed" Version="0.30.4" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.27" />
@@ -52,8 +41,7 @@
   
   <ItemGroup>
     <Folder Include="App\TusDotNetExt\" />
-    <Folder Include="Areas\ServiceProfileManagement\" />
-    <Folder Include="Data\Migrations\" />
+    <Folder Include="Controllers\" />
     <Folder Include="wwwroot\lib\tus-js-client\" />
   </ItemGroup>
 

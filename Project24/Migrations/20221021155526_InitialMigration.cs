@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Project24.Migrations
 {
-    public partial class _00_InitialMigration : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -18,7 +18,7 @@ namespace Project24.Migrations
                     Username = table.Column<string>(nullable: true),
                     Operation = table.Column<string>(nullable: false),
                     OperationStatus = table.Column<string>(nullable: false),
-                    Description = table.Column<string>(nullable: true)
+                    CustomInfo = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -32,9 +32,7 @@ namespace Project24.Migrations
                     Id = table.Column<string>(nullable: false),
                     Name = table.Column<string>(maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(nullable: true),
-                    Discriminator = table.Column<string>(nullable: false),
-                    Level = table.Column<int>(nullable: true)
+                    ConcurrencyStamp = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -61,50 +59,13 @@ namespace Project24.Migrations
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     Discriminator = table.Column<string>(nullable: false),
-                    FamilyName = table.Column<string>(nullable: true),
-                    MiddleName = table.Column<string>(nullable: true),
-                    LastName = table.Column<string>(nullable: true),
-                    JoinDateTime = table.Column<DateTime>(nullable: true),
-                    LeaveDateTime = table.Column<DateTime>(nullable: true),
-                    AttendanceProfileId = table.Column<string>(nullable: true)
+                    FirstName = table.Column<string>(maxLength: 128, nullable: true),
+                    LastName = table.Column<string>(maxLength: 16, nullable: true),
+                    JoinDateTime = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Customer",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UniqueId = table.Column<string>(nullable: true),
-                    Name = table.Column<string>(nullable: true),
-                    Address = table.Column<string>(nullable: true),
-                    CustomerProfileId = table.Column<int>(nullable: false),
-                    CustomInfo = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Customer", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ServicesDev",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ServiceCode = table.Column<string>(nullable: true),
-                    Name = table.Column<string>(nullable: true),
-                    Price = table.Column<float>(nullable: false),
-                    AddedDate = table.Column<DateTime>(nullable: false),
-                    UpdatedDate = table.Column<DateTime>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ServicesDev", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -214,7 +175,7 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CustomerProfilesDev",
+                name: "CustomerProfiles",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -224,39 +185,7 @@ namespace Project24.Migrations
                     LastName = table.Column<string>(maxLength: 10, nullable: false),
                     Address = table.Column<string>(nullable: true),
                     PhoneNumber = table.Column<string>(nullable: true),
-                    AddedUserId = table.Column<string>(nullable: true),
-                    UpdatedUserId = table.Column<string>(nullable: true),
-                    AddedDate = table.Column<DateTime>(nullable: false),
-                    UpdatedDate = table.Column<DateTime>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CustomerProfilesDev", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CustomerProfilesDev_AspNetUsers_AddedUserId",
-                        column: x => x.AddedUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_CustomerProfilesDev_AspNetUsers_UpdatedUserId",
-                        column: x => x.UpdatedUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CustomerProfilesDev2",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    CustomerCode = table.Column<string>(nullable: true),
-                    FirstMidName = table.Column<string>(nullable: true),
-                    LastName = table.Column<string>(maxLength: 10, nullable: false),
-                    Address = table.Column<string>(nullable: true),
-                    PhoneNumber = table.Column<string>(nullable: true),
+                    Notes = table.Column<string>(nullable: true),
                     AddedUserId = table.Column<string>(nullable: true),
                     UpdatedUserId = table.Column<string>(nullable: true),
                     AddedDate = table.Column<DateTime>(nullable: false),
@@ -265,15 +194,15 @@ namespace Project24.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CustomerProfilesDev2", x => x.Id);
+                    table.PrimaryKey("PK_CustomerProfiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomerProfilesDev2_AspNetUsers_AddedUserId",
+                        name: "FK_CustomerProfiles_AspNetUsers_AddedUserId",
                         column: x => x.AddedUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CustomerProfilesDev2_AspNetUsers_UpdatedUserId",
+                        name: "FK_CustomerProfiles_AspNetUsers_UpdatedUserId",
                         column: x => x.UpdatedUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -281,7 +210,7 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CustomerImageDev",
+                name: "CustomerImages",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -293,65 +222,11 @@ namespace Project24.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CustomerImageDev", x => x.Id);
+                    table.PrimaryKey("PK_CustomerImages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomerImageDev_CustomerProfilesDev2_OwnedCustomerId",
+                        name: "FK_CustomerImages_CustomerProfiles_OwnedCustomerId",
                         column: x => x.OwnedCustomerId,
-                        principalTable: "CustomerProfilesDev2",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "VisitingProfilesDev",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    CustomerId = table.Column<int>(nullable: false),
-                    CheckInDateTime = table.Column<DateTime>(nullable: false),
-                    CheckOutDateTime = table.Column<DateTime>(nullable: false),
-                    CustomerProfileDev2Id = table.Column<int>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VisitingProfilesDev", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VisitingProfilesDev_CustomerProfilesDev_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "CustomerProfilesDev",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_VisitingProfilesDev_CustomerProfilesDev2_CustomerProfileDev2~",
-                        column: x => x.CustomerProfileDev2Id,
-                        principalTable: "CustomerProfilesDev2",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ServiceUsageProfilessDev",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    VisitingProfileId = table.Column<int>(nullable: false),
-                    ServiceId = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ServiceUsageProfilessDev", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ServiceUsageProfilessDev_ServicesDev_ServiceId",
-                        column: x => x.ServiceId,
-                        principalTable: "ServicesDev",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ServiceUsageProfilessDev_VisitingProfilesDev_VisitingProfile~",
-                        column: x => x.VisitingProfileId,
-                        principalTable: "VisitingProfilesDev",
+                        principalTable: "CustomerProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -394,49 +269,19 @@ namespace Project24.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerImageDev_OwnedCustomerId",
-                table: "CustomerImageDev",
+                name: "IX_CustomerImages_OwnedCustomerId",
+                table: "CustomerImages",
                 column: "OwnedCustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerProfilesDev_AddedUserId",
-                table: "CustomerProfilesDev",
+                name: "IX_CustomerProfiles_AddedUserId",
+                table: "CustomerProfiles",
                 column: "AddedUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerProfilesDev_UpdatedUserId",
-                table: "CustomerProfilesDev",
+                name: "IX_CustomerProfiles_UpdatedUserId",
+                table: "CustomerProfiles",
                 column: "UpdatedUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CustomerProfilesDev2_AddedUserId",
-                table: "CustomerProfilesDev2",
-                column: "AddedUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CustomerProfilesDev2_UpdatedUserId",
-                table: "CustomerProfilesDev2",
-                column: "UpdatedUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ServiceUsageProfilessDev_ServiceId",
-                table: "ServiceUsageProfilessDev",
-                column: "ServiceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ServiceUsageProfilessDev_VisitingProfileId",
-                table: "ServiceUsageProfilessDev",
-                column: "VisitingProfileId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VisitingProfilesDev_CustomerId",
-                table: "VisitingProfilesDev",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VisitingProfilesDev_CustomerProfileDev2Id",
-                table: "VisitingProfilesDev",
-                column: "CustomerProfileDev2Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -460,28 +305,13 @@ namespace Project24.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Customer");
-
-            migrationBuilder.DropTable(
-                name: "CustomerImageDev");
-
-            migrationBuilder.DropTable(
-                name: "ServiceUsageProfilessDev");
+                name: "CustomerImages");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "ServicesDev");
-
-            migrationBuilder.DropTable(
-                name: "VisitingProfilesDev");
-
-            migrationBuilder.DropTable(
-                name: "CustomerProfilesDev");
-
-            migrationBuilder.DropTable(
-                name: "CustomerProfilesDev2");
+                name: "CustomerProfiles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

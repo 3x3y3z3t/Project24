@@ -1,13 +1,10 @@
 /*  Index.cshtml.cs
- *  Version: 1.1 (2022.10.10)
+ *  Version: 1.2 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -33,53 +30,28 @@ namespace Project24.Pages.Home
                 return RedirectToPage("Login");
             }
 
-            if (HttpContext.User.IsInRole(Constants.ROLE_ADMIN))
+            bool isCMSide = HttpContext.User.IsInRole(P24RoleName.Manager);
+            
+            bool isNasSide = HttpContext.User.IsInRole(P24RoleName.NasUser)
+                || HttpContext.User.IsInRole(P24RoleName.NasTester);
+
+            if (isCMSide && isNasSide)
             {
-                return RedirectToPage("../Nas/Index");
-                //return RedirectToPage("../ClinicManager/Index");
-                //return RedirectToPage("About");
-                //return Partial("_Navigator");
+                return Page();
             }
 
-            if (HttpContext.User.IsInRole(P24Roles.NasTester))
-            {
-                return RedirectToPage("../Nas/Index");
-            }
-
-            if (HttpContext.User.IsInRole(Constants.ROLE_NAS_USER))
-            {
-                return RedirectToPage("../Nas/Index");
-            }
-
-            if (HttpContext.User.IsInRole(Constants.ROLE_MANAGER))
+            if (isCMSide)
             {
                 return RedirectToPage("../ClinicManager/Index");
             }
-            
-            return Page(); // TODO: maybe redirect to access denied page;
-        }
 
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!HttpContext.User.Identity.IsAuthenticated)
+            if (isNasSide)
             {
-                //return await OnPostAsync_Login();
+                return RedirectToPage("../Nas/Index");
             }
 
-
-
-
-
-            return BadRequest();
-
+            return NotFound(); // TODO: maybe redirect to access denied page;
         }
-
-
-
-
-
-
     }
 
 }

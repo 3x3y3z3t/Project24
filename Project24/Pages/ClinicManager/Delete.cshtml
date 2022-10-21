@@ -1,5 +1,5 @@
 ﻿@*  Delete.cshtml
-    *  Version: 1.0 (2022.10.09)
+    *  Version: 1.1 (2022.10.22)
     *
     *  Contributor
     *      Arime-chan
@@ -10,7 +10,7 @@
 
 @{
     ViewData["Title"] = "Xoắ bệnh nhân";
-    Layout = "_CMLayout";
+    Layout = "_Layout";
 }
 
 <h3>Bạn có chắc chắn muốn xóa hoàn toàn thông tin bệnh nhân sau?</h3>
@@ -32,19 +32,19 @@
         <dd class="col-sm-10">@Model.CustomerProfile.CustomerCode</dd>
 
         <dt class="col-sm-2">Họ và Tên bệnh nhân:</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.FullName)</dd>
+        <dd class="col-sm-10">@Model.CustomerProfile.FullName</dd>
 
         <dt class="col-sm-2">Địa chỉ:</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.Address)</dd>
+        <dd class="col-sm-10">@Model.CustomerProfile.Address</dd>
 
         <dt class="col-sm-2">Số điện thoại:</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.PhoneNumber)</dd>
+        <dd class="col-sm-10">@Model.CustomerProfile.PhoneNumber</dd>
 
         <dt class="col-sm-2">Ngày đăng ký:</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.AddedDate) (bởi @Html.DisplayFor(model => model.CustomerProfile.AddedUser.UserName))</dd>
+        <dd class="col-sm-10">@Model.CustomerProfile.AddedDate (bởi @Model.CustomerProfile.AddedUser.UserName)</dd>
 
         <dt class="col-sm-2">Cập nhật lần cuối:</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.CustomerProfile.UpdatedDate) (bởi @Html.DisplayFor(model => model.CustomerProfile.UpdatedUser.UserName))</dd>
+        <dd class="col-sm-10">@Model.CustomerProfile.UpdatedDate (bởi @Model.CustomerProfile.UpdatedUser.UserName)</dd>
     </dl>
 
     @if (Model.CustomerImages != null && Model.CustomerImages.Count > 0)
@@ -53,10 +53,10 @@
         <h5 class="text-bold">@Model.CustomerImages.Count ảnh</h5>
         <hr />
         <div class="d-flex flex-wrap">
-            @foreach (Project24.Models.CustomerImageDev image in Model.CustomerImages)
+            @foreach (Project24.Models.CustomerImage image in Model.CustomerImages)
             {
                 <figure class="figure m-2">
-                    <img src="@string.Concat("../../data/", image.Filepath)" class="figure-img img-fluid" style="max-height:200px;" />
+                        <img src="@string.Concat("/data", image.Filepath)" class="figure-img img-fluid" style="max-height:200px;" />
                     <figcaption class="figure-caption">@image.Filepath</figcaption>
                 </figure>
             }

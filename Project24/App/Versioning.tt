@@ -7,8 +7,8 @@
 
 using System.Reflection;
 
-[assembly: AssemblyVersion("0.6.<#= this.BuildNumber #>.<#= this.RevisionNumber #>")]
-[assembly: AssemblyFileVersion("0.6.<#= this.BuildNumber #>.<#= this.RevisionNumber #>")]
+[assembly: AssemblyVersion("0.8.<#= this.BuildNumber #>.<#= this.RevisionNumber #>")]
+[assembly: AssemblyFileVersion("0.8.<#= this.BuildNumber #>.<#= this.RevisionNumber #>")]
 <#+
     int BuildNumber = (int)(DateTime.Now - new DateTime(2022, 8, 31, 2, 18, 37, 135)).TotalDays;
     int RevisionNumber = (int)(DateTime.Now.TimeOfDay.TotalSeconds * 0.5);

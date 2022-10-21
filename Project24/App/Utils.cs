@@ -1,5 +1,5 @@
 ﻿/*  Utils.cs
- *  Version: 1.12 (2022.10.19)
+ *  Version: 1.13 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
@@ -93,7 +93,8 @@ namespace Project24
 
         public static string WorkingDir { get; private set; } = System.IO.Directory.GetCurrentDirectory();
 
-        /*  Project24 Directory Structure:
+
+        /*  Project24 Directory Structure (no longer valid):
          *
          *  root_dir
          *  |---wwwApp
@@ -106,27 +107,12 @@ namespace Project24
          *  |---wwwTmp
          *  |   |---p24-next                    <- (next version of the app, contains the 'publish' directory)
          */
-        public static string NasRoot { get; set; }
-        public static string DataRoot { get; set; }
 
 
 
         //public const string NAS_ROOT = "./../../../wwwNas/";
         //public const string DATA_ROOT = "./../db/data/";
 
-        public const string ROLE_POWER = "Arime";
-        public const string ROLE_ADMIN = "Admin";
-        public const string ROLE_MANAGER = "Manager";
-        public const string ROLE_EMPLOYEE = "Employee";
-        public const string ROLE_USER = "User";
-        public const string ROLE_NAS_USER = "NasUser";
-
-        public const string ROLE_POWER_LOCALIZED = "Arime-chan";
-        public const string ROLE_ADMIN_LOCALIZED = "Admin";
-        public const string ROLE_MANAGER_LOCALIZED = "Quản lý";
-        public const string ROLE_EMPLOYEE_LOCALIZED = "Nhân viên";
-        public const string ROLE_USER_LOCALIZED = "Người dùng";
-        public const string ROLE_NAS_USER_LOCALIZED = "Nas User";
 
         public const string DEFAULT_PASSWORD = "123@123a";
 
@@ -166,15 +152,6 @@ namespace Project24
         public const string ERROR_EMPTY_USERNAME = "Tên tài khoản không được để trống.";
         public const string ERROR_EMPTY_PASWORD = "Mật khẩu không được để trống.";
 
-        public static string[] s_Roles = { ROLE_POWER, ROLE_ADMIN, ROLE_MANAGER, ROLE_EMPLOYEE, ROLE_USER };
-        public static string[] s_RolesLocalized =
-        {
-            ROLE_POWER_LOCALIZED,
-            ROLE_ADMIN_LOCALIZED,
-            ROLE_MANAGER_LOCALIZED,
-            ROLE_EMPLOYEE_LOCALIZED,
-            ROLE_USER_LOCALIZED
-        };
     }
 
     public static class FileSignatures
@@ -185,13 +162,9 @@ namespace Project24
 
     public static class Utils
     {
-        
-        /* This is equivalent to Directory.GetCurrentDirectory() */
-        public static string AppRoot { get; set; } 
 
-        public static string DataRoot { get; set; }
-        public static string NasRoot { get; set; }
-        public static string TmpRoot { get; set; }
+        public static string AppRoot { get; private set; } = System.IO.Directory.GetCurrentDirectory();
+
 
         public static string CurrentVersion { get; set; }
 
@@ -268,16 +241,6 @@ namespace Project24
             return username;
         }
 
-        public static string ConstructFullName(string _familyName, string _middleName, string _lastName)
-        {
-            if (string.IsNullOrEmpty(_middleName))
-            {
-                return _familyName + " " + _lastName;
-            }
-
-            return _familyName + " " + _middleName + " " + _lastName;
-        }
-
         public static Tuple<string, string, string> TokenizeName(string _fullName)
         {
             if (string.IsNullOrEmpty(_fullName))
@@ -297,46 +260,6 @@ namespace Project24
             }
 
             return new Tuple<string, string, string>(tokens[0].Trim(), middlename, tokens[tokens.Length - 1].Trim());
-        }
-
-
-        public static async Task<int> RecordAction(
-            string _username,
-            string _operation,
-            string _status,
-            string _description = null)
-        {
-            ActionRecord record = new ActionRecord()
-            {
-                Timestamp = DateTime.Now,
-                Username = _username,
-                Operation = _operation,
-                OperationStatus = _status,
-                Description = _description,
-            };
-            ApplicationDbContext.Instance.Add(record);
-
-            return await ApplicationDbContext.Instance.SaveChangesAsync();
-        }
-
-        public static async Task<int> RecordAction(
-            ApplicationDbContext _db,
-            string _username,
-            string _operation,
-            string _status,
-            string _description = null)
-        {
-            ActionRecord record = new ActionRecord()
-            {
-                Timestamp = DateTime.Now,
-                Username = _username,
-                Operation = _operation,
-                OperationStatus = _status,
-                Description = _description,
-            };
-            _db.Add(record);
-
-            return await _db.SaveChangesAsync();
         }
     }
 

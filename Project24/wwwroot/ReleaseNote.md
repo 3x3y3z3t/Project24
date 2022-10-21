@@ -1,4 +1,8 @@
 ﻿
+#### v0.8.1 (2022.10.21)
+- Restructured data directories.
+- Minor fixes on Clinic Manager side.
+
 #### v0.7.5-alpha (2022.10.19)
 - Reworked NAS Browser function.
 - Reworked NAS Download function.

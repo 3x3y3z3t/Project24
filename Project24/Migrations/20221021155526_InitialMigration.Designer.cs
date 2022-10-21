@@ -9,8 +9,8 @@ using Project24.Data;
 namespace Project24.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20221009170943_00_InitialMigration")]
-    partial class _00_InitialMigration
+    [Migration("20221021155526_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,10 +28,6 @@ namespace Project24.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
                     b.Property<string>("Name")
                         .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
@@ -47,8 +43,6 @@ namespace Project24.Migrations
                         .HasName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityRole");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -229,7 +223,7 @@ namespace Project24.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("CustomInfo")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Operation")
@@ -251,33 +245,7 @@ namespace Project24.Migrations
                     b.ToTable("ActionRecords");
                 });
 
-            modelBuilder.Entity("Project24.Models.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("CustomInfo")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<int>("CustomerProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("UniqueId")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customer");
-                });
-
-            modelBuilder.Entity("Project24.Models.CustomerImageDev", b =>
+            modelBuilder.Entity("Project24.Models.CustomerImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -300,54 +268,10 @@ namespace Project24.Migrations
 
                     b.HasIndex("OwnedCustomerId");
 
-                    b.ToTable("CustomerImageDev");
+                    b.ToTable("CustomerImages");
                 });
 
-            modelBuilder.Entity("Project24.Models.CustomerProfileDev", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("AddedUserId")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("CustomerCode")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("FirstMidName")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("varchar(10) CHARACTER SET utf8mb4")
-                        .HasMaxLength(10);
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UpdatedUserId")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AddedUserId");
-
-                    b.HasIndex("UpdatedUserId");
-
-                    b.ToTable("CustomerProfilesDev");
-                });
-
-            modelBuilder.Entity("Project24.Models.CustomerProfileDev2", b =>
+            modelBuilder.Entity("Project24.Models.CustomerProfile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -376,6 +300,9 @@ namespace Project24.Migrations
                         .HasColumnType("varchar(10) CHARACTER SET utf8mb4")
                         .HasMaxLength(10);
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
@@ -391,114 +318,23 @@ namespace Project24.Migrations
 
                     b.HasIndex("UpdatedUserId");
 
-                    b.ToTable("CustomerProfilesDev2");
-                });
-
-            modelBuilder.Entity("Project24.Models.ServiceDev", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<float>("Price")
-                        .HasColumnType("float");
-
-                    b.Property<string>("ServiceCode")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ServicesDev");
-                });
-
-            modelBuilder.Entity("Project24.Models.ServiceUsageProfileDev", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("ServiceId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("VisitingProfileId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServiceId");
-
-                    b.HasIndex("VisitingProfileId");
-
-                    b.ToTable("ServiceUsageProfilessDev");
-                });
-
-            modelBuilder.Entity("Project24.Models.VisitingProfileDev", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CheckInDateTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime>("CheckOutDateTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CustomerProfileDev2Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("CustomerProfileDev2Id");
-
-                    b.ToTable("VisitingProfilesDev");
-                });
-
-            modelBuilder.Entity("Project24.Identity.P24IdentityRole", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.HasDiscriminator().HasValue("P24IdentityRole");
+                    b.ToTable("CustomerProfiles");
                 });
 
             modelBuilder.Entity("Project24.Identity.P24IdentityUser", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
-                    b.Property<string>("AttendanceProfileId")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("FamilyName")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                    b.Property<string>("FirstName")
+                        .HasColumnType("varchar(128) CHARACTER SET utf8mb4")
+                        .HasMaxLength(128);
 
                     b.Property<DateTime>("JoinDateTime")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("LastName")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<DateTime>("LeaveDateTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("MiddleName")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("varchar(16) CHARACTER SET utf8mb4")
+                        .HasMaxLength(16);
 
                     b.HasDiscriminator().HasValue("P24IdentityUser");
                 });
@@ -554,16 +390,16 @@ namespace Project24.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Project24.Models.CustomerImageDev", b =>
+            modelBuilder.Entity("Project24.Models.CustomerImage", b =>
                 {
-                    b.HasOne("Project24.Models.CustomerProfileDev2", "OwnedCustomer")
+                    b.HasOne("Project24.Models.CustomerProfile", "OwnedCustomer")
                         .WithMany("Images")
                         .HasForeignKey("OwnedCustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Project24.Models.CustomerProfileDev", b =>
+            modelBuilder.Entity("Project24.Models.CustomerProfile", b =>
                 {
                     b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()
@@ -572,45 +408,6 @@ namespace Project24.Migrations
                     b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
                         .WithMany()
                         .HasForeignKey("UpdatedUserId");
-                });
-
-            modelBuilder.Entity("Project24.Models.CustomerProfileDev2", b =>
-                {
-                    b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
-                        .WithMany()
-                        .HasForeignKey("AddedUserId");
-
-                    b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
-                        .WithMany()
-                        .HasForeignKey("UpdatedUserId");
-                });
-
-            modelBuilder.Entity("Project24.Models.ServiceUsageProfileDev", b =>
-                {
-                    b.HasOne("Project24.Models.ServiceDev", "Service")
-                        .WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Project24.Models.VisitingProfileDev", "VisitingProfile")
-                        .WithMany("ServicesUsed")
-                        .HasForeignKey("VisitingProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Project24.Models.VisitingProfileDev", b =>
-                {
-                    b.HasOne("Project24.Models.CustomerProfileDev", "Customer")
-                        .WithMany("Visitings")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Project24.Models.CustomerProfileDev2", null)
-                        .WithMany("Visitings")
-                        .HasForeignKey("CustomerProfileDev2Id");
                 });
 #pragma warning restore 612, 618
         }

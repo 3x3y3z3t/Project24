@@ -1,5 +1,5 @@
 ﻿/*  Edit.cshtml.cs
- *  Version: 1.0 (2022.10.15)
+ *  Version: 1.1 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
@@ -7,6 +7,7 @@
 #pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,7 +27,6 @@ namespace Project24.Pages.ClinicManager
     {
         public class DataModel
         {
-            [Required(ErrorMessage = Constants.ERROR_EMPTY_CUSTOMER_ID, AllowEmptyStrings = false)]
             public string CustomerCode { get; set; }
 
             //[Required(ErrorMessage = Constants.ERROR_EMPTY_FULLNAME)]
@@ -73,7 +73,7 @@ namespace Project24.Pages.ClinicManager
                 return Page();
             }
 
-            var customers = from _customers in m_DbContext.CustomerProfilesDev2.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
+            var customers = from _customers in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
                             where _customers.CustomerCode == _code
                             select _customers;
 
@@ -83,40 +83,18 @@ namespace Project24.Pages.ClinicManager
                 return Page();
             }
 
-            if (customers.Count() != 1)
-            {
-                await Utils.RecordAction(
-                    null,
-                    ActionRecord.Operation_.UpdateCustomer,
-                    ActionRecord.OperationStatus_.UnexpectedError,
-                    "code=" + _code + ";count=" + customers.Count()
-                );
-
-                TempData["Error"] = "error";
-                TempData["CustomerCode"] = _code;
-                return Page();
-            }
-
             var customer = customers.First();
-
-
-            // ============
-
-            //TempData["Error"] = "deleted";
-            //TempData["CustomerCode"] = _code;
-            //TempData["DeletedOn"] = DateTime.Now.ToString();
-            //TempData["DeletedBy"] = customer.UpdatedUser.UserName;
-
-            // ============
-
 
             if (customer.DeletedDate != DateTime.MinValue)
             {
-                await Utils.RecordAction(
+                await m_DbContext.RecordChanges(
                     currentUser.UserName,
                     ActionRecord.Operation_.UpdateCustomer,
                     ActionRecord.OperationStatus_.Failed,
-                    "Already deleted on " + customer.DeletedDate.ToString()
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Message, "Already deleted on " + customer.DeletedDate.ToString() }
+                    }
                 );
 
                 TempData["Error"] = "deleted";
@@ -148,15 +126,14 @@ namespace Project24.Pages.ClinicManager
 
             if (!ModelState.IsValid)
             {
-                //StatusMessage = "Error: Lỗi không xác định.";
-
-                //m_Logger.LogError("Unknown Error during Create Service.");
-
-                await Utils.RecordAction(
+                await m_DbContext.RecordChanges(
                     currentUser.UserName,
                     ActionRecord.Operation_.UpdateCustomer,
                     ActionRecord.OperationStatus_.Failed,
-                    Constants.ERROR_MODEL_STATE_INVALID
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
+                    }
                 );
 
                 return Page();
@@ -178,14 +155,18 @@ namespace Project24.Pages.ClinicManager
             }
 #endif
 
-            var customer = await m_DbContext.CustomerProfilesDev2.FirstOrDefaultAsync(_customer => _customer.CustomerCode == Data.CustomerCode);
+            var customer = await m_DbContext.CustomerProfiles.FirstOrDefaultAsync(_customer => _customer.CustomerCode == Data.CustomerCode);
             if (customer == null)
             {
-                await Utils.RecordAction(
+                await m_DbContext.RecordChanges(
                     currentUser.UserName,
                     ActionRecord.Operation_.UpdateCustomer,
                     ActionRecord.OperationStatus_.Failed,
-                    Constants.ERROR_NOT_FOUND_CUSTOMER + ";" + Data.CustomerCode
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Error, ErrorMessage.CustomerNotFound },
+                        { CustomInfoKey.CustomerCode, Data.CustomerCode }
+                    }
                 );
 
                 return await OnGetAsync(Data.CustomerCode);
@@ -203,15 +184,17 @@ namespace Project24.Pages.ClinicManager
 
             m_DbContext.Update(customer);
 
-            await m_DbContext.SaveChangesAsync();
-
-
-            await Utils.RecordAction(
+            await m_DbContext.RecordChanges(
                 currentUser.UserName,
                 ActionRecord.Operation_.UpdateCustomer,
                 ActionRecord.OperationStatus_.Success,
-                "CustomerCode=" + customer.CustomerCode
+                new Dictionary<string, string>()
+                {
+                    { CustomInfoKey.CustomerCode, customer.CustomerCode }
+                }
             );
+
+            //await m_DbContext.SaveChangesAsync();
 
             return RedirectToPage("./Index");
         }

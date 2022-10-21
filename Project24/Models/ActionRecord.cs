@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.3 (2022.10.18)
+ *  Version: 1.4 (2022.10.21)
  *
  *  Contributor
  *      Arime-chan
@@ -53,7 +53,7 @@ namespace Project24.Models
             public const string Denied = "Denied";
 
             public const string HasUpload = "Has Upload";
-            public const string MalfunctionUploadAttempted = "Malfunction Upload Attempted";
+            public const string HasMalfunction = "Has Malfunction";
         }
 
         
@@ -72,11 +72,10 @@ namespace Project24.Models
         [Required(AllowEmptyStrings = false)]
         public string OperationStatus { get; set; }
         
-        public string Description { get; set; }
+        public string CustomInfo { get; set; }
 
         public ActionRecord()
         { }
-
     }
 
 }
