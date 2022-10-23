@@ -1,5 +1,5 @@
 /*  Index.cshtml.cs
- *  Version: 1.3 (2022.10.22)
+ *  Version: 1.4 (2022.10.23)
  *
  *  Contributor
  *      Arime-chan
@@ -55,8 +55,9 @@ namespace Project24.Pages.Nas
             }
         }
 
-
         public DataModel Data { get; set; } = null;
+
+        public bool IsUploadMode { get; set; } = false;
 
         public IndexModel(ILogger<IndexModel> _logger)
         {
@@ -64,15 +65,28 @@ namespace Project24.Pages.Nas
 
         }
 
+
         public async Task<IActionResult> OnGetAsync(string _path)
         {
+            const string prefixUpload = "<upload>";
+            const string prefixCreateFolder = "<createFolder>";
             if (_path == null)
             {
                 _path = "";
             }
-            else if (_path.StartsWith("<upload>"))
+            else if (_path.Contains(prefixUpload))
             {
-                return Partial("_NasUploader", this);
+                IsUploadMode = true;
+                int pos = _path.LastIndexOf(prefixUpload) + prefixUpload.Length;
+                _path = _path[pos..];
+            }
+            else if (_path.Contains(prefixCreateFolder))
+            {
+                IsUploadMode = true;
+                int pos = _path.LastIndexOf(prefixCreateFolder) + prefixCreateFolder.Length;
+                _path = _path[pos..];
+
+                _path = CreateDirectory(_path);
             }
 
             string absPath = Utils.AppRoot + "/" + AppConfig.NasRoot + "/" + _path;
@@ -110,7 +124,7 @@ namespace Project24.Pages.Nas
 
             Data = new DataModel()
             {
-                Path = _path,
+                Path = _path.TrimStart('/'),
                 PathLayers = pathLayers,
                 Files = files
             };
@@ -121,6 +135,32 @@ namespace Project24.Pages.Nas
         public async Task<IActionResult> OnPostAsync()
         {
             return BadRequest();
+        }
+
+        private string CreateDirectory(string _path)
+        {
+            string parentDir;
+
+            int pos = _path.LastIndexOf('/');
+            if (pos < 0)
+            {
+                parentDir = "";
+            }
+            else
+            {
+                parentDir = _path.Remove(pos);
+            }
+
+            string absPath = Utils.AppRoot + "/" + AppConfig.NasRoot + "/" + _path;
+            try
+            {
+                absPath = Path.GetFullPath(absPath);
+                Directory.CreateDirectory(absPath);
+            }
+            catch (Exception)
+            { }
+
+            return parentDir;
         }
 
         private IList<FileModel> GetFilesInDirectory(string _absPath)

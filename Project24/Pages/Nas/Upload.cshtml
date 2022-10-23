@@ -1,37 +1,26 @@
 ﻿@*  Upload.cshtml
-    *  Version: 1.4 (2022.10.19)
+    *  Version: 1.5 (2022.10.22)
     *
     *  Contributor
     *      Arime-chan
 *@
 
 @page
+
 @model Project24.Pages.Nas.UploadModel
 
 @{
     ViewData["Title"] = "Upload";
+    ViewData[CustomInfoKey.UseFullWidth] = "true";
+
     Layout = "_Layout";
 }
 
 <div class="d-flex flex-wrap">
 
-    <div class="col-12 col-lg-6 col-xl-6 px-3 border-left">
-        NAS Details goes here;
+    <div id="nas-browser" class="col-12 col-lg-6 col-xl-6 px-3 border-left">
+        <h4>NAS Browser</h4>
         <hr />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
@@ -40,7 +29,7 @@
         <hr />
 
         <div class="mb-2">
-            <div>Upload location: <span id="upload-location" class="font-italic">root/</span></div>
+            <div>Upload location: <span id="upload-location" class="font-italic" onmouseover="underlineMe(this)" onmouseout="normalizeMe(this)">root/</span></div>
             <p>Uploading: <span id="current-file-name" class="font-weight-bold">None</span></p>
 
             <div class="mb-2">
@@ -95,4 +84,75 @@
 @section Scripts {
 <script src="~/js/nas-upload.js"></script>
 <script src="~/lib/tus-js-client/tus.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        browseNas("");
+
+    });
+
+    function inputNewFolderName_OnChange() {
+        if ($("#input-new-folder-name").val())
+            $("#btn-create-folder").show();
+        else
+            $("#btn-create-folder").hide();
+    }
+
+    function createFolder() {
+        let location = "root/" + $("#current-location").html();
+        let folderName = $("#input-new-folder-name").val();
+
+        let text = "Location: " + location + "\nNew Folder: '" + folderName + "'\n\nAre you sure you want to create this folder?"
+
+        if (confirm(text) == true) {
+            sendCreateFolderRequest(location.substring(5), folderName);
+        } else {
+
+        }
+      }
+
+      function sendCreateFolderRequest(_path, _folderName) {
+          if (!_path.endsWith("/"))
+          _path += "/";
+
+          $.ajax({
+            type: 'GET',
+            url: '<createFolder>' + _path + _folderName,
+            success: function(_content) {
+                $("#nas-browser").html(_content);
+
+                let newLocation = "root/" + $("#current-location").html();
+                //window.alert(newLocation);
+                $("#upload-location").html(newLocation);
+            },
+            error: function() {
+                window.alert("Could not fetch browser.");
+            }
+        });
+    }
+
+    function browseNas(_path) {
+        $.ajax({
+            type: 'GET',
+            url: '<upload>' + _path,
+            success: function(_content) {
+                $("#nas-browser").html(_content);
+
+                let newLocation = "root/" + $("#current-location").html();
+                //window.alert(newLocation);
+                $("#upload-location").html(newLocation);
+            },
+            error: function() {
+                window.alert("Could not fetch browser.");
+            }
+        });
+    }
+
+    function underlineMe(_x) {
+        _x.style.textDecoration = "underline";
+    }
+
+    function normalizeMe(_x) {
+        _x.style.textDecoration = "initial";
+    }
+</script>
 }

@@ -1,5 +1,5 @@
 ﻿@*  _NasBrowser.cshtml
-    *  Version: 1.1 (2022.10.21)
+    *  Version: 1.2 (2022.10.24)
     *
     *  Contributor
     *      Arime-chan
@@ -9,78 +9,117 @@
 @using Project24.App.Utils
 @model Project24.Pages.Nas.IndexModel
 @{
-    Layout = "_Layout";
+    string prefix = "";
+    string latestModColumnStyle = "width: 20ch;";
+    string sizeColumnStyle = "width: 16ch;";
+
+    if (Model.IsUploadMode)
+    {
+        prefix = "<upload>";
+        latestModColumnStyle = "max-width: 18ch";
+        sizeColumnStyle = "width: 12ch;";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
+
+    object[] nasStatModel = new object[] { "Main", DriveUtils.NasDriveUtils };
+    object[] appStatModel = new object[] { "Cache", DriveUtils.AppDriveUtils };
 }
 
 
 <div class="text-center">
 
-    <div class="text-left col-12 col-md-6 col-lg-5 col-xl-4 m-2">
-        @{
-            float percent = DriveUtils.NasDriveUtils.UsedRatio * 100.0f;
-
-            string colorClassname = "";
-            if (percent < 75.0f)
-                colorClassname = "bg-success";
-            else if (percent < 90.0f)
-                colorClassname = "bg-warning";
-            else
-                colorClassname = "bg-danger";
-
-            string strFreeSpace = Utils.FormatDataSize(DriveUtils.NasDriveUtils.FreeSpace);
-            string strTotalSpace = Utils.FormatDataSize(DriveUtils.NasDriveUtils.TotalSize);
-            string strUsedPercent = string.Format("{0:0.00}%", percent);
-        }
-
-        <div id="progress-bar-wrapper" class="progress">
-            <div id="progress-bar" class="progress-bar @colorClassname" style="width: @strUsedPercent"
-                 role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-value="@percent"></div>
-        </div>
-        <div>@strFreeSpace free of @strTotalSpace (@strUsedPercent used)</div>
+    <div class="d-flex flex-wrap">
+        <partial name="_NasStatsDisplay" model="@nasStatModel" />
+        <partial name="_NasStatsDisplay" model="@appStatModel" />
+        <hr />
     </div>
 
-    <h4 class="d-flex font-weight-normal text-left">
-        <span><a href="/Nas">root/</a></span>
+    <div id="current-location" hidden>@Model.Data.Path</div>
 
+    <h4 class="d-flex flex-wrap font-weight-normal text-left">
         @{
-            string pathArg = "";
-            for (int i = 0; i < Model.Data.PathLayers.Count; ++i)
             {
-                pathArg += @Model.Data.PathLayers[i] + "/";
+                string href = "/Nas/" + prefix;
+                <span><a href="#" onclick="browseNas('@href')">root/</a></span>
 
-                if (i == Model.Data.PathLayers.Count - 1)
+                string pathArg = "";
+                for (int i = 0; i < Model.Data.PathLayers.Count; ++i)
                 {
-                    <span>@Model.Data.PathLayers[i]/</span>
-                }
-                else
-                {
-                    string href = "/Nas/Index/" + pathArg.TrimEnd('/');
-                    <span><a href="@href">@Model.Data.PathLayers[i]/</a></span>
+                    pathArg += Model.Data.PathLayers[i] + "/";
+
+                    if (i == Model.Data.PathLayers.Count - 1)
+                    {
+                        <span>@Model.Data.PathLayers[i]/</span>
+                    }
+                    else
+                    {
+                        href = "/Nas/" + prefix + pathArg.TrimEnd('/');
+                        <span><a href="#" onclick="browseNas('@href')">@Model.Data.PathLayers[i]/</a></span>
+                    }
                 }
             }
+
+            <input type="text" id="input-new-folder-name" class="form-control form-control-sm col-4 ml-2" oninput="inputNewFolderName_OnChange()" />
+            <span type="button" id="btn-create-folder" class="badge badge-primary text-wrap ml-2" style="width: 5rem; font-size: small; display: none"
+                  onclick="createFolder()">Create Folder</span>
         }
     </h4>
 
     <table class="table table-sm table-hover">
         <thead>
             <tr>
-                <th class="text-left" style="max-width: 64px;">Icon</th>
+                <th class="text-left" style="width: 64px;">Icon</th>
                 <th class="text-left">Filename</th>
-                <th class="text-left" style="max-width: 512px;">Latest Modified</th>
-                <th class="text-left" style="max-width: 256px;">Size</th>
+                <th class="text-center" style="@latestModColumnStyle">Latest Modified</th>
+                <th class="text-center" style="@sizeColumnStyle">Size</th>
             </tr>
         </thead>
         <tbody>
             @for (int i = 0; i < Model.Data.Files.Count; ++i)
             {
                 var file = Model.Data.Files[i];
-                string href = "/Nas/" + file.RelativePath + file.Name;
+                string href = "/Nas/" + prefix + file.RelativePath + file.Name;
+                string path = file.RelativePath + file.Name;
 
                 <tr class="">
-                    <td class="text-left"></td>
-                    <td class="text-left"><a href="@href">@file.Name</a></td>
-                    <td class="text-left">@file.LastModified</td>
-                    <td class="text-right">@Utils.FormatDataSize(file.Size)</td>
+                    <td class="text-left px-1">
+                        @if (Model.IsUploadMode)
+                        {
+                            <span type="button" id="btn-delete-file" class="badge badge-danger p-1" onclick="deleteFile('@path')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z" />
+                                </svg>
+                            </span>
+
+                            <span type="button" id="btn-copy-file" class="badge badge-secondary p-1" onclick="copyFile('@path')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+                                    <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+                                </svg>
+                            </span>
+                        }
+                    </td>
+
+                    @if (Model.IsUploadMode && file.FileType == Project24.Pages.Nas.IndexModel.FileType.File)
+                    {
+                        <td class="text-left text-break">@file.Name</td>
+                    }
+                    else
+                    {
+                        <td class="text-left text-break"><a href="#" onclick="browseNas('@href')">@file.Name</a></td>
+                    }
+
+                    <td class="text-right">@file.LastModified</td>
+                    @if (file.FileType == Project24.Pages.Nas.IndexModel.FileType.File)
+                    {
+                        <td class="text-right">@Utils.FormatDataSize(file.Size)</td>
+                    } else
+                    {
+                        <td class="text-right"> </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -88,4 +127,14 @@
 
 </div>
 
+@if (!Model.IsUploadMode)
+{
+    <script type="text/javascript">
 
+        function browseNas(_path)
+        {
+            window.location.href = _path;
+        }
+
+    </script>
+}

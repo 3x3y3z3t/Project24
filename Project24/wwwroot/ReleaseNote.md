@@ -1,4 +1,7 @@
 ﻿
+#### v0.8.2 (2022.10.24)
+- Added Create Folder in NAS Upload.
+
 #### v0.8.1 (2022.10.21)
 - Restructured data directories.
 - Minor fixes on Clinic Manager side.

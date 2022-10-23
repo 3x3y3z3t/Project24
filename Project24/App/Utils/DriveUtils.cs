@@ -1,5 +1,5 @@
 ﻿/*  DriveUtils.cs
- *  Version: 1.3 (2022.10.21)
+ *  Version: 1.4 (2022.10.24)
  *
  *  Contributor
  *      Arime-chan
@@ -27,7 +27,7 @@ namespace Project24.App
         public static void FixDirectoryStructure()
         {
             // create directory for next version app container;
-            string fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.AppNextRoot);
+            string fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.AppNextRoot + "/publish");
             Directory.CreateDirectory(fullPath);
 
             // create directory for cache container;

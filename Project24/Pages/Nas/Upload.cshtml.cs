@@ -28,6 +28,7 @@ namespace Project24.Pages.Nas
 
         }
 
+
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
     }

@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.0 (2022.10.20)
+ *  Version: 1.1 (2022.10.24)
  *
  *  Contributor
  *      Arime-chan
@@ -51,6 +51,8 @@ namespace Project24
 
     public static class CustomInfoKey
     {
+        public const string UseFullWidth = "UseFullWidth";
+
         public const string Error = "err";
         public const string Message = "msg";
         public const string Path = "path";
