@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.1 (2022.10.24)
+ *  Version: 1.2 (2022.10.26)
  *
  *  Contributor
  *      Arime-chan
@@ -62,6 +62,11 @@ namespace Project24
 
         public const string AddedList = "added";
         public const string Malfunctions = "malfunctions";
+
+        public const string ParentDir = "dir";
+        public const string FolderName = "name";
+
+        public const string MoveMode = "move";
     }
 
     public static class P24RoleName

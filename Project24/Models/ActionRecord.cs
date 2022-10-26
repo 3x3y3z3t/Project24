@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.4 (2022.10.21)
+ *  Version: 1.5 (2022.10.26)
  *
  *  Contributor
  *      Arime-chan
@@ -38,6 +38,10 @@ namespace Project24.Models
             public const string RemoveVisitingProfile = "Delete Visiting Profile";
             public const string UpdateVisitingProfile = "Update Visiting Profile";
             public const string DetailVisitingProfile = "Detail Visiting Profile";
+
+            public const string CreateNasFolder = "Create NAS Folder";
+            public const string DeleteNasFile = "Delete NAS File";
+            public const string CopyNasFile = "Copy NAS File";
 
 
             public const string UploadNasFile = "UploadNasFile";

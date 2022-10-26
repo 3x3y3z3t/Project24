@@ -1,5 +1,5 @@
 ﻿/*  DriveUtils.cs
- *  Version: 1.4 (2022.10.24)
+ *  Version: 1.5 (2022.10.25)
  *
  *  Contributor
  *      Arime-chan
@@ -24,25 +24,26 @@ namespace Project24.App
             s_IsReady = true;
         }
 
+        public static string AppNextRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.AppNextRoot);
+        public static string TmpRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.TmpRoot);
+        public static string DataRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.DataRoot);
+        public static string DeletedDataRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.DataRoot + "/../deletedData");
+        public static string NasRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.NasRoot);
+
         public static void FixDirectoryStructure()
         {
             // create directory for next version app container;
-            string fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.AppNextRoot + "/publish");
-            Directory.CreateDirectory(fullPath);
+            Directory.CreateDirectory(AppNextRootPath);
 
             // create directory for cache container;
-            fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.TmpRoot);
-            Directory.CreateDirectory(fullPath);
+            Directory.CreateDirectory(TmpRootPath);
 
             // create directory for app data container;
-            fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.DataRoot);
-            Directory.CreateDirectory(fullPath);
-            fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.DataRoot + "/../deletedData");
-            Directory.CreateDirectory(fullPath);
+            Directory.CreateDirectory(DataRootPath);
+            Directory.CreateDirectory(DeletedDataRootPath);
 
             // create directory for app nas container;
-            fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.NasRoot);
-            Directory.CreateDirectory(fullPath);
+            Directory.CreateDirectory(NasRootPath);
         }
 
         /* Write detailed info to stat file. This will write ONE `stats.txt` file to the default NAS drive directory

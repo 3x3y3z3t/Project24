@@ -1,5 +1,5 @@
 /*  Index.cshtml.cs
- *  Version: 1.4 (2022.10.23)
+ *  Version: 1.5 (2022.10.24)
  *
  *  Contributor
  *      Arime-chan
@@ -16,48 +16,32 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
+using Project24.App.Utils;
+using Project24.App;
 
 namespace Project24.Pages.Nas
 {
     [Authorize(Roles = P24Roles.NasUser + "," + P24Roles.NasTester)]
     public partial class IndexModel : PageModel
     {
-        public enum FileType
-        {
-            Unset = 0,
-            Directory,
-            File
-        }
-
-        public class FileModel
-        {
-            public FileType FileType { get; set; } = FileType.Unset;
-            public string Name { get; set; }
-            public string Fullname { get; set; }
-            public string RelativePath { get; set; }
-            public DateTime LastModified { get; set; }
-            public long Size { get; set; }
-
-            public FileModel()
-            { }
-        }
-
         public class DataModel
         {
             public string Path { get; set; }
-            public IList<string> PathLayers { get; set; }
-            public IList<FileModel> Files { get; set; }
+            public List<string> PathLayers { get; set; }
+            public List<NasUtils.FileModel> Files { get; set; }
+            public bool IsUploadMode { get; set; }
 
             public DataModel()
             {
+                Path = "";
                 PathLayers = new List<string>();
-                Files = new List<FileModel>();
+                Files = new List<NasUtils.FileModel>();
+                IsUploadMode = false;
             }
         }
 
         public DataModel Data { get; set; } = null;
 
-        public bool IsUploadMode { get; set; } = false;
 
         public IndexModel(ILogger<IndexModel> _logger)
         {
@@ -69,67 +53,61 @@ namespace Project24.Pages.Nas
         public async Task<IActionResult> OnGetAsync(string _path)
         {
             const string prefixUpload = "<upload>";
-            const string prefixCreateFolder = "<createFolder>";
+
+            DataModel data = new DataModel();
+
             if (_path == null)
             {
                 _path = "";
             }
             else if (_path.Contains(prefixUpload))
             {
-                IsUploadMode = true;
                 int pos = _path.LastIndexOf(prefixUpload) + prefixUpload.Length;
                 _path = _path[pos..];
-            }
-            else if (_path.Contains(prefixCreateFolder))
-            {
-                IsUploadMode = true;
-                int pos = _path.LastIndexOf(prefixCreateFolder) + prefixCreateFolder.Length;
-                _path = _path[pos..];
 
-                _path = CreateDirectory(_path);
+                data.IsUploadMode = true;
             }
 
-            string absPath = Utils.AppRoot + "/" + AppConfig.NasRoot + "/" + _path;
-            absPath = Path.GetFullPath(absPath).Replace('\\', '/').TrimEnd('/');
+            _path = _path.Trim('/');
 
+            string absPath = Path.GetFullPath(DriveUtils.NasRootPath + "/" + _path);
             if (!absPath.Contains("nasData"))
             {
-                Data = new DataModel();
-                return Partial("_NasBrowser", this);
+                return Partial("_NasBrowser", data);
             }
 
-            FileAttributes attrib = System.IO.File.GetAttributes(absPath);
-            if (!attrib.HasFlag(FileAttributes.Directory))
+            if (!data.IsUploadMode)
             {
-                await ProcessDownloadRequest(absPath);
+                FileAttributes attrib = System.IO.File.GetAttributes(absPath);
+                if (!attrib.HasFlag(FileAttributes.Directory))
+                {
+                    await ProcessDownloadRequest(absPath);
 
-                int startIndex = absPath.IndexOf("nasData") + 7;
-                int length = absPath.LastIndexOf('/') - startIndex;
-                if (length <= 0)
-                    return await OnGetAsync("");
+                    //return await OnGetAsync(_path);
 
-                absPath = absPath.Substring(startIndex, length);
-                return await OnGetAsync(absPath);
+                    //int startIndex = absPath.IndexOf("nasData") + 7;
+                    //int length = absPath.LastIndexOf('/') - startIndex;
+                    //if (length <= 0)
+                    //    return await OnGetAsync("");
+
+                    //absPath = absPath.Substring(startIndex, length);
+                    //return await OnGetAsync(absPath);
+                }
             }
 
-            IList<FileModel> files = GetFilesInDirectory(absPath);
-
+            List<NasUtils.FileModel> files = NasUtils.GetFilesInDirectory(_path);
             if (files == null)
             {
-                Data = new DataModel();
-                return Partial("_NasBrowser", this);
+                return Partial("_NasBrowser", data);
             }
 
-            List<string> pathLayers = _path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            List<string> pathLayers = new List<string>(_path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries));
 
-            Data = new DataModel()
-            {
-                Path = _path.TrimStart('/'),
-                PathLayers = pathLayers,
-                Files = files
-            };
+            data.Path = _path;
+            data.PathLayers = pathLayers;
+            data.Files = files;
 
-            return Partial("_NasBrowser", this);
+            return Partial("_NasBrowser", data);
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -137,49 +115,23 @@ namespace Project24.Pages.Nas
             return BadRequest();
         }
 
-        private string CreateDirectory(string _path)
-        {
-            string parentDir;
-
-            int pos = _path.LastIndexOf('/');
-            if (pos < 0)
-            {
-                parentDir = "";
-            }
-            else
-            {
-                parentDir = _path.Remove(pos);
-            }
-
-            string absPath = Utils.AppRoot + "/" + AppConfig.NasRoot + "/" + _path;
-            try
-            {
-                absPath = Path.GetFullPath(absPath);
-                Directory.CreateDirectory(absPath);
-            }
-            catch (Exception)
-            { }
-
-            return parentDir;
-        }
-
-        private IList<FileModel> GetFilesInDirectory(string _absPath)
+        private List<NasUtils.FileModel> GetFilesInDirectory(string _absPath)
         {
             int pos = _absPath.IndexOf("nasData") + 7;
             string relativePath = _absPath.Substring(pos);
             if (relativePath.Length != 0)
                 relativePath += "/";
 
-            List<FileModel> list = new List<FileModel>();
+            List<NasUtils.FileModel> list = new List<NasUtils.FileModel>();
 
             string[] directories = Directory.GetDirectories(_absPath);
             foreach (string dir in directories)
             {
                 DirectoryInfo di = new DirectoryInfo(dir);
 
-                list.Add(new FileModel()
+                list.Add(new NasUtils.FileModel()
                 {
-                    FileType = FileType.Directory,
+                    FileType = NasUtils.FileType.Directory,
                     Name = di.Name,
                     Fullname = di.FullName,
                     RelativePath = relativePath,
@@ -192,9 +144,9 @@ namespace Project24.Pages.Nas
             {
                 FileInfo fi = new FileInfo(file);
 
-                list.Add(new FileModel()
+                list.Add(new NasUtils.FileModel()
                 {
-                    FileType = FileType.File,
+                    FileType = NasUtils.FileType.File,
                     Name = fi.Name,
                     Fullname = fi.FullName,
                     RelativePath = relativePath,

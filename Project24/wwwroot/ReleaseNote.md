@@ -1,10 +1,15 @@
 ﻿
+#### v0.8.3 (2022.10.26)
+- Added Delete File/Folder in NAS Upload.
+
 #### v0.8.2 (2022.10.24)
 - Added Create Folder in NAS Upload.
 
 #### v0.8.1 (2022.10.21)
 - Restructured data directories.
 - Minor fixes on Clinic Manager side.
+
+---
 
 #### v0.7.5-alpha (2022.10.19)
 - Reworked NAS Browser function.
@@ -14,6 +19,8 @@
 #### v0.7.3 (2022.10.18)
 - Update NAS Upload function using [tus protocol](https://tus.io/). Currently every file is uploaded to root directory.
 - Added NAS Tester user for NAS upload function testing. Default username is `nas-tester`, password is `nas-tester1`.
+
+---
 
 #### v0.6.13 (2022.10.16)
 - Updated Release Notes fetching logic on About page.
