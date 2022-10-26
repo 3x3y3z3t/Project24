@@ -1,4 +1,8 @@
 ﻿
+#### v0.8.4-alpha (2022.10.27)
+- Added statistic in NAS Upload (Elapsed time, Avg speed).
+- Update server file upload location to (hopefully) improve upload speed (previously 907KB/s, now 1.11MB/s, increased by 22%).
+
 #### v0.8.3 (2022.10.26)
 - Added Delete File/Folder in NAS Upload.
 

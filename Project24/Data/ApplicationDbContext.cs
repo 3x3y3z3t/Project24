@@ -1,5 +1,5 @@
 ﻿/*  ApplicationDbContext.cs
- *  Version: 1.7 (2022.10.21)
+ *  Version: 1.8 (2022.10.27)
  *
  *  Contributor
  *      Arime-chan
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Project24.Identity;
 using Project24.Models;
+using Project24.Models.Nas;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -24,6 +25,8 @@ namespace Project24.Data
         public DbSet<CustomerImage> CustomerImages { get; set; }
 
         public DbSet<ActionRecord> ActionRecords { get; set; }
+
+        public DbSet<NasCachedFile> NasCachedFiles { get; set; }
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

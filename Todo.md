@@ -5,6 +5,7 @@
 - Add Feedback/Request button
 - Add Bug Report button
 - Add Update page
+- Add Index page handle when user has multiple-side role
 
 ### Project24 - Identity
 - Overall rework

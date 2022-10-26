@@ -1,5 +1,5 @@
 ﻿/*  nas-utils.js
- *  Version: 1.0 (2022.10.26)
+ *  Version: 1.1 (2022.10.27)
  *
  *  Contributor
  *      Arime-chan
@@ -82,7 +82,7 @@ function sendCreateFolderRequest(_path, _folderName) {
         success: function (_content) {
             $("#nas-browser").html(_content);
 
-            console.log("CreateDirectory returns " + _returnMsg)
+            console.log("CreateDirectory success");
             //location.reload();
         },
         error: function () {
@@ -112,7 +112,7 @@ function sendDeleteFileRequest(_path) {
         success: function (_content) {
             $("#nas-browser").html(_content);
 
-            console.log("Delete returns " + _returnMsg)
+            console.log("CreateDirectory success");
             //location.reload();
         },
         error: function () {

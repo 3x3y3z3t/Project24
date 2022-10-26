@@ -1,5 +1,5 @@
 ﻿/*  site.js
- *  Version: 1.0 (2022.09.06)
+ *  Version: 1.1 (2022.10.27)
  *
  *  Contributor
  *      Arime-chan
@@ -32,4 +32,21 @@ function formatDataLength(_length) {
     }
 
     return (_length).toFixed(0) + " B";
+}
+
+function formatTimeSpan_Hour(_millis) {
+    _millis /= 1000.0;
+
+    let seconds = Math.round(_millis % 60);
+    _millis = Math.floor(_millis / 60);
+
+    let minutes = Math.round(_millis % 60);
+    _millis = Math.floor(_millis / 60);
+
+    let hours = Math.round(_millis % 24);
+    _millis = Math.floor(_millis / 24);
+
+    return hours.toLocaleString("en-US", { minimumIntegerDigits: 2 }) + ":"
+        + minutes.toLocaleString("en-US", { minimumIntegerDigits: 2 }) + ":"
+        + seconds.toLocaleString("en-US", { minimumIntegerDigits: 2 });
 }

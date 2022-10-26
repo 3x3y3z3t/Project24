@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.8 (2022.10.21)
+ *  Version: 1.9 (2022.10.27)
  *
  *  Contributor
  *      Arime-chan
@@ -27,6 +27,8 @@ using Microsoft.Extensions.FileProviders;
 using Project24.App.Utils;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Project24.App.Services;
+using Project24.Models.Nas;
 
 namespace Project24
 {
@@ -86,6 +88,7 @@ namespace Project24
                 _options.Limits.MaxRequestBodySize = 64L * 1024L * 1024L;
             });
 
+            services.AddHostedService<NasDiskService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -177,7 +180,7 @@ namespace Project24
         #region TusDotNet Event Handlers
         private tusdotnet.Models.DefaultTusConfiguration ConfigTusDotNet(Microsoft.AspNetCore.Http.HttpContext _httpContext)
         {
-            string nasRootAbsPath = Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.NasRoot);
+            string nasCacheAbsPath = Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.TmpRoot);
 
             return new tusdotnet.Models.DefaultTusConfiguration()
             {
@@ -185,7 +188,7 @@ namespace Project24
                 // Return null to disable tusdotnet for the current request.
 
                 // c:\tusfiles is where to store files
-                Store = new TusDiskStore(nasRootAbsPath, true),
+                Store = new TusDiskStore(nasCacheAbsPath, true),
                 // On what url should we listen for uploads?
                 UrlPath = "/Nas/Upload0",
                 Events = new tusdotnet.Models.Configuration.Events
@@ -210,8 +213,8 @@ namespace Project24
 
                         try
                         {
-                            string uploadLocationAbsPath = Path.GetFullPath(filePath.Remove(0, 5), nasRootAbsPath);
-                            if (!uploadLocationAbsPath.Contains("nasData"))
+                            string uploadLocationAbsPath = Path.GetFullPath(filePath.Remove(0, 5), nasCacheAbsPath);
+                            if (!uploadLocationAbsPath.Contains("nasTmp"))
                             {
                                 _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
                             }
@@ -257,12 +260,13 @@ namespace Project24
                             filePath = metadata["filePath"].GetString(Encoding.UTF8).Remove(0, 5);
                         }
 
-                        string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
+                        string uploadLocationAbsPath = Path.GetFullPath(filePath, nasCacheAbsPath);
                         string fileName = metadata["fileName"].GetString(Encoding.UTF8);
                         Directory.CreateDirectory(uploadLocationAbsPath);
 
-                        FileStream fileStream = new FileStream(uploadLocationAbsPath + "/" + fileName, FileMode.Create);
-                        await content.CopyToAsync(fileStream);
+                        FileStream fileStream = File.Create(uploadLocationAbsPath + "/" + fileName, 4 * 1024 * 1024, FileOptions.Asynchronous);
+                        await content.CopyToAsync(fileStream, 4 * 1024 * 1024);
+
                         await fileStream.DisposeAsync();
 
                         await content.DisposeAsync();
@@ -271,6 +275,15 @@ namespace Project24
                         await terminationStore.DeleteFileAsync(_eventContext.FileId, _eventContext.CancellationToken);
 
                         ApplicationDbContext dbContext = _eventContext.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+                        
+                        NasCachedFile cachedFile = new NasCachedFile()
+                        {
+                            Name = fileName,
+                            Path = filePath,
+                            AddedDate = DateTime.Now
+                        };
+                        await dbContext.NasCachedFiles.AddAsync(cachedFile);
+
                         var username = _eventContext.HttpContext.User.Identity.Name;
                         await dbContext.RecordChanges(
                             _eventContext.HttpContext.User.Identity.Name,

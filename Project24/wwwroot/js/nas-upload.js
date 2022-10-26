@@ -1,5 +1,5 @@
 ﻿/*  nas-upload.js
- *  Version: 1.4 (2022.10.21)
+ *  Version: 1.5 (2022.10.27)
  *
  *  Contributor
  *      Arime-chan
@@ -17,6 +17,8 @@ NasUploader.m_UploadInProgress = -1;
 NasUploader.m_TotalBytesToUpload = 0;
 NasUploader.m_TotalBytesSent = 0;
 
+NasUploader.m_TotalBytesSent_Realtime = 0;
+
 NasUploader.m_CurrentBytesAccepted = 0;
 NasUploader.m_CurrentBytesSentPercent = 0;
 NasUploader.m_CurrentBytesAcceptedPercent = 0;
@@ -24,6 +26,8 @@ NasUploader.m_CurrentBytesAcceptedPercent = 0;
 NasUploader.m_TotalBytesAccepted = 0;
 NasUploader.m_TotalBytesSentPercent = 0;
 NasUploader.m_TotalBytesAcceptedPercent = 0;
+
+NasUploader.m_StartDate = null;
 
 
 $(document).ready(function () {
@@ -36,10 +40,14 @@ $(document).ready(function () {
     $("#current-progress-info-status").hide();
     $("#total-progress-info-status").hide();
 
-    NasUploader.m_UploadFilePath = $("#upload-location").html();
-
     enableFunctionButtons(false);
-})
+
+    window.setInterval(function () {
+        NasUploader.m_UploadFilePath = $("#upload-location").html();
+        updateStatistic();
+    }, 500);
+});
+
 
 function uploadButton_onClick() {
     $("#input-files").attr("disabled", true);
@@ -48,13 +56,22 @@ function uploadButton_onClick() {
     $("#button-pause").removeAttr("disabled");
     $("#button-resume").removeAttr("disabled");
 
+    $("#total-progress-bar-wrapper").attr("aria-valuenow", 0);
+    $("#total-sent-progress-bar").width("0%");
+
     tryStartNextUpload();
+    NasUploader.m_StartDate = new Date();
+    NasUploader.m_TotalBytesSent_Realtime = 0;
 }
 
 function tusUpload_OnError(_error) {
+    markFileAsError(NasUploader.m_ActiveTusUpload.file.name);
+
     console.log("tusUpload error: " + _error);
     window.alert("Upload error, please see Console for more information (QoL coming soon).");
     NasUploader.m_ActiveTusUpload = null;
+
+    tryStartNextUpload();
 }
 
 function tusUpload_OnProgress(_bytesSent, _bytesTotal) {
@@ -92,6 +109,8 @@ function tusUpload_OnProgress(_bytesSent, _bytesTotal) {
         $("#total-progress-info").html("Total: " + uploaded + " / " + total + " (" + percent + "%)");
         $("#total-progress-info-status").hide();
     }
+
+    NasUploader.m_TotalBytesSent_Realtime = NasUploader.m_TotalBytesSent + _bytesSent;
 }
 
 function tusUpload_OnChunkComplete(_chunkSize, _bytesAccepted, _bytesTotal) {
@@ -186,10 +205,26 @@ function tryStartNextUpload() {
         tryStartUpload(NasUploader.m_UploadInProgress + 1);
     } else {
         NasUploader.m_UploadInProgress = -1;
+        NasUploader.m_StartDate = null;
 
         $("#input-files").removeAttr("disabled");
         enableFunctionButtons(false);
     }
+}
+
+function updateStatistic() {
+    if (!NasUploader.m_IsTransfering)
+        return;
+    if (NasUploader.m_StartDate == null)
+        return;
+
+    let elapsed = new Date() - NasUploader.m_StartDate;
+    let avgSpeed = (NasUploader.m_TotalBytesSent_Realtime) / elapsed * 1000.0;
+
+    $("#upload-elapsed-time").html("Elapsed time: " + formatTimeSpan_Hour(elapsed));
+    $("#upload-avg-speed").html("Average speed: " + formatDataLength(avgSpeed) + "/s");
+
+    //console.log(formatTimeSpan_Hour(elapsed) + ", " + formatDataLength(avgSpeed) + "/");
 }
 
 function pauseUpload() {
@@ -274,6 +309,9 @@ function markFileAsInProgress(_index) {
     for (let i = 0; i < NasUploader.m_FilesToUpload.length; ++i) {
         if (i == _index) {
             let divElement = $("#file-" + i);
+            divElement.removeClass("text-danger");
+            divElement.removeClass("text-success");
+
             if (!divElement.hasClass("text-warning"))
                 divElement.addClass("text-warning");
 
@@ -290,7 +328,24 @@ function markFileAsCompleted(_filename) {
         if (NasUploader.m_FilesToUpload[i].name == _filename) {
             let divElement = $("#file-" + i);
             divElement.removeClass("text-warning");
+            divElement.removeClass("text-danger");
             divElement.addClass("text-success");
+
+            $("#file-" + i + " div:first-child").html("");
+        }
+    }
+}
+
+function markFileAsError(_filename) {
+    if (_filename == null)
+        return;
+
+    for (let i = 0; i < NasUploader.m_FilesToUpload.length; ++i) {
+        if (NasUploader.m_FilesToUpload[i].name == _filename) {
+            let divElement = $("#file-" + i);
+            divElement.removeClass("text-warning");
+            divElement.removeClass("text-success");
+            divElement.addClass("text-danger");
 
             $("#file-" + i + " div:first-child").html("");
         }
