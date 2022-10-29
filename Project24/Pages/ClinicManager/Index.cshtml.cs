@@ -1,5 +1,5 @@
 ﻿/*  Index.cshtml.cs
- *  Version: 1.3 (2022.10.21)
+ *  Version: 1.4 (2022.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -42,8 +43,12 @@ namespace Project24.Pages.ClinicManager
             }
         }
 
-        [BindProperty]
         public DataModel Data { get; private set; }
+
+        public bool IsSearchMode { get; private set; } = false;
+        public string SearchName { get; private set; } = "";
+        public string SearchPhone { get; private set; } = "";
+        public string SearchAddress { get; private set; } = "";
 
         public string CustomerCount { get; private set; } = "0";
 
@@ -56,7 +61,7 @@ namespace Project24.Pages.ClinicManager
 
 
         // async this method will cause NRE since data won't make it to the client (customerViews.Count);
-        public void OnGet()
+        public IActionResult OnGet()
         {
             Data = new DataModel();
 
@@ -77,6 +82,75 @@ namespace Project24.Pages.ClinicManager
             List<DataModel.CustomerViewModel> customerViews = customers.ToList();
 
             Data.Customers = customerViews;
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnGetSearchAsync(string _name, string _phone, string _address)
+        {
+            IsSearchMode = true;
+
+            if (string.IsNullOrEmpty(_name) && string.IsNullOrEmpty(_phone) && string.IsNullOrEmpty(_address))
+            {
+                return OnGet();
+            }
+
+            if (_name == null)
+                _name = "";
+            if (_phone == null)
+                _phone = "";
+            if (_address == null)
+                _address = "";
+
+            var perfectHit = m_DbContext.CustomerProfiles
+                            .ToList()
+                            .Where(_customer => _customer.DeletedDate == DateTime.MinValue
+                                && _customer.FullName.EndsWith(_name, StringComparison.OrdinalIgnoreCase)
+                                && _customer.PhoneNumber.EndsWith(_phone)
+                                && _customer.Address.Contains(_address, StringComparison.OrdinalIgnoreCase))
+                            .Select(_customer => new DataModel.CustomerViewModel()
+                            {
+                                CustomerCode = _customer.CustomerCode,
+                                FullName = _customer.FullName,
+                                Address = _customer.Address,
+                                PhoneNumber = _customer.PhoneNumber,
+                                LastUpdated = _customer.UpdatedDate,
+                                ImageCount = (from _images in m_DbContext.CustomerImages
+                                              where _images.OwnedCustomerId == _customer.Id && _images.DeletedDate == DateTime.MinValue
+                                              select _images.Id).Count()
+                            });
+
+            var nearHit = m_DbContext.CustomerProfiles
+                            .ToList()
+                            .Where(_customer => _customer.DeletedDate == DateTime.MinValue &&
+                                (_customer.FullName.EndsWith(_name, StringComparison.OrdinalIgnoreCase)
+                                || _customer.PhoneNumber.EndsWith(_phone)
+                                || _customer.Address.Contains(_address, StringComparison.OrdinalIgnoreCase)))
+                            .Select(_customer => new DataModel.CustomerViewModel()
+                            {
+                                CustomerCode = _customer.CustomerCode,
+                                FullName = _customer.FullName,
+                                Address = _customer.Address,
+                                PhoneNumber = _customer.PhoneNumber,
+                                LastUpdated = _customer.UpdatedDate,
+                                ImageCount = (from _images in m_DbContext.CustomerImages
+                                              where _images.OwnedCustomerId == _customer.Id && _images.DeletedDate == DateTime.MinValue
+                                              select _images.Id).Count()
+                            });
+
+            List<DataModel.CustomerViewModel> customerViews = perfectHit.ToList();
+            //customerViews.AddRange(nearHit);
+
+            Data = new DataModel()
+            {
+                Customers = customerViews
+            };
+
+            SearchName = _name;
+            SearchPhone = _phone;
+            SearchAddress = _address;
+
+            return Page();
         }
 
 

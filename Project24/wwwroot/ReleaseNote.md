@@ -1,4 +1,7 @@
 ﻿
+#### v0.8.6-beta (2022.10.29)
+- Added Search feature in Clinic Manager index page.
+
 #### v0.8.5 (2022.10.29)
 - Added logging to file.
 - Fixed some crash when moving uploaded file from cache to disk.
