@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.2 (2022.10.26)
+ *  Version: 1.3 (2022.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -56,6 +56,8 @@ namespace Project24
         public const string Error = "err";
         public const string Message = "msg";
         public const string Path = "path";
+        public const string Filename = "fileName";
+        public const string Size = "size";
 
         public const string CustomerCode = "customerCode";
         public const string ImageId = "imgId";

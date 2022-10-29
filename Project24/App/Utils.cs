@@ -1,13 +1,11 @@
 ﻿/*  Utils.cs
- *  Version: 1.13 (2022.10.21)
+ *  Version: 1.14 (2022.10.29)
  *
  *  Contributor
  *      Arime-chan
  */
 
 using Microsoft.AspNetCore.Hosting;
-using Project24.Data;
-using Project24.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -164,6 +162,7 @@ namespace Project24
     {
 
         public static string AppRoot { get; private set; } = System.IO.Directory.GetCurrentDirectory();
+        public static string CurrentSessionName { get; private set; } = string.Format("{0:yyyy}-{0:MM}-{0:dd}_{0:HH}-{0:mm}-{0:ss}", DateTime.Now);
 
 
         public static string CurrentVersion { get; set; }
@@ -209,7 +208,7 @@ namespace Project24
             var match = regex.Match(markdown);
             if (match.Success)
             {
-                Utils.CurrentVersion = match.Value[4..]; // equivalent to .Substring(4);
+                Utils.CurrentVersion = match.Value[5..]; // equivalent to .Substring(4);
             }
             else
             {

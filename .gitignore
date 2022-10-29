@@ -4,6 +4,7 @@
 **/obj
 
 *.txt
+*.log
 *.csproj.user
 
 Utils_Internal.cs

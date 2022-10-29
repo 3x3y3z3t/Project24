@@ -1,5 +1,5 @@
 ﻿/*  DriveUtils.cs
- *  Version: 1.5 (2022.10.25)
+ *  Version: 1.6 (2022.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -55,15 +55,7 @@ namespace Project24.App
 
             string fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.NasRoot + "/..");
 
-            string fileContent = "\r\n";
-
-            fileContent += "AppDrive\r\n";
-            fileContent += AppDriveUtils.GetFormattedDetailInfo();
-            fileContent += "\r\n";
-
-            fileContent += "NasDrive\r\n";
-            fileContent += NasDriveUtils.GetFormattedDetailInfo();
-            fileContent += "\r\n";
+            string fileContent = GetNasDetails() + "\r\n";
 
             try
             {
@@ -71,6 +63,23 @@ namespace Project24.App
             }
             catch (Exception)
             { }
+        }
+
+        public static string GetNasDetails()
+        {
+            if (!s_IsReady)
+                Init();
+
+            string content = "\r\n";
+
+            content += "AppDrive\r\n";
+            content += AppDriveUtils.GetFormattedDetailInfo();
+            content += "\r\n";
+
+            content += "NasDrive\r\n";
+            content += NasDriveUtils.GetFormattedDetailInfo();
+
+            return content;
         }
 
 

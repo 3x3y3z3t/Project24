@@ -14,11 +14,7 @@
 - Add more details on customer (per request)
 
 ### Project24 - NAS
-- Add upload cache
-- Add upload cache worker
-- Add folder deletion
 - Add folder move/copy (w/ jsTree)
-- Rework folder creation
 
 ### AutoUpdater (temp)
 - Add autoupdater

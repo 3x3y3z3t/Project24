@@ -1,5 +1,5 @@
 ﻿/*  nas-upload.js
- *  Version: 1.5 (2022.10.27)
+ *  Version: 1.7 (2022.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -10,7 +10,7 @@ window.NasUploader = {};
 NasUploader.m_FilesToUpload = new Array();
 
 NasUploader.m_ActiveTusUpload = null;
-NasUploader.m_UploadFilePath = ""; //TODO: fetch this;
+NasUploader.m_UploadFilePath = "";
 NasUploader.m_IsTransfering = false;
 NasUploader.m_UploadInProgress = -1;
 
@@ -87,6 +87,13 @@ function tusUpload_OnProgress(_bytesSent, _bytesTotal) {
         let total = formatDataLength(_bytesTotal);
         let diffPercent = percent - NasUploader.m_CurrentBytesAcceptedPercent;
 
+        //if (diffPercent < 0) {
+        //    console.log("_bytesSent = " + _bytesSent);
+        //    console.log("_bytesTotal = " + _bytesTotal);
+        //    console.log("percent = " + percent);
+        //    console.log("bigPercent = " + NasUploader.m_CurrentBytesAcceptedPercent);
+        //}
+
         NasUploader.m_CurrentBytesSentPercent = percent;
 
         $("#current-progress-bar-wrapper").attr("aria-valuenow", percent);
@@ -146,6 +153,9 @@ function tusUpload_OnSuccess() {
     NasUploader.m_TotalBytesSent += file.size;
     NasUploader.m_TotalBytesAccepted += file.size;
 
+    NasUploader.m_TotalBytesAcceptedPercent = (NasUploader.m_TotalBytesAccepted / NasUploader.m_TotalBytesToUpload * 100.0).toFixed(2);
+    NasUploader.m_CurrentBytesAcceptedPercent = 0.0;
+
     tryStartNextUpload();
 }
 
@@ -174,8 +184,9 @@ function tryStartUpload(_index) {
 
         metadata: {
             fileName: file.name,
-            contentType: file.type,
+            fileSize: file.size,
             filePath: NasUploader.m_UploadFilePath,
+            contentType: file.type,
         },                                                  // Attach additional meta data about the file for the server
 
         onError: tusUpload_OnError,                         // Callback for errors which cannot be fixed using retries

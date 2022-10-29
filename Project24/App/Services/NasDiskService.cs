@@ -1,5 +1,5 @@
 ﻿/*  NasDiskService.cshtml
- *  Version: 1.0 (2022.10.27)
+ *  Version: 1.1 (2022.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -76,27 +76,46 @@ namespace Project24.App.Services
                     string src = nasCacheAbsPath + "/" + file.Path + "/" + file.Name;
                     string dst = nasRootAbsPath + "/" + file.Path + "/" + file.Name;
 
-                    if (File.Exists(src))
+                    if (!File.Exists(src))
                     {
-                        FileInfo fi = new FileInfo(src);
-                        length += fi.Length;
-                        ++processed;
+                        string logStr = "NasDiskService cycle " + m_ExecutionCount + ":\r\n";
+                        logStr += "File " + file.Path + "/" + file.Name + " doesn't exist anymore";
+                        m_Logger.LogWarning(logStr);
 
-                        File.Copy(src, dst, true);
-                        if (File.Exists(dst))
-                        {
-                            File.Delete(src);
-                        }
+                        dbContext.Remove(file);
+                        continue;
                     }
 
-                    dbContext.Remove(file);
+                    try
+                    {
+                        File.Copy(src, dst, true);
+
+                        if (File.Exists(dst))
+                        {
+                            FileInfo fi = new FileInfo(src);
+                            length += fi.Length;
+                            ++processed;
+
+                            dbContext.Remove(file);
+
+                            File.Delete(src);
+                        }
+
+                    }
+                    catch (Exception _e)
+                    {
+                        string logStr = "NasDiskService cycle " + m_ExecutionCount + ":\r\n";
+                        logStr += _e.ToString();
+
+                        m_Logger.LogError(logStr);
+                    }
                 }
 
                 TimeSpan elapsed = DateTime.Now - start;
 
                 dbContext.SaveChanges();
 
-                string log = "NasDiskService cycle " + m_ExecutionCount + "\n";
+                string log = "NasDiskService cycle " + m_ExecutionCount + "\r\n";
                 log += "    Moved " + processed + " files (" + Project24.Utils.FormatDataSize(length) + ")";
                 log += ", avg " + Project24.Utils.FormatDataSize((long)(length / elapsed.TotalSeconds)) + "/s";
 
@@ -112,7 +131,7 @@ namespace Project24.App.Services
         }
 
 
-        private int m_ExecutionCount = 0;
+        private long m_ExecutionCount = 0;
         private Timer m_Timer = null;
 
         private readonly IServiceProvider m_ServiceProvider;

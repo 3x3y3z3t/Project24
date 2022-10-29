@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.9 (2022.10.27)
+ *  Version: 1.10 (2022.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Project24.Data;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
@@ -22,13 +21,11 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Hosting;
 using tusdotnet;
 using System.IO;
-using tusdotnet.Stores;
 using Microsoft.Extensions.FileProviders;
 using Project24.App.Utils;
-using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Project24.App.Services;
-using Project24.Models.Nas;
+using Project24.App;
 
 namespace Project24
 {
@@ -49,18 +46,20 @@ namespace Project24
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection _services)
         {
+            _services.AddLogging(LoggerConfig.ConfigureLogger);
+
             //services.AddDbContext<ApplicationDbContext>(options =>
             //    options.UseSqlServer(
             //        Configuration.GetConnectionString("DefaultConnection")));
 
             string mySqlConnectionStr = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApplicationDbContext>(options =>
+            _services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(mySqlConnectionStr, opts => opts.ServerVersion(ServerVersion.AutoDetect(mySqlConnectionStr)))
             );
 
-            services.AddIdentity<P24IdentityUser, IdentityRole>((_options) =>
+            _services.AddIdentity<P24IdentityUser, IdentityRole>((_options) =>
             {
                 _options.SignIn.RequireConfirmedAccount = true;
                 _options.SignIn.RequireConfirmedEmail = false;
@@ -77,18 +76,18 @@ namespace Project24
                 .AddErrorDescriber<P24IdentityErrorDescriber>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            services.AddControllersWithViews();
-            services.AddRazorPages(_options =>
+            _services.AddControllersWithViews();
+            _services.AddRazorPages(_options =>
             {
                 _options.Conventions.AddPageRoute("/Home/Index", "/");
             });
 
-            services.Configure<KestrelServerOptions>(_options =>
+            _services.Configure<KestrelServerOptions>(_options =>
             {
                 _options.Limits.MaxRequestBodySize = 64L * 1024L * 1024L;
             });
 
-            services.AddHostedService<NasDiskService>();
+            _services.AddHostedService<NasDiskService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -101,19 +100,7 @@ namespace Project24
         {
             m_Logger = _logger;
 
-            {
-                string logStr = "Nas Stats:\r\n\r\n";
-
-                logStr += "App Drive:\r\n";
-                logStr += App.DriveUtils.AppDriveUtils.GetFormattedDetailInfo();
-                logStr += "\r\n";
-
-                logStr += "Nas Drive:\r\n";
-                logStr += App.DriveUtils.NasDriveUtils.GetFormattedDetailInfo();
-                logStr += "\r\n";
-
-                _logger.LogInformation(logStr);
-            }
+            _logger.LogInformation("Nas Stats:\r\n" + DriveUtils.GetNasDetails());
 
             Utils.UpdateCurrentVersion(_env).Wait();
             _logger.LogInformation("App version: " + Utils.CurrentVersion);
@@ -158,7 +145,7 @@ namespace Project24
              *  and notify tusdotnet that the client has disconnected.
              */
             // tus upload;
-            _app.UseTus(ConfigTusDotNet);
+            _app.UseTus(TusDotNetConfig.ConfigureTusDotNet);
 
             _app.UseAuthorization();
 
@@ -176,137 +163,6 @@ namespace Project24
 
             _logger.LogInformation(">> Configuring done. App ready. <<\n");
         }
-
-        #region TusDotNet Event Handlers
-        private tusdotnet.Models.DefaultTusConfiguration ConfigTusDotNet(Microsoft.AspNetCore.Http.HttpContext _httpContext)
-        {
-            string nasCacheAbsPath = Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.TmpRoot);
-
-            return new tusdotnet.Models.DefaultTusConfiguration()
-            {
-                // This method is called on each request so different configurations can be returned per user, domain, path etc.
-                // Return null to disable tusdotnet for the current request.
-
-                // c:\tusfiles is where to store files
-                Store = new TusDiskStore(nasCacheAbsPath, true),
-                // On what url should we listen for uploads?
-                UrlPath = "/Nas/Upload0",
-                Events = new tusdotnet.Models.Configuration.Events
-                {
-                    OnBeforeCreateAsync = (_eventContext) =>
-                    {
-                        if (!_eventContext.Metadata.ContainsKey("fileName"))
-                        {
-                            _eventContext.FailRequest("name metadata must be specified. ");
-                        }
-
-                        if (!_eventContext.Metadata.ContainsKey("contentType"))
-                        {
-                            _eventContext.FailRequest("contentType metadata must be specified. ");
-                        }
-
-                        string filePath = "";
-                        if (_eventContext.Metadata.ContainsKey("filePath"))
-                        {
-                            filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
-                        }
-
-                        try
-                        {
-                            string uploadLocationAbsPath = Path.GetFullPath(filePath.Remove(0, 5), nasCacheAbsPath);
-                            if (!uploadLocationAbsPath.Contains("nasTmp"))
-                            {
-                                _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
-                            }
-                        }
-                        catch (Exception _e)
-                        {
-                            _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
-                        }
-
-                        return Task.CompletedTask;
-                    },
-
-                    OnCreateCompleteAsync = (_eventContext) =>
-                    {
-
-                        //string filePath = "";
-                        //if (_eventContext.Metadata.ContainsKey("filePath"))
-                        //{
-                        //    filePath = _eventContext.Metadata["filePath"].GetString(Encoding.UTF8);
-                        //}
-
-                        //string uploadLocationAbsPath = Path.GetFullPath(filePath, nasRootAbsPath);
-                        //TusDotNetUtils.AddOrReplace(_eventContext.FileId, new TusDotNetUtils.FileMetadata()
-                        //{
-                        //    Path = uploadLocationAbsPath,
-                        //    Filename = _eventContext.Metadata["fileName"].GetString(Encoding.UTF8)
-                        //});
-
-                        return Task.CompletedTask;
-                    },
-
-                    OnFileCompleteAsync = async (_eventContext) =>
-                    {
-                        tusdotnet.Interfaces.ITusFile file = await _eventContext.GetFileAsync();
-                        Dictionary<string, tusdotnet.Models.Metadata> metadata = await file.GetMetadataAsync(_eventContext.CancellationToken);
-                        Stream content = await file.GetContentAsync(_eventContext.CancellationToken);
-                        long contentLength = content.Length;
-
-                        // write file to disk;
-                        string filePath = "";
-                        if (metadata.ContainsKey("filePath"))
-                        {
-                            filePath = metadata["filePath"].GetString(Encoding.UTF8).Remove(0, 5);
-                        }
-
-                        string uploadLocationAbsPath = Path.GetFullPath(filePath, nasCacheAbsPath);
-                        string fileName = metadata["fileName"].GetString(Encoding.UTF8);
-                        Directory.CreateDirectory(uploadLocationAbsPath);
-
-                        FileStream fileStream = File.Create(uploadLocationAbsPath + "/" + fileName, 4 * 1024 * 1024, FileOptions.Asynchronous);
-                        await content.CopyToAsync(fileStream, 4 * 1024 * 1024);
-
-                        await fileStream.DisposeAsync();
-
-                        await content.DisposeAsync();
-
-                        var terminationStore = (tusdotnet.Interfaces.ITusTerminationStore)_eventContext.Store;
-                        await terminationStore.DeleteFileAsync(_eventContext.FileId, _eventContext.CancellationToken);
-
-                        ApplicationDbContext dbContext = _eventContext.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
-                        
-                        NasCachedFile cachedFile = new NasCachedFile()
-                        {
-                            Name = fileName,
-                            Path = filePath,
-                            AddedDate = DateTime.Now
-                        };
-                        await dbContext.NasCachedFiles.AddAsync(cachedFile);
-
-                        var username = _eventContext.HttpContext.User.Identity.Name;
-                        await dbContext.RecordChanges(
-                            _eventContext.HttpContext.User.Identity.Name,
-                            Models.ActionRecord.Operation_.UploadNasFile,
-                            Models.ActionRecord.OperationStatus_.Success,
-                            new Dictionary<string, string>()
-                            {
-                                { "path", filePath },
-                                { "file", fileName },
-                                { "size", contentLength.ToString() }
-                            }
-                        );
-
-                        // TODO: refresh page;
-                        //await DoSomeProcessing(content, metadata);
-                    }
-                },
-
-                MaxAllowedUploadSizeInBytesLong = 10L * 1024L * 1024L * 1024L, /* allow 10GiB */
-                Expiration = new tusdotnet.Models.Expiration.SlidingExpiration(new TimeSpan(3, 0, 0, 0)),
-            };
-        }
-        #endregion
 
         private async Task MigrateDatabase(IServiceProvider _serviceProvider, ApplicationDbContext _dbContext, ILogger<Startup> _logger)
         {

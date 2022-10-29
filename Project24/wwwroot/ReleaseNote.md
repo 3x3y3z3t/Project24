@@ -1,5 +1,9 @@
 ﻿
-#### v0.8.4-alpha (2022.10.27)
+#### v0.8.5 (2022.10.29)
+- Added logging to file.
+- Fixed some crash when moving uploaded file from cache to disk.
+
+#### v0.8.4 (2022.10.27)
 - Added statistic in NAS Upload (Elapsed time, Avg speed).
 - Update server file upload location to (hopefully) improve upload speed (previously 907KB/s, now 1.11MB/s, increased by 22%).
 
