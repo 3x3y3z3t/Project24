@@ -14,7 +14,7 @@ using Project24.Identity;
 
 namespace Project24.Pages.Nas
 {
-    [Authorize(Roles = P24Roles.NasUser + "," + P24Roles.NasTester)]
+    [Authorize(Roles = P24RoleName.NasUser + "," + P24RoleName.NasTester)]
     public class UploadModel : PageModel
     {
         public UploadModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager)

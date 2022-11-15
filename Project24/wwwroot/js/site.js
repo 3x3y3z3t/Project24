@@ -1,5 +1,5 @@
 ﻿/*  site.js
- *  Version: 1.1 (2022.10.27)
+ *  Version: 1.2 (2022.11.06)
  *
  *  Contributor
  *      Arime-chan
@@ -49,4 +49,14 @@ function formatTimeSpan_Hour(_millis) {
     return hours.toLocaleString("en-US", { minimumIntegerDigits: 2 }) + ":"
         + minutes.toLocaleString("en-US", { minimumIntegerDigits: 2 }) + ":"
         + seconds.toLocaleString("en-US", { minimumIntegerDigits: 2 });
+}
+
+function formatDateString(_date) {
+    let year = _date.getFullYear();
+    let month = String(_date.getMonth() + 1).padStart(2, "0");
+    let date = String(_date.getDate()).padStart(2, "0");
+    let hour = String(_date.getHours()).padStart(2, "0");
+    let minute = String(_date.getMinutes()).padStart(2, "0");
+
+    return year + "/" + month + "/" + date + " " + hour + ":" + minute;
 }

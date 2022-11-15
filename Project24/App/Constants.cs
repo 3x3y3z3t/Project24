@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.3 (2022.10.29)
+ *  Version: 1.4 (2022.11.13)
  *
  *  Contributor
  *      Arime-chan
@@ -34,6 +34,10 @@ namespace Project24
 
         public const string DataRoot = "/../../../../wwwNas/appData/p24/data";
         public const string NasRoot = "/../../../../wwwNas/nasData";
+
+        public const long MaxLogFileSize = 16L * 1024L * 1024L;
+
+        public const int ThisYear = 2022;
     }
 
     public static class ErrorMessage
@@ -46,7 +50,19 @@ namespace Project24
         public const string ImageNotFound = "Image not found";
 
         public const string CurrentUserIsNull = "currentUser is null";
+    }
 
+    /// <summary> This class define error message constants for Clinic Manager module, or Project24 (P24) side.</summary>
+    public static class P24ErrorMessage
+    {
+        public const string DoBMustBeInRange = "Năm sinh phải nằm trong phạm vi {1} - {2}.";
+
+    }
+
+    public static class ServerAnnouncementMessage
+    {
+        public const string Maintenance = "Server will be down in {0} minutes for maintenance.";
+        public const string Maintenance_Vi = "Hệ thống sẽ tạm ngưng để bảo trì sau {0} phút nữa.";
     }
 
     public static class CustomInfoKey
@@ -59,6 +75,9 @@ namespace Project24
         public const string Filename = "fileName";
         public const string Size = "size";
 
+        public const string SuccessCount = "successCount";
+        public const string ErrorCount = "errorCount";
+
         public const string CustomerCode = "customerCode";
         public const string ImageId = "imgId";
 
@@ -69,15 +88,23 @@ namespace Project24
         public const string FolderName = "name";
 
         public const string MoveMode = "move";
+
+        public const string Language = "lang";
+
+        public const string Lang_Vi_VN = "vi-VN";
+        public const string Lang_En_US = "en-US";
     }
 
     public static class P24RoleName
     {
         public const string Power = "Arime";
         public const string Admin = "Admin";
+
         public const string Manager = "Manager";
+
         public const string NasUser = "NasUser";
         public const string NasTester = "NasTester";
+        public const string NasUploader = "NasUploader";
 
         public static string[] GetAllRoleNames()
         {
@@ -85,8 +112,21 @@ namespace Project24
             {
                 Power, Admin,
                 Manager,
-                NasUser, NasTester
+                NasUser, NasTester, NasUploader
             };
+        }
+
+        public static string GetLocalized_Vi_VN(string _role)
+        {
+            switch (_role)
+            {
+                case Manager:
+                    return "Quản lý";
+                case NasUser:
+                    return "Người dùng NAS";
+            }
+
+            return _role;
         }
     }
 

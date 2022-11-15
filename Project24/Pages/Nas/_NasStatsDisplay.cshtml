@@ -6,7 +6,6 @@
 *@
 
 @using Project24.App
-@using Project24.App.Utils
 @model object[]
 @{
 
@@ -27,8 +26,8 @@
             else
                 colorClassname = "bg-danger";
 
-            string strFreeSpace = Utils.FormatDataSize(driveUtils.FreeSpace);
-            string strTotalSpace = Utils.FormatDataSize(driveUtils.TotalSize);
+            string strFreeSpace = AppUtils.FormatDataSize(driveUtils.FreeSpace);
+            string strTotalSpace = AppUtils.FormatDataSize(driveUtils.TotalSize);
             string strUsedPercent = string.Format("{0:0.00}%", percent);
         }
 

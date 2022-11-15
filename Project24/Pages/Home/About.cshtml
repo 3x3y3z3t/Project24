@@ -1,12 +1,11 @@
 ﻿@*  About.cshtml
-    *  Version: 1.3 (2022.10.22)
+    *  Version: 1.4 (2022.11.13)
     *
     *  Contributor
     *      Arime-chan
  *@
 
 @page "{handler?}"
-@using Project24
 @model Project24.Pages.AboutModel
 @{
     ViewData["Title"] = "About";
@@ -23,9 +22,10 @@
     </p>
     <p>
         The project started out on 31 August 2022 as "<i>Project24</i>", after I had enough with how my father manage his
-        clinic. In 4 weeks after that, many planned features had been scrapped (due to my lack of skill in this field)
-        but a big feature was added (despite my lack of skill). On 3rd October I decided to change the project to be
-        <i>my</i> NAS manager and demote my father's clinic manager to be a "feature", renaming the project to be "<i>Project24b</i>".
+        clinic. During the first 4 weeks after that, I have to scrapped many planned features due to my lack of skill in
+        this field, but I managed to added another big feature on the other hand. On 3rd October I decided to change the
+        project to be <i>my</i> NAS manager and demote my father's clinic manager to be a "feature", renaming the project
+        to be "<i>Project24b</i>".
     </p>
     <p>
         If you landed on this About page, you must have been <i>my father</i>, <i>my mother</i>, <i>my brother</i>,
@@ -35,7 +35,7 @@
     <br />
     <p>
         If you encounter any bug, please send a <i>Bug Report</i> ticket using the planned link below, or open an
-        <a href="https://github.com/3x3y3z3t/Project24/issues" target="_blank">issue</a>.
+        <a href="https://github.com/3x3y3z3t/Project24/issues" target="_blank">issue on Github</a>.
         <br />
         If you just want to send feedback, or request something, please send a <i>Feedback/Request</i> ticket using the
         planned link below (feature request and resource request all accepted).
@@ -45,7 +45,7 @@
         <b><a href="https://github.com/3x3y3z3t/Project24" target="_blank">here</a></b>.
     </p>
     <p>
-        Current version: <b>@Utils.CurrentVersion</b> (<a href="#release-note" id="rel-note-anchor">Release Note</a>)
+        Current version: <b>@Project24.App.AppUtils.CurrentVersion</b> (<a href="About/ReleaseNote">Release Note</a>)
     </p>
 
 </div>
@@ -53,7 +53,7 @@
 
 <partial name="_About_AboutUs" />
 
-<div id="release-note">
+<div id="release-note" hidden>
     <h2>
         <a href="#" id="rel-note-toggle" data-toggle="collapse" data-target="#rel-note-wrapper" style="color: inherit;">
             Release Note
@@ -68,30 +68,3 @@
     </div>
 
 </div>
-
-@section Scripts {
-<script>
-    $(document).ready(function() {
-        $("#rel-note-anchor").on("click", sendAjaxRequestForReleaseNote);
-        $("#rel-note-update").on("click", sendAjaxRequestForReleaseNote);
-    });
-
-    function sendAjaxRequestForReleaseNote() {
-        $.ajax({
-            type: 'GET',
-            url: 'About/ReleaseNote',
-            contentType: false,
-            processData: false,
-            cache: false,
-            success: replaceReleaseNoteContentWithData,
-            error: function() {
-                window.alert("Error!");
-            }
-        });
-    }
-
-    function replaceReleaseNoteContentWithData(_content) {
-        $("#rel-note-content").html(_content);
-    }
-</script>
-}

@@ -1,5 +1,5 @@
 ﻿/*  DriveUtils.cs
- *  Version: 1.6 (2022.10.29)
+ *  Version: 1.7 (2022.11.08)
  *
  *  Contributor
  *      Arime-chan
@@ -24,11 +24,13 @@ namespace Project24.App
             s_IsReady = true;
         }
 
-        public static string AppNextRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.AppNextRoot);
-        public static string TmpRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.TmpRoot);
-        public static string DataRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.DataRoot);
-        public static string DeletedDataRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.DataRoot + "/../deletedData");
-        public static string NasRootPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.NasRoot);
+        public static string AppRootPath = Path.GetFullPath(AppUtils.AppRoot);
+
+        public static string AppNextRootPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.AppNextRoot);
+        public static string TmpRootPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.TmpRoot);
+        public static string DataRootPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.DataRoot);
+        public static string DeletedDataRootPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.DataRoot + "/../deletedData");
+        public static string NasRootPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.NasRoot);
 
         public static void FixDirectoryStructure()
         {
@@ -53,7 +55,7 @@ namespace Project24.App
             if (!s_IsReady)
                 Init();
 
-            string fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.NasRoot + "/..");
+            string fullPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.NasRoot + "/..");
 
             string fileContent = GetNasDetails() + "\r\n";
 
@@ -110,11 +112,11 @@ namespace Project24.App
             //detailed += "Total:     999.99 GB      99.99%    2147147147147147\r\n\r\n";
 
             detailed += string.Format("Total:{0,14}        {1,24}\r\n",
-                Project24.Utils.FormatDataSize(TotalSize), TotalSize);
+                AppUtils.FormatDataSize(TotalSize), TotalSize);
             detailed += string.Format("  Used:{0,13}{1,11:#0.00}%{2,20}\r\n",
-                Project24.Utils.FormatDataSize(UsedSpace), UsedRatio * 100.0f, UsedSpace);
+                AppUtils.FormatDataSize(UsedSpace), UsedRatio * 100.0f, UsedSpace);
             detailed += string.Format("  Free:{0,13}{1,11:#0.00}%{2,20}\r\n",
-                Project24.Utils.FormatDataSize(FreeSpace), FreeRatio * 100.0f, FreeSpace);
+                AppUtils.FormatDataSize(FreeSpace), FreeRatio * 100.0f, FreeSpace);
 
             return detailed;
         }
@@ -122,13 +124,13 @@ namespace Project24.App
 
         private DriveUtils(string _path)
         {
-            string fullPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + _path);
+            string fullPath = Path.GetFullPath(AppUtils.AppRoot + "/" + _path);
 
             m_DriveInfo = new DriveInfo(fullPath);
         }
 
         private static bool s_IsReady = false;
-        private DriveInfo m_DriveInfo = null;
+        private readonly DriveInfo m_DriveInfo = null;
     }
 
 }

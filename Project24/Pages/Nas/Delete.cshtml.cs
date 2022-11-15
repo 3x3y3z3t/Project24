@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Project24.App;
-using Project24.App.Utils;
 using Project24.Data;
 using Project24.Identity;
 using Project24.Models;
@@ -83,7 +82,7 @@ namespace Project24.Pages.Nas
             IndexModel.DataModel data = new IndexModel.DataModel();
             data.IsUploadMode = true;
 
-            List<NasUtils.FileModel> files = NasUtils.GetFilesInDirectory(parentDir);
+            List<NasUtils.FileModel> files = NasUtils.GetDirectoryContent(parentDir);
             if (files == null)
             {
                 return Partial("_NasBrowser", data);

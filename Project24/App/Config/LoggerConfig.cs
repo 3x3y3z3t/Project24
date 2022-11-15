@@ -1,5 +1,5 @@
 ﻿/*  LoggerConfig.cs
- *  Version: 1.0 (2022.10.29)
+ *  Version: 1.1 (2022.11.15)
  *
  *  Contributor
  *      Arime-chan
@@ -9,19 +9,19 @@ using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
 using System;
 
-namespace Project24.App.Utils
+namespace Project24.App
 {
     public static class LoggerConfig
     {
         public static void ConfigureLogger(ILoggingBuilder _builder)
         {
-            _builder.AddFile("../logs/" + Project24.Utils.CurrentSessionName + "-log.log", ConfigureFileLoggerOptions);
+            _builder.AddFile("../logs/" + AppUtils.CurrentSessionName + "-log.log", ConfigureFileLoggerOptions);
         }
 
         private static void ConfigureFileLoggerOptions(FileLoggerOptions _options)
         {
             _options.Append = false;
-            _options.FileSizeLimitBytes = 100L * 1024L * 1024L;
+            _options.FileSizeLimitBytes = AppConfig.MaxLogFileSize;
             _options.MinLevel = LogLevel.Trace;
             _options.FormatLogEntry = FormatLogEntry;
             _options.HandleFileError = HandleFileError;
@@ -39,7 +39,7 @@ namespace Project24.App.Utils
 
             if (_msg.Exception != null)
             {
-                res += "    > Exception < " + _msg.Exception.ToString();
+                res += "\r\n    > Exception < " + _msg.Exception.ToString() + "\r\n";
             }
 
             return res;

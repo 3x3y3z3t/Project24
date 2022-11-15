@@ -17,7 +17,7 @@ using Project24.Data;
 
 namespace Project24.Pages.ClinicManager
 {
-    [Authorize(Roles = P24Roles.Manager)]
+    [Authorize(Roles = P24RoleName.Manager)]
     public class IndexModel : PageModel
     {
         public class DataModel
@@ -86,14 +86,9 @@ namespace Project24.Pages.ClinicManager
             return Page();
         }
 
-        public async Task<IActionResult> OnGetSearchAsync(string _name, string _phone, string _address)
+        public async Task<IActionResult> OnGetSearchAsync(string _name, string _phone, string _address, string _date)
         {
             IsSearchMode = true;
-
-            if (string.IsNullOrEmpty(_name) && string.IsNullOrEmpty(_phone) && string.IsNullOrEmpty(_address))
-            {
-                return OnGet();
-            }
 
             if (_name == null)
                 _name = "";
@@ -101,6 +96,24 @@ namespace Project24.Pages.ClinicManager
                 _phone = "";
             if (_address == null)
                 _address = "";
+            if (_date == null)
+                _date = "";
+
+            if (_name == "" && _phone == "" && _address == "" && _date == "")
+                return OnGet();
+
+            // NOTE: Search by Date didn't make it into this version;
+            //IEnumerable<DataModel.CustomerViewModel> perfectHit;
+            if (_date != "")
+            {
+                //perfectHit = from _customers in m_DbContext.CustomerProfiles
+                //             where _customers.AddedDate
+            }
+            else
+            {
+
+            }
+
 
             var perfectHit = m_DbContext.CustomerProfiles
                             .ToList()
@@ -120,6 +133,7 @@ namespace Project24.Pages.ClinicManager
                                               select _images.Id).Count()
                             });
 
+            /*
             var nearHit = m_DbContext.CustomerProfiles
                             .ToList()
                             .Where(_customer => _customer.DeletedDate == DateTime.MinValue &&
@@ -137,6 +151,7 @@ namespace Project24.Pages.ClinicManager
                                               where _images.OwnedCustomerId == _customer.Id && _images.DeletedDate == DateTime.MinValue
                                               select _images.Id).Count()
                             });
+            */
 
             List<DataModel.CustomerViewModel> customerViews = perfectHit.ToList();
             //customerViews.AddRange(nearHit);

@@ -16,13 +16,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Project24.App;
 using Project24.Data;
 using Project24.Identity;
 using Project24.Models;
 
 namespace Project24.Pages.ClinicManager
 {
-    [Authorize(Roles = P24Roles.Manager)]
+    [Authorize(Roles = P24RoleName.Manager)]
     public class DeleteImageModel : PageModel
     {
         public class DataModel
@@ -118,7 +119,7 @@ namespace Project24.Pages.ClinicManager
                 return Content(ErrorMessage.ImageNotFound, MediaTypeNames.Text.Plain);
             }
 
-            string dataRoot = Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.DataRoot);
+            string dataRoot = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.DataRoot);
 
             string currentFilepath = dataRoot + image.Filepath;
             string deletedCacheFilepath = currentFilepath.Replace("data", "deletedData");

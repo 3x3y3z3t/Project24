@@ -1,0 +1,28 @@
+﻿@*  _ServerAnnouncement.cshtml
+    *  Version: 1.0 (2022.11.14)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@inject Project24.App.Services.UpdaterService _updaterService
+@if (_updaterService.IsUpdateInProgress)
+{
+    <div id="server-announcement" class="alert alert-warning alert-dismissible border mx-auto" style="width: 90%" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <div class="text-danger font-weight-bold" style="font-size:larger">
+            @if (ViewData.ContainsKey(CustomInfoKey.Language))
+            {
+                if ((string)ViewData[CustomInfoKey.Language] == CustomInfoKey.Lang_Vi_VN)
+                {
+                    @string.Format(ServerAnnouncementMessage.Maintenance_Vi, (int)(_updaterService.RemainingTime.TotalMinutes + 1))
+                }
+            }
+            else
+            {
+                @string.Format(ServerAnnouncementMessage.Maintenance, (int)(_updaterService.RemainingTime.TotalMinutes + 1))
+            }
+        </div>
+    </div>
+}
+

@@ -6,15 +6,15 @@
 *@
 
 @page "{_code?}/{_mode?}"
-@using Project24
+@using Project24.App
 @model Project24.Pages.ClinicManager.DetailsModel
 
 @{
     ViewData["Title"] = "Chi tiết thông tin bệnh nhân";
     Layout = "_Layout";
 
-    string dirRoot = System.IO.Directory.GetDirectoryRoot(Utils.AppRoot);
-    string dataRoot = System.IO.Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.DataRoot);
+    string dirRoot = System.IO.Directory.GetDirectoryRoot(AppUtils.AppRoot);
+    string dataRoot = System.IO.Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.DataRoot);
 }
 
 <h1>@ViewData["Title"]</h1>

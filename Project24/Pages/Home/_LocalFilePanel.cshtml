@@ -1,0 +1,107 @@
+﻿@*  _LocalFilePanel.cshtml
+    *  Version: 1.0 (2022.11.14)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@using Project24.App
+@using System.Reflection
+@using System.Xml.Serialization
+@using System.IO
+@using static Project24.Pages.Home.UpdaterModel
+
+@inject Project24.App.Services.UpdaterService _updaterService
+
+@model Project24.Pages.Home.UpdaterModel
+@{
+    Version currentVersion = Assembly.GetEntryAssembly().GetName().Version;
+    VersionInfo nextVersion = new VersionInfo();
+
+    int versionComparison = 0;
+    string fullname = System.IO.Path.GetFullPath(DriveUtils.AppNextRootPath + "/version.xml");
+
+    if (System.IO.File.Exists(fullname))
+    {
+        FileStream stream = System.IO.File.OpenRead(fullname);
+
+        XmlSerializer serializer = new XmlSerializer(typeof(VersionInfo));
+        try
+        {
+            nextVersion = (VersionInfo)serializer.Deserialize(stream);
+        }
+        catch (Exception) { }
+
+        stream.Close();
+
+        versionComparison = nextVersion.CompareTo(currentVersion);
+    }
+}
+
+<div class="d-flex">
+    <div class="col-6">
+        <h5>Current version</h5>
+        <div class="ml-3">Release: <span class="text-primary font-weight-bold">@AppUtils.CurrentVersion</span></div>
+        <div class="ml-3">Build: <span class="text-primary font-weight-bold">@currentVersion.ToString()</span></div>
+    </div>
+
+    <div class="col-6 border-left border-success">
+        @if (versionComparison > 0)
+        {
+            <h5>Newer build detected: <span class="text-success">@nextVersion.ToString()</span></h5>
+            @if (_updaterService.IsUpdateInProgress)
+            {
+                <button type="button" class="btn btn-warning" onclick="abortVerUpButton_OnClick()">Abort</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-primary" onclick="verUpButton_OnClick()">Update</button>
+            }
+        }
+        else if (versionComparison < 0)
+        {
+            <h5>Older build detected: <span class="text-danger">@nextVersion.ToString()</span></h5>
+            <p class="text-danger">Version Down currently not supported</p>
+        }
+
+        <button type="button" class="btn btn-danger" onclick="purgeButton_OnClick()">Purge Next version files</button>
+    </div>
+</div>
+
+<hr class="mx-0" />
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    string alertClassName = "alert-success";
+    if (Model.StatusMessage.StartsWith("Warning: "))
+        alertClassName = "alert-warning";
+
+    <div id="io-operation-status" class="alert @alertClassName alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        @Model.StatusMessage
+    </div>
+}
+
+<h5>Local Files (<span id="local-file-count">@Model.LocalFiles.Count</span>)</h5>
+<div id="local-file-list" class="overflow-auto mh-100 ml-3">
+
+    @for (int i = 0; i < Model.LocalFiles.Count; ++i)
+    {
+        NasUtils.FileModel file = Model.LocalFiles[i];
+
+        string path = file.RelativePath.Replace('\\', '/');
+        if (path != "")
+            path += "/";
+
+        string hashCode = AppUtils.ComputeCyrb53HashCode(path + file.Name);
+        string date = AppUtils.FormatDateTimetring_EndsWithMinute(file.LastModified);
+
+        <div id="local-file-@i" class="d-flex align-itens-center mr-2">
+            <div hidden>@hashCode:@date</div>
+            <div class="text-break"><span class="font-font-weight-light">@path</span>@file.Name</div>
+            <div class="text-break text-right ml-auto" style="font-size: small;">@date</div>
+            <div class="text-right text-nowrap ml-2 pl-1" style="width: 9%">@AppUtils.FormatDataSize(file.Size)</div>
+        </div>
+    }
+
+</div>

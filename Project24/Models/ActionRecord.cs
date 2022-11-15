@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.5 (2022.10.26)
+ *  Version: 1.6 (2022.11.06)
  *
  *  Contributor
  *      Arime-chan
@@ -45,6 +45,11 @@ namespace Project24.Models
 
 
             public const string UploadNasFile = "UploadNasFile";
+
+
+            public const string Updater_UploadNextFiles = "Upload Next version files";
+            public const string Updater_PurgeNextFiles = "Purge Next version files";
+            public const string Updater_VersionUp = "Version Up";
 
         }
 

@@ -21,7 +21,7 @@ using Project24.Models;
 
 namespace Project24.Pages.ClinicManager
 {
-    [Authorize(Roles = P24Roles.Manager)]
+    [Authorize(Roles = P24RoleName.Manager)]
     public class DeleteModel : PageModel
     {
         public CustomerProfile CustomerProfile { get; set; }

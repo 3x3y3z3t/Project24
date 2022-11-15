@@ -1,5 +1,12 @@
 ﻿
-#### v0.8.6-beta (2022.10.29)
+#### v0.9.0 (2022.11.06)
+- Added self-contained update feature.
+- Updated Index page.
+- Fixed issue with Search function in Clinic Manager index page.
+
+---
+
+#### v0.8.6 (2022.10.29)
 - Added Search feature in Clinic Manager index page.
 
 #### v0.8.5 (2022.10.29)

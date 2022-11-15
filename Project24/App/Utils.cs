@@ -1,80 +1,14 @@
 ﻿/*  Utils.cs
- *  Version: 1.14 (2022.10.29)
+ *  Version: 1.15 (2022.11.13)
  *
  *  Contributor
  *      Arime-chan
  */
 
-using Microsoft.AspNetCore.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Project24
 {
-    public static class P24Roles
-    {
-        public const string Power = "Arime";
-        public const string Admin = "Admin";
-        public const string Manager = "Manager";
-        public const string Employee = "Employee";
-        public const string User = "User";
-        public const string NasUser = "NasUser";
-        public const string NasTester = "NasTester";
-
-        public const string Vie_Power = "Arime";
-        public const string Vie_Admin = "Admin";
-        public const string Vie_Manager = "Quản lý";
-        public const string Vie_Employee = "Nhân viên";
-        public const string Vie_User = "Người dùng";
-        public const string Vie_NasUser = "Người dùng NAS";
-        public const string Vie_NasTester = "Người test NAS";
-
-        public static string Vie_GetLocalized(string _role)
-        {
-            if (m_Vie_Localized.ContainsKey(_role))
-                return m_Vie_Localized[_role];
-
-            return "";
-        }
-
-        public static ReadOnlyDictionary<string, string> Vie_GetAllLocalized()
-        {
-            return new ReadOnlyDictionary<string, string>(m_Vie_Localized);
-        }
-
-        public static List<string> GetAllRoles()
-        {
-            return new List<string>()
-            {
-                Power, Admin, Manager, Employee, User, NasTester
-            };
-        }
-
-        private static readonly Dictionary<string, int> m_RoleLevel = new Dictionary<string, int>()
-        {
-            { Power, 0 },
-            { Admin, 1 },
-            { Manager, 2 },
-            { Employee, 3 },
-            { User, 999 },
-            { NasTester, 4 },
-        };
-
-        private static readonly Dictionary<string, string> m_Vie_Localized = new Dictionary<string, string>()
-        {
-            { Power, Vie_Power },
-            { Admin, Vie_Admin },
-            { Manager, Vie_Manager },
-            { Employee, Vie_Employee },
-            { User, Vie_User },
-            { NasTester, Vie_NasTester },
-        };
-    }
-
     public enum P24Module
     {
         Home = 0,
@@ -161,60 +95,6 @@ namespace Project24
     public static class Utils
     {
 
-        public static string AppRoot { get; private set; } = System.IO.Directory.GetCurrentDirectory();
-        public static string CurrentSessionName { get; private set; } = string.Format("{0:yyyy}-{0:MM}-{0:dd}_{0:HH}-{0:mm}-{0:ss}", DateTime.Now);
-
-
-        public static string CurrentVersion { get; set; }
-
-        public static string FormatDataSize(long _size)
-        {
-            const long oneKiB = 1024L;
-            const long oneMiB = 1024L * oneKiB;
-            const long oneGiB = 1024L * oneMiB;
-            const long oneTiB = 1024L * oneGiB;
-
-            if (_size >= oneTiB)
-            {
-                return string.Format("{0:##0.00} TB", (float)_size / oneTiB);
-            }
-
-            if (_size >= oneGiB)
-            {
-                return string.Format("{0:##0.00} GB", (float)_size / oneGiB);
-            }
-
-            if (_size >= oneMiB)
-            {
-                return string.Format("{0:##0.00} MB", (float)_size / oneMiB);
-            }
-
-            if (_size >= oneKiB)
-            {
-                return string.Format("{0:##0.00} KB", (float)_size / oneKiB);
-            }
-
-            return string.Format("{0:##0.00}   B", (float)_size);
-        }
-
-        public static async Task UpdateCurrentVersion(IWebHostEnvironment _webHostEnv)
-        {
-            string webRootPath = _webHostEnv.WebRootPath;
-
-            string markdown = await System.IO.File.ReadAllTextAsync(webRootPath + "/ReleaseNote.md", Encoding.UTF8);
-
-            Regex regex = new Regex(@"#+ v[0-9]+\.[0-9]+\.[0-9]+-*([a-z0-9])*");
-
-            var match = regex.Match(markdown);
-            if (match.Success)
-            {
-                Utils.CurrentVersion = match.Value[5..]; // equivalent to .Substring(4);
-            }
-            else
-            {
-                Utils.CurrentVersion = "Unknown";
-            }
-        }
 
 
         /* Summary:
@@ -258,7 +138,7 @@ namespace Project24
                 middlename += tokens[i].Trim();
             }
 
-            return new Tuple<string, string, string>(tokens[0].Trim(), middlename, tokens[tokens.Length - 1].Trim());
+            return new Tuple<string, string, string>(tokens[0].Trim(), middlename, tokens[^1].Trim());
         }
     }
 

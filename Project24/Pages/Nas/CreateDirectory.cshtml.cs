@@ -1,5 +1,5 @@
 /*  CreateDirectory.cshtml.cs
- *  Version: 1.0 (2022.10.26)
+ *  Version: 1.1 (2022.11.12)
  *
  *  Contributor
  *      Arime-chan
@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Project24.App;
-using Project24.App.Utils;
 using Project24.Data;
 using Project24.Identity;
 using Project24.Models;
@@ -69,10 +68,12 @@ namespace Project24.Pages.Nas
             string absPath = Path.GetFullPath(DriveUtils.NasRootPath + "/" + _data.ParentDir);
             Directory.CreateDirectory(absPath + "/" + _data.FolderName);
 
-            IndexModel.DataModel data = new IndexModel.DataModel();
-            data.IsUploadMode = true;
+            IndexModel.DataModel data = new IndexModel.DataModel()
+            {
+                IsUploadMode = true
+            };
 
-            List<NasUtils.FileModel> files = NasUtils.GetFilesInDirectory(_data.ParentDir);
+            List<NasUtils.FileModel> files = NasUtils.GetDirectoryContent(_data.ParentDir);
             if (files == null)
             {
                 return Partial("_NasBrowser", data);

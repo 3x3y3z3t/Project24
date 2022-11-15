@@ -56,8 +56,8 @@ namespace Project24.App.Services
         {
             var count = Interlocked.Increment(ref m_ExecutionCount);
 
-            string nasRootAbsPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.NasRoot);
-            string nasCacheAbsPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.TmpRoot);
+            string nasRootAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.NasRoot);
+            string nasCacheAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.TmpRoot);
 
             using (var scope = m_ServiceProvider.CreateScope())
             {
@@ -116,8 +116,8 @@ namespace Project24.App.Services
                 dbContext.SaveChanges();
 
                 string log = "NasDiskService cycle " + m_ExecutionCount + "\r\n";
-                log += "    Moved " + processed + " files (" + Project24.Utils.FormatDataSize(length) + ")";
-                log += ", avg " + Project24.Utils.FormatDataSize((long)(length / elapsed.TotalSeconds)) + "/s";
+                log += "    Moved " + processed + " files (" + AppUtils.FormatDataSize(length) + ")";
+                log += ", avg " + AppUtils.FormatDataSize((long)(length / elapsed.TotalSeconds)) + "/s";
 
                 m_Logger.LogInformation(log);
             }

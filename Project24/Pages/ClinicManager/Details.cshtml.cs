@@ -18,13 +18,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Project24.App;
 using Project24.Data;
 using Project24.Identity;
 using Project24.Models;
 
 namespace Project24.Pages.ClinicManager
 {
-    [Authorize(Roles = P24Roles.Manager)]
+    [Authorize(Roles = P24RoleName.Manager)]
     [RequestFormLimits(MultipartBodyLengthLimit = 32L * 1024L * 1024L)]
     public class DetailsModel : PageModel
     {
@@ -225,7 +226,7 @@ namespace Project24.Pages.ClinicManager
                         continue;
                     }
 
-                    string fullPath = Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.DataRoot + "/" + Data.CustomerCode);
+                    string fullPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.DataRoot + "/" + Data.CustomerCode);
                     Directory.CreateDirectory(fullPath);
                     using (FileStream stream = new FileStream(fullPath + "/" + file.FileName, FileMode.Create))
                     {

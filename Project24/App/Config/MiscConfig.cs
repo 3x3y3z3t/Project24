@@ -5,7 +5,7 @@
  *      Arime-chan
  */
 
-namespace Project24.App.Utils
+namespace Project24.App
 {
     public static partial class DefaultUsers
     {

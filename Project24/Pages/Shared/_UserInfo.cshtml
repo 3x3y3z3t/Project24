@@ -14,9 +14,9 @@
     @if (User.Identity.IsAuthenticated)
     {
         string welcomeString;
-        if (User.IsInRole(P24Roles.Power))
+        if (User.IsInRole(P24RoleName.Power))
         {
-            welcomeString = P24Roles.Power;
+            welcomeString = P24RoleName.Power;
         }
         else
         {

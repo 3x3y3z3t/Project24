@@ -1,12 +1,12 @@
-﻿@*  _Layout.cshtml
-    *  Version: 1.3 (2022.11.13)
+﻿@*  _NoScrollLayout.cshtml
+    *  Version: 1.0 (2022.11.13)
     *
     *  Contributor
     *      Arime-chan
 *@
 
 <!DOCTYPE html>
-<html lang="en" class="@ViewData["HtmlClassOverride"]">
+<html lang="en" class="h-100" style="min-height: 100%;">
 
 <head>
     <meta charset="utf-8" />
@@ -16,23 +16,15 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 
-<body class="@ViewData["BodyClassOverride"]">
+<body class="d-flex flex-column flex-nowrap h-100" style="min-height: 100%;">
     <partial name="_Header" />
     <partial name="_ServerAnnouncement" />
 
-    @{
-        string style = "";
-        if (ViewData[CustomInfoKey.UseFullWidth] != null)
-            style = "max-width: 100%;";
-    }
+    <main role="main" class="flex-fill w-100 mw-100 px-2" style="min-height: 0; @ViewData["ContainerStyleOverride"]">
+        @RenderBody()
+    </main>
 
-    <div class="container" style="@style">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted" style="position: inherit;">
         <partial name="_FooterCommon" />
     </footer>
 

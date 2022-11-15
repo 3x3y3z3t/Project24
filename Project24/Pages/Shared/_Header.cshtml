@@ -18,8 +18,8 @@
         P24IdentityUser user = await _userManager.GetUserAsync(User);
         if (user != null)
         {
-            isManager = await _userManager.IsInRoleAsync(user, P24Roles.Manager);
-            isNasUser = await _userManager.IsInRoleAsync(user, P24Roles.NasUser);
+            isManager = await _userManager.IsInRoleAsync(user, P24RoleName.Manager);
+            isNasUser = await _userManager.IsInRoleAsync(user, P24RoleName.NasUser);
         }
     }
 }

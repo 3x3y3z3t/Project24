@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.10 (2022.10.29)
+ *  Version: 1.11 (2022.11.15)
  *
  *  Contributor
  *      Arime-chan
@@ -22,7 +22,6 @@ using Microsoft.Extensions.Hosting;
 using tusdotnet;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
-using Project24.App.Utils;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Project24.App.Services;
 using Project24.App;
@@ -88,6 +87,7 @@ namespace Project24
             });
 
             _services.AddHostedService<NasDiskService>();
+            _services.AddSingleton<UpdaterService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,8 +102,8 @@ namespace Project24
 
             _logger.LogInformation("Nas Stats:\r\n" + DriveUtils.GetNasDetails());
 
-            Utils.UpdateCurrentVersion(_env).Wait();
-            _logger.LogInformation("App version: " + Utils.CurrentVersion);
+            AppUtils.UpdateCurrentVersion().Wait();
+            _logger.LogInformation("App version: " + AppUtils.CurrentVersion);
 
             MigrateDatabase(_serviceProvider, _dbContext, _logger).Wait();
 
@@ -130,7 +130,7 @@ namespace Project24
 
             _app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.GetFullPath(Utils.AppRoot + "/" + AppConfig.DataRoot)),
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.DataRoot)),
                 RequestPath = "/data"
             });
 
@@ -183,7 +183,7 @@ namespace Project24
         {
             m_Logger.LogInformation("Adding Roles..");
 
-            foreach (string role in P24Roles.GetAllRoles())
+            foreach (string role in P24RoleName.GetAllRoleNames())
             {
                 IdentityRole p24Role = await _roleManager.FindByNameAsync(role);
                 if (p24Role == null)
@@ -272,7 +272,7 @@ namespace Project24
                 }
             }
 
-            foreach (string role in P24Roles.GetAllRoles())
+            foreach (string role in P24RoleName.GetAllRoleNames())
             {
                 if (!await _userManager.IsInRoleAsync(user, role))
                 {
@@ -343,9 +343,9 @@ namespace Project24
                 }
             }
 
-            foreach (string role in P24Roles.GetAllRoles())
+            foreach (string role in P24RoleName.GetAllRoleNames())
             {
-                if (role == P24Roles.Power)
+                if (role == P24RoleName.Power)
                     continue;
 
                 if (!await _userManager.IsInRoleAsync(user, role))
@@ -420,12 +420,12 @@ namespace Project24
                 }
             }
 
-            if (!await _userManager.IsInRoleAsync(user, P24Roles.Manager))
+            if (!await _userManager.IsInRoleAsync(user, P24RoleName.Manager))
             {
-                var status = await _userManager.AddToRoleAsync(user, P24Roles.Manager);
+                var status = await _userManager.AddToRoleAsync(user, P24RoleName.Manager);
                 if (!status.Succeeded)
                 {
-                    m_Logger.LogWarning("Could not add role " + P24Roles.Manager + " for Default User 1.");
+                    m_Logger.LogWarning("Could not add role " + P24RoleName.Manager + " for Default User 1.");
                 }
             }
 
@@ -491,12 +491,20 @@ namespace Project24
                 }
             }
 
-            if (!await _userManager.IsInRoleAsync(user, P24Roles.NasTester))
+            if (!await _userManager.IsInRoleAsync(user, P24RoleName.NasTester))
             {
-                var status = await _userManager.AddToRoleAsync(user, P24Roles.NasTester);
+                var status = await _userManager.AddToRoleAsync(user, P24RoleName.NasTester);
                 if (!status.Succeeded)
                 {
-                    m_Logger.LogWarning("Could not add role " + P24Roles.NasTester + " for Default Nas Tester.");
+                    m_Logger.LogWarning("Could not add role " + P24RoleName.NasTester + " for Default Nas Tester.");
+                }
+            }
+            if (!await _userManager.IsInRoleAsync(user, P24RoleName.NasUploader))
+            {
+                var status = await _userManager.AddToRoleAsync(user, P24RoleName.NasUploader);
+                if (!status.Succeeded)
+                {
+                    m_Logger.LogWarning("Could not add role " + P24RoleName.NasUploader + " for Default Nas Tester.");
                 }
             }
 

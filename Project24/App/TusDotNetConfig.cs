@@ -1,5 +1,5 @@
 ﻿/*  TusDotNetConfig.cs
- *  Version: 1.1 (2022.10.29)
+ *  Version: 1.2 (2022.11.05)
  *
  *  Contributor
  *      Arime-chan
@@ -12,6 +12,7 @@ using Project24.Data;
 using Project24.Models.Nas;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,9 +25,10 @@ namespace Project24.App
 {
     public class TusDotNetConfig
     {
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static DefaultTusConfiguration ConfigureTusDotNet(HttpContext _httpContext)
         {
-            string nasCacheAbsPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.TmpRoot);
+            string nasCacheAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.TmpRoot);
 
             TusDiskBufferSize tusDiskBufferSize = new TusDiskBufferSize(8 * 1024 * 1024);
 
@@ -265,7 +267,7 @@ namespace Project24.App
 
         private const int c_WriteFileBufferSize = 4 * 1024 * 1024;
 
-        private static string s_NasCacheAbsPath = Path.GetFullPath(Project24.Utils.AppRoot + "/" + AppConfig.TmpRoot);
+        private static readonly string s_NasCacheAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.TmpRoot);
     }
 
 }

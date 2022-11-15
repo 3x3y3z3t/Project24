@@ -1,0 +1,33 @@
+﻿@*  _FooterCommon.cshtml
+    *  Version: 1.0 (2022.11.13)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+<div class="container d-flex">
+    <div class="mr-2">
+        &copy; 2022 ExWorkshop - Project24
+    </div>
+
+    <div class="mx-2">
+        <a asp-page="/Home/About">About</a>
+    </div>
+
+    <div class="mx-2">
+        <a asp-page="/Home/About" asp-page-handler="ReleaseNote">@Project24.App.AppUtils.CurrentVersion</a>
+    </div>
+
+    <div class="vr"></div>
+
+    @if (false)
+    {
+        <div class="ml-auto mr-2">
+            <a asp-page="/Home/Feedback">Feedback/Request</a>
+        </div>
+
+        <div class="mx-2">
+            <a asp-page="/Home/BugReport">Bug Report</a>
+        </div>
+    }
+</div>

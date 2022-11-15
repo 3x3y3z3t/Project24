@@ -1,0 +1,51 @@
+﻿@*  Updater.cshtml
+    *  Version: 1.0 (2022.11.05)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page "{handler?}"
+@using Project24.App
+@using System.Reflection
+@model Project24.Pages.Home.UpdaterModel
+@{
+    ViewData["Title"] = "Updater";
+    Layout = "_NoScrollLayout";
+
+    var version = Assembly.GetEntryAssembly().GetName().Version;
+
+}
+
+<div class="d-flex flex-nowrap h-100 pb-2">
+
+    <div id="local-file-panel" class="d-flex flex-column col-6 px-3 border-left h-100">
+        <partial name="_LocalFilePanel" />
+    </div>
+
+    <div id="upload-file-panel" class="d-flex flex-column col-6 px-3 border-left h-100" style="border-left-width: thick;">
+        <br />
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" name="file" multiple webkitdirectory id="input-files" class="mx-2" />
+            <span asp-validation-formaction="Data.FileUploads" class="text-danger"></span>
+
+            @Html.AntiForgeryToken()
+
+            <button type="button" id="button-upload" class="btn btn-success mx-2" disabled>Upload</button>
+        </form>
+        <br />
+
+        <hr class="mx-0" />
+
+        <h5>Upload Files (<span id="upload-file-count">0</span>)</h5>
+        <div id="upload-file-list" class="overflow-auto mh-100 ml-3">
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+<script src="~/js/home/updater.js"></script>
+<script src="~/js/home/cyrb53.js"></script>
+}

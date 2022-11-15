@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Project24.App.Utils
+namespace Project24.App
 {
     public static class NasUtils
     {
@@ -29,10 +29,10 @@ namespace Project24.App.Utils
             public long Size { get; set; }
         }
 
-        /* Returns all files and folders in the directory specified by `_path`.
-         * Note that `_path` is relative path to DriveUtils.NasRootPath. 
-         */
-        public static List<FileModel> GetFilesInDirectory(string _path)
+        /// <summary>Returns a list of all folders and files in the directory specified by <c>_path</c>.</summary>
+        /// <param name="_path">The relative path to DriveUtils.NasRootPath that specify the directory to get its content.</param>
+        /// <returns type="System.Collection.List">A list of folders and files in the specified directory.</returns>
+        public static List<FileModel> GetDirectoryContent(string _path)
         {
             string absPath = Path.GetFullPath(DriveUtils.NasRootPath + "/" + _path);
 
@@ -72,10 +72,59 @@ namespace Project24.App.Utils
             return list;
         }
 
+        public enum NasLocation
+        {
+            AppRoot,
+            AppNextRoot,
+            NasRoot,
+        }
+
+        /// <summary>Returns a list of all files in the directory specified by <c>_path</c> and its subdirectories.</summary>
+        /// <param name="_path">The relative path to DriveUtils.NasRootPath that specify the directory to get its content.</param>
+        /// <returns>A list of all files in the specified directory and its subdirectories.</returns>
+        public static List<FileModel> GetAllFilesInDirectory(string _path, NasLocation _location = NasLocation.NasRoot)
+        {
+            string absPath;
+
+            switch (_location)
+            {
+                case NasLocation.NasRoot:
+                    absPath = Path.GetFullPath(DriveUtils.NasRootPath + "/" + _path);
+                    break;
+                case NasLocation.AppRoot:
+                    absPath = Path.GetFullPath(AppUtils.AppRoot + "/" + _path);
+                    break;
+                case NasLocation.AppNextRoot:
+                    absPath = Path.GetFullPath(DriveUtils.AppNextRootPath + "/" + _path);
+                    break;
+
+                default:
+                    return new List<FileModel>();
+            }
+
+            List<FileModel> list = new List<FileModel>();
+
+            DirectoryInfo dirInfo = new DirectoryInfo(absPath);
 
 
+            var files = dirInfo.EnumerateFiles("*", new EnumerationOptions() { RecurseSubdirectories = true });
+            foreach (FileInfo fi in files)
+            {
+                string parent = fi.FullName.Replace(absPath, "").Replace(fi.Name, "").Trim(new char[] { '/', '\\' });
 
+                list.Add(new FileModel()
+                {
+                    FileType = FileType.File,
+                    Name = fi.Name,
+                    Fullname = fi.FullName,
+                    RelativePath = parent,
+                    LastModified = fi.LastWriteTime,
+                    Size = fi.Length
+                });
+            }
 
+            return list;
+        }
 
     }
 

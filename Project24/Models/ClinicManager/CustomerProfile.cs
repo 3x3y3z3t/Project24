@@ -26,6 +26,10 @@ namespace Project24.Models
         [StringLength(10, ErrorMessage = Constants.ERROR_LONG_NAME)]
         public string LastName { get; set; }
 
+        // NOTE: Date of Birth didn't make it into this version;
+        //[Range(1900, AppConfig.ThisYear, ErrorMessage = P24ErrorMessage.DoBMustBeInRange)]
+        //public int DateOfBirth { get; set; }
+
         [DataType(DataType.MultilineText)]
         public string Address { get; set; }
 
@@ -67,6 +71,8 @@ namespace Project24.Models
         public CustomerProfile(string _customerCode, string _addedUserId)
         {
             CustomerCode = _customerCode;
+
+            //DateOfBirth = AppConfig.ThisYear;
 
             AddedUserId = _addedUserId;
             UpdatedUserId = _addedUserId;

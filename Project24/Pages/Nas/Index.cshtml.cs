@@ -16,12 +16,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
-using Project24.App.Utils;
 using Project24.App;
 
 namespace Project24.Pages.Nas
 {
-    [Authorize(Roles = P24Roles.NasUser + "," + P24Roles.NasTester)]
+    [Authorize(Roles = P24RoleName.NasUser + "," + P24RoleName.NasTester)]
     public partial class IndexModel : PageModel
     {
         public class DataModel
@@ -95,7 +94,7 @@ namespace Project24.Pages.Nas
                 }
             }
 
-            List<NasUtils.FileModel> files = NasUtils.GetFilesInDirectory(_path);
+            List<NasUtils.FileModel> files = NasUtils.GetDirectoryContent(_path);
             if (files == null)
             {
                 return Partial("_NasBrowser", data);
