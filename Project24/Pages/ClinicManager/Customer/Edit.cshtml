@@ -1,0 +1,83 @@
+﻿@*  P24/Customer/Edit.cshtml
+    *  Version: 1.2 (2022.11.28)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.ClinicManager.Customer.EditModel
+@{
+    ViewData["Title"] = "Sửa thông tin";
+    Layout = "_Layout";
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="List">Trở về danh sách</a>
+<!--partial name="_StatusMessage" model="Model.StatusMessage" /-->
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="FormData.Code" class="control-label">Mã bệnh nhân (tự động điền)</label>
+                <input asp-for="FormData.Code" class="form-control" readonly />
+                <span asp-validation-for="FormData.Code" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Fullname" class="control-label">Họ và Tên bệnh nhân</label>
+                <input asp-for="FormData.Fullname" class="form-control" />
+                <span asp-validation-for="FormData.Fullname" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Gender" class="control-label mr-3">Giới tính</label>
+                <div class="form-check form-check-inline">
+                    <input asp-for="FormData.Gender" type="radio" value="M" id="radio-gender-m" class="form-check-input" />
+                    <label for="radio-gender-m" class="form-check-label">Nam</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input asp-for="FormData.Gender" type="radio" value="F" id="radio-gender-f" class="form-check-input" />
+                    <label for="radio-gender-f" class="form-check-label">Nữ</label>
+                </div>
+                <div asp-validation-for="FormData.Gender" class="text-danger"></div>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.DoB" class="control-label">Năm sinh</label>
+                <input asp-for="FormData.DoB" class="form-control" />
+                <span asp-validation-for="FormData.DoB" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.PhoneNumber" class="control-label">Số điện thoại</label>
+                <input asp-for="FormData.PhoneNumber" class="form-control" />
+                <span asp-validation-for="FormData.PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Address" class="control-label">Địa chỉ</label>
+                <textarea asp-for="FormData.Address" text-wrap="normal" rows="3" class="form-control"></textarea>
+                <span asp-validation-for="FormData.Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Notes" class="control-label">Ghi chú</label>
+                <textarea asp-for="FormData.Notes" text-wrap="normal" rows="4" class="form-control"></textarea>
+                <span asp-validation-for="FormData.Notes" class="text-danger"></span>
+            </div>
+
+            <hr />
+
+            <button type="submit" class="btn btn-primary mr-1">Cập nhật</button>
+            <a asp-page="List" class="btn btn-secondary">Hủy bỏ</a>
+
+            @Html.AntiForgeryToken()
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

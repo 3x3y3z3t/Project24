@@ -1,5 +1,5 @@
 ﻿/*  ApplicationDbContext.cs
- *  Version: 1.8 (2022.10.27)
+ *  Version: 1.9 (2022.11.20)
  *
  *  Contributor
  *      Arime-chan
@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Project24.Identity;
 using Project24.Models;
+using Project24.Models.ClinicManager;
 using Project24.Models.Nas;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -20,13 +22,70 @@ namespace Project24.Data
     public class ApplicationDbContext : IdentityDbContext
     {
 
+
+
         public DbSet<P24IdentityUser> P24Users { get; set; }
+
         public DbSet<CustomerProfile> CustomerProfiles { get; set; }
         public DbSet<CustomerImage> CustomerImages { get; set; }
+
+        public DbSet<VisitingProfile> VisitingProfiles { get; set; }
+
 
         public DbSet<ActionRecord> ActionRecords { get; set; }
 
         public DbSet<NasCachedFile> NasCachedFiles { get; set; }
+
+        /// <summary>
+        /// NOTE: Cache this value as much as possible, because each reference fetchs from database again.
+        /// </summary>
+        public DailyIndexes DailyIndexes
+        {
+            get
+            {
+                DailyIndexes dind = (from _dind in DailyIndexesInternal
+                                     where _dind.Date == DateTime.Today
+                                     select _dind)
+                                    .FirstOrDefault();
+                                    
+                if (dind == null)
+                {
+                    dind = new DailyIndexes();
+                    DailyIndexesInternal.Add(dind);
+
+                    SaveChanges();
+                }
+
+                return dind;
+            }
+
+            set
+            {
+                DailyIndexes dind = (from _dind in DailyIndexesInternal
+                                     where _dind.Date == value.Date
+                                     select _dind)
+                                    .FirstOrDefault();
+
+                if (dind == null)
+                {
+                    dind = new DailyIndexes(value.Date)
+                    {
+                        CustomerIndex = value.CustomerIndex,
+                        VisitingIndex = value.VisitingIndex
+                    };
+                    DailyIndexesInternal.Add(dind);
+                }
+                else
+                {
+                    dind.CustomerIndex = value.CustomerIndex;
+                    dind.VisitingIndex = value.VisitingIndex;
+
+                    DailyIndexesInternal.Update(dind);
+                }
+            }
+        }
+
+        private DbSet<DailyIndexes> DailyIndexesInternal { get; set; }
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -66,7 +125,15 @@ namespace Project24.Data
 
         }
 
+        protected override void OnModelCreating(ModelBuilder _builder)
+        {
+            base.OnModelCreating(_builder);
 
+            _builder.Entity<VisitingProfile>()
+                .HasIndex(_ticket => _ticket.Code)
+                .IsUnique();
+
+        }
     }
 
 }

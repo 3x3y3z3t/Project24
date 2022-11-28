@@ -1,11 +1,10 @@
 /*  Index.cshtml.cs
- *  Version: 1.2 (2022.10.21)
+ *  Version: 1.3 (2022.11.28)
  *
  *  Contributor
  *      Arime-chan
  */
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +22,7 @@ namespace Project24.Pages.Home
 
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public IActionResult OnGet()
         {
             if (!HttpContext.User.Identity.IsAuthenticated)
             {
@@ -42,12 +41,13 @@ namespace Project24.Pages.Home
 
             if (isCMSide)
             {
-                return RedirectToPage("../ClinicManager/Index");
+                return RedirectToPage("../ClinicManager/Customer/List");
             }
 
             if (isNasSide)
             {
                 return RedirectToPage("../Nas/Index");
+                return RedirectToPage("../Nas/Upload");
             }
 
             return NotFound(); // TODO: maybe redirect to access denied page;

@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.4 (2022.11.13)
+ *  Version: 1.5 (2022.11.27)
  *
  *  Contributor
  *      Arime-chan
@@ -38,6 +38,9 @@ namespace Project24
         public const long MaxLogFileSize = 16L * 1024L * 1024L;
 
         public const int ThisYear = 2022;
+
+        public const string CustomerCodeFormatString = "BN{0:yy}{0:MM}{0:dd}{1:00}";
+        public const string TicketCodeFormatString = "PK{0:yy}{0:MM}{0:dd}{1:00}";
     }
 
     public static class ErrorMessage
@@ -45,18 +48,33 @@ namespace Project24
         public const string FirstNameTooLong = "First name is too long";
         public const string LastNameTooLong = "Last name is too long";
 
-        public const string InvalidModelState = "Invalid Model state";
+        public const string InvalidModelState = "Invalid ModelState";
         public const string CustomerNotFound = "Customer not found";
+        public const string CustomerDeleted = "Customer already deleted";
         public const string ImageNotFound = "Image not found";
 
         public const string CurrentUserIsNull = "currentUser is null";
     }
 
     /// <summary> This class define error message constants for Clinic Manager module, or Project24 (P24) side.</summary>
-    public static class P24ErrorMessage
+    public static class P24Message
     {
-        public const string DoBMustBeInRange = "Năm sinh phải nằm trong phạm vi {1} - {2}.";
 
+        public const string DoBMustBeInRange = "Năm sinh phải nằm trong phạm vi {1} - {2}.";
+        public const string DoBCannotBeEmpty = "Năm sinh không được để trống.";
+
+        public const string NameCannotBeEmpty = "Họ Tên không được để trống.";
+        public const string GenderCannotBeEmpty = "Giới tính không được để trống.";
+
+    }
+
+    public static class P24Constants
+    {
+        public const string Customer = "bệnh nhân";
+        public const string Ticket = "phiếu khám bệnh";
+
+        public const string GenderMale = "Nam";
+        public const string GenderFemale = "Nữ";
     }
 
     public static class ServerAnnouncementMessage
@@ -93,6 +111,15 @@ namespace Project24
 
         public const string Lang_Vi_VN = "vi-VN";
         public const string Lang_En_US = "en-US";
+    }
+
+    public static class CustomInfoTag
+    {
+        public const int TagLength = 6;
+
+        public const string Info = "<info>";
+        public const string Warning = "<warn>";
+        public const string Error = "<fail>";
     }
 
     public static class P24RoleName
@@ -134,6 +161,10 @@ namespace Project24
 
 
 
-
+    //public enum P24Module
+    //{
+    //    Customer,
+    //    Ticket
+    //}
 
 }

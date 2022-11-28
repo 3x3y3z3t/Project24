@@ -1,0 +1,17 @@
+﻿@*  P24/Customer > _CommonNotFound.cshtml
+    *  Version: 1.0 (2022.11.20)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@model Project24.Models.ClinicManager.CommonNotFoundModel
+@{
+    ViewData["Title"] = "Không tìm thấy";
+    Layout = "_Layout";
+}
+
+<div class="text-danger font-weight-bold" style="font-size: x-large;">Không tìm thấy @Model.EntityType có mã <code>@Model.Code.</code></div>
+<br />
+
+<a href="@Model.ReturnUrl">Trở về</a>

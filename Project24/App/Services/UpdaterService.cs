@@ -114,7 +114,7 @@ namespace Project24.App.Services
             {
                 proc.StartInfo.UseShellExecute = true;
                 proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = $"\"{nextAbsPath}/updatex.sh\" \"{nextAbsPath}\" \"{appAbsPath}\"";
+                proc.StartInfo.Arguments = $"\"{nextAbsPath}/update.sh\" \"{nextAbsPath}\" \"{appAbsPath}\"";
             }
             else
             {

@@ -14,7 +14,7 @@ namespace Project24.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.27")
+                .HasAnnotation("ProductVersion", "3.1.31")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -243,7 +243,7 @@ namespace Project24.Migrations
                     b.ToTable("ActionRecords");
                 });
 
-            modelBuilder.Entity("Project24.Models.CustomerImage", b =>
+            modelBuilder.Entity("Project24.Models.ClinicManager.CustomerImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -252,24 +252,46 @@ namespace Project24.Migrations
                     b.Property<DateTime>("AddedDate")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("AddedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
                     b.Property<DateTime>("DeletedDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Filepath")
+                    b.Property<byte>("Module")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("OwnedCustomerId")
+                    b.Property<int>("OwnerCustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("UpdatedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<int?>("VisitingProfileId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnedCustomerId");
+                    b.HasIndex("AddedUserId");
+
+                    b.HasIndex("OwnerCustomerId");
+
+                    b.HasIndex("UpdatedUserId");
+
+                    b.HasIndex("VisitingProfileId");
 
                     b.ToTable("CustomerImages");
                 });
 
-            modelBuilder.Entity("Project24.Models.CustomerProfile", b =>
+            modelBuilder.Entity("Project24.Models.ClinicManager.CustomerProfile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -284,14 +306,22 @@ namespace Project24.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("CustomerCode")
+                    b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int>("DateOfBirth")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("DeletedDate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("FirstMidName")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("CHAR(1)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -317,6 +347,83 @@ namespace Project24.Migrations
                     b.HasIndex("UpdatedUserId");
 
                     b.ToTable("CustomerProfiles");
+                });
+
+            modelBuilder.Entity("Project24.Models.ClinicManager.VisitingProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("AddedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Diagnose")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<bool>("IsTicketOpen")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ProposeTreatment")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("TicketStatus")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddedUserId");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("UpdatedUserId");
+
+                    b.ToTable("VisitingProfiles");
+                });
+
+            modelBuilder.Entity("Project24.Models.DailyIndexes", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<byte>("CustomerIndex")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("DATE");
+
+                    b.Property<byte>("VisitingIndex")
+                        .HasColumnType("tinyint unsigned");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DailyIndexesInternal");
                 });
 
             modelBuilder.Entity("Project24.Models.Nas.NasCachedFile", b =>
@@ -408,20 +515,49 @@ namespace Project24.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Project24.Models.CustomerImage", b =>
-                {
-                    b.HasOne("Project24.Models.CustomerProfile", "OwnedCustomer")
-                        .WithMany("Images")
-                        .HasForeignKey("OwnedCustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Project24.Models.CustomerProfile", b =>
+            modelBuilder.Entity("Project24.Models.ClinicManager.CustomerImage", b =>
                 {
                     b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()
                         .HasForeignKey("AddedUserId");
+
+                    b.HasOne("Project24.Models.ClinicManager.CustomerProfile", "OwnerCustomer")
+                        .WithMany("CustomerImages")
+                        .HasForeignKey("OwnerCustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedUserId");
+
+                    b.HasOne("Project24.Models.ClinicManager.VisitingProfile", null)
+                        .WithMany("Images")
+                        .HasForeignKey("VisitingProfileId");
+                });
+
+            modelBuilder.Entity("Project24.Models.ClinicManager.CustomerProfile", b =>
+                {
+                    b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
+                        .WithMany()
+                        .HasForeignKey("AddedUserId");
+
+                    b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedUserId");
+                });
+
+            modelBuilder.Entity("Project24.Models.ClinicManager.VisitingProfile", b =>
+                {
+                    b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
+                        .WithMany()
+                        .HasForeignKey("AddedUserId");
+
+                    b.HasOne("Project24.Models.ClinicManager.CustomerProfile", "Customer")
+                        .WithMany("VisitingTickets")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
                         .WithMany()

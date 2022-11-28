@@ -1,5 +1,10 @@
 ﻿
-#### v0.9.0 (2022.11.06)
+#### v0.10.0 (2022.11.20)
+- Rework Clinic Manager (Customer).
+
+---
+
+#### v0.9.1 (2022.11.15)
 - Added self-contained update feature.
 - Updated Index page.
 - Fixed issue with Search function in Clinic Manager index page.

@@ -1,0 +1,79 @@
+﻿@*  P24/Customer/Details.cshtml
+    *  Version: 1.6 (2022.11.26)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.ClinicManager.Customer.DetailsrModel
+@{
+    ViewData["Title"] = "Thông tin bệnh nhân";
+    Layout = "_Layout";
+
+    string age = (DateTime.Now.Year - Model.CustomerViewData.DoB) + "t";
+    bool deleted = false;
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="List">Trở về danh sách</a>
+<!--partial name="_StatusMessage" model="Model.StatusMessage" /-->
+<hr />
+
+@if (Model.CustomerViewData.DeletedDate != DateTime.MinValue)
+{
+    deleted = true;
+
+    <div class="text-danger font-weight-bold" style="font-size: larger;">
+        Bệnh nhân <code>@Model.CustomerViewData.Code</code> đã bị xóa vào ngày @Model.CustomerViewData.DeletedDate.
+    </div>
+    <br />
+}
+
+<dl class="row">
+    <dt class="col-sm-2">Mã bệnh nhân:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.Code</dd>
+
+    <dt class="col-sm-2">Họ và Tên bệnh nhân:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.Fullname</dd>
+
+    <dt class="col-sm-2">Giới tính:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.Gender</dd>
+
+    <dt class="col-sm-2">Năm sinh:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.DoB (@age)</dd>
+
+    <dt class="col-sm-2">Địa chỉ:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.Address</dd>
+
+    <dt class="col-sm-2">Số điện thoại:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.PhoneNumber</dd>
+
+    <dt class="col-sm-2">Ghi chú:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.Notes</dd>
+
+    <dt class="col-sm-2">Ngày đăng ký:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.AddedDate (bởi @Model.CustomerViewData.AddedUserName)</dd>
+
+    <dt class="col-sm-2">Cập nhật lần cuối:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.UpdatedDate (bởi @Model.CustomerViewData.UpdatedUserName)</dd>
+</dl>
+
+<div class="row">
+    <a asp-page="Edit" asp-route-_code="@Model.CustomerViewData.Code" class="btn btn-primary mr-2">Chỉnh sửa</a>
+</div>
+
+@if (Model.CustomerViewData.DeletedDate != DateTime.MinValue)
+{
+    <a asp-page="Delete" asp-route-_code="@Model.CustomerViewData.Code" class="text-danger font-weight-bold ml-2">Xóa thông tin bệnh nhân</a>
+}
+<br />
+
+<div id="list-image">
+    <partial name="_CommonListImage" model="@Model.ListImageModel" />
+</div>
+
+@section Scripts {
+<script src="~/js/clinic-manager/clinic-manager-utils.js"></script>
+}

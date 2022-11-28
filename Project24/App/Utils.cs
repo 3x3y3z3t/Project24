@@ -1,5 +1,5 @@
 ﻿/*  Utils.cs
- *  Version: 1.15 (2022.11.13)
+ *  Version: 1.16 (2022.11.20)
  *
  *  Contributor
  *      Arime-chan
@@ -9,16 +9,6 @@ using System;
 
 namespace Project24
 {
-    public enum P24Module
-    {
-        Home = 0,
-        Home_Navigate,
-
-        ClinicManager,
-
-        Nas,
-    }
-
     public class Constants
     {
 
@@ -91,56 +81,5 @@ namespace Project24
         public static byte[] Png = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
         public static byte[] Jpg = { 0xFF, 0xD8, 0xFF };
     }
-
-    public static class Utils
-    {
-
-
-
-        /* Summary:
-         *  Construct user's Username based on the following template:
-         *      Last Name + First letter of Family Name + First letter of every Middle Name.
-         */
-        public static string ConstructUsernameNoCount(string _familyName, string _middleName, string _lastName)
-        {
-            string username = _lastName;
-            if (!string.IsNullOrEmpty(_familyName))
-            {
-                username += char.ToUpper(_familyName[0]);
-            }
-            if (!string.IsNullOrEmpty(_middleName))
-            {
-                string[] tokens = _middleName.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
-                foreach (string token in tokens)
-                {
-                    username += char.ToUpper(token[0]);
-                }
-            }
-
-            return username;
-        }
-
-        public static Tuple<string, string, string> TokenizeName(string _fullName)
-        {
-            if (string.IsNullOrEmpty(_fullName))
-                return new Tuple<string, string, string>("", "", "");
-
-            string[] tokens = _fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (tokens.Length == 1)
-                return new Tuple<string, string, string>("", "", tokens[0].Trim());
-
-            if (tokens.Length == 2)
-                return new Tuple<string, string, string>(tokens[0].Trim(), "", tokens[1]);
-
-            string middlename = "";
-            for (int i = 1; i < tokens.Length - 1; ++i)
-            {
-                middlename += tokens[i].Trim();
-            }
-
-            return new Tuple<string, string, string>(tokens[0].Trim(), middlename, tokens[^1].Trim());
-        }
-    }
-
 
 }

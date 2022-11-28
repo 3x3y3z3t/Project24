@@ -1,0 +1,79 @@
+﻿@*  P24/Customer > _CommonListImage.cshtml
+    *  Version: 1.0 (2022.11.27)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@model Project24.Models.ClinicManager.DataModel.P24ImageListingModel
+
+@{
+    bool hasImage = Model.Images != null && Model.Images.Count > 0;
+}
+
+<div>
+    @if (Model.IsReadonly)
+    {
+        if (hasImage)
+        {
+            <h5 class="text-bold">Ảnh (@Model.Images.Count ảnh)</h5>
+        }
+    }
+    else
+    {
+        if (hasImage)
+        {
+            <h5 class="text-bold">Ảnh (@Model.Images.Count ảnh) | <a href="#" data-toggle="collapse" data-target="#add-image-form">Thêm ảnh</a></h5>
+        }
+        else
+        {
+            <h5 class="text-bold"><a href="#" data-toggle="collapse" data-target="#add-image-form">Thêm ảnh</a></h5>
+        }
+
+        <div id="add-image-form" class="collapse">
+            <form method="post" asp-page="Create" asp-page-handler="CreateImage" enctype="multipart/form-data" id="add-image-form" class="col-md-6" style="@ViewData["AddImgFormStyles"]">
+                <hr />
+                <div class="form-group" hidden>
+                    <input asp-for="_formData.CustomerCode" class="form-control" value="@Model.CustomerCode" readonly />
+                    <span asp-validation-for="_formData.CustomerCode" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="_formData.UploadedFiles" class="control-label">Ảnh (nhiều file, tối đa 32 MB)</label>
+                    <input asp-for="_formData.UploadedFiles" accept="image/*" class="form-control" />
+                    <span asp-validation-for="_formData.UploadedFiles" class="text-danger"></span>
+                </div>
+
+                <hr />
+
+                <button type="submit" class="btn btn-primary">Thêm</button>
+                <button type="reset" data-toggle="collapse" data-target="#add-image-form" class="btn btn-secondary">Hủy bỏ</button>
+
+                @Html.AntiForgeryToken()
+            </form>
+        </div>
+        <hr />
+    }
+
+    @if (hasImage)
+    {
+        <div class="d-flex flex-wrap">
+            @foreach (var image in Model.Images)
+            {
+                string path = "/" + image.Path + "/" + image.Name;
+                string fullpath = "/data" + path;
+
+                <figure class="figure m-2">
+                    <img src="@fullpath" class="figure-img img-fluid" style="max-height:200px;" />
+                    <figcaption class="figure-caption">@path</figcaption>
+
+                    @if (!Model.IsReadonly)
+                    {
+                        string func = "customer_commonListImage_SubmitDeleteImageForm('" + image.Id + "', '" + Model.CustomerCode + "')";
+                        <a href="#" onclick="@func">Xóa</a>
+                    }
+
+                </figure>
+            }
+        </div>
+    }
+</div>

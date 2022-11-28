@@ -69,6 +69,36 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DailyIndexesInternal",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Date = table.Column<DateTime>(type: "DATE", nullable: false),
+                    CustomerIndex = table.Column<byte>(nullable: false),
+                    VisitingIndex = table.Column<byte>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DailyIndexesInternal", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NasCachedFiles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Path = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    AddedDate = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NasCachedFiles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -180,17 +210,19 @@ namespace Project24.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    CustomerCode = table.Column<string>(nullable: true),
-                    FirstMidName = table.Column<string>(nullable: true),
-                    LastName = table.Column<string>(maxLength: 10, nullable: false),
-                    Address = table.Column<string>(nullable: true),
-                    PhoneNumber = table.Column<string>(nullable: true),
-                    Notes = table.Column<string>(nullable: true),
                     AddedUserId = table.Column<string>(nullable: true),
                     UpdatedUserId = table.Column<string>(nullable: true),
                     AddedDate = table.Column<DateTime>(nullable: false),
                     UpdatedDate = table.Column<DateTime>(nullable: false),
-                    DeletedDate = table.Column<DateTime>(nullable: false)
+                    DeletedDate = table.Column<DateTime>(nullable: false),
+                    Code = table.Column<string>(nullable: false),
+                    FirstMidName = table.Column<string>(nullable: true),
+                    LastName = table.Column<string>(maxLength: 10, nullable: false),
+                    Gender = table.Column<string>(type: "CHAR(1)", nullable: false),
+                    DateOfBirth = table.Column<int>(nullable: false),
+                    PhoneNumber = table.Column<string>(nullable: true),
+                    Address = table.Column<string>(nullable: true),
+                    Notes = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -210,25 +242,90 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "VisitingProfiles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AddedUserId = table.Column<string>(nullable: true),
+                    UpdatedUserId = table.Column<string>(nullable: true),
+                    AddedDate = table.Column<DateTime>(nullable: false),
+                    UpdatedDate = table.Column<DateTime>(nullable: false),
+                    DeletedDate = table.Column<DateTime>(nullable: false),
+                    Code = table.Column<string>(nullable: false),
+                    CustomerId = table.Column<int>(nullable: false),
+                    IsTicketOpen = table.Column<bool>(nullable: false),
+                    TicketStatus = table.Column<string>(nullable: true),
+                    Diagnose = table.Column<string>(nullable: true),
+                    ProposeTreatment = table.Column<string>(nullable: true),
+                    Note = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VisitingProfiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VisitingProfiles_AspNetUsers_AddedUserId",
+                        column: x => x.AddedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_VisitingProfiles_CustomerProfiles_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "CustomerProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_VisitingProfiles_AspNetUsers_UpdatedUserId",
+                        column: x => x.UpdatedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CustomerImages",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Filepath = table.Column<string>(nullable: false),
+                    AddedUserId = table.Column<string>(nullable: true),
+                    UpdatedUserId = table.Column<string>(nullable: true),
+                    Module = table.Column<byte>(nullable: false),
+                    Name = table.Column<string>(nullable: false),
+                    Path = table.Column<string>(nullable: false),
                     AddedDate = table.Column<DateTime>(nullable: false),
                     DeletedDate = table.Column<DateTime>(nullable: false),
-                    OwnedCustomerId = table.Column<int>(nullable: false)
+                    OwnerCustomerId = table.Column<int>(nullable: false),
+                    VisitingProfileId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CustomerImages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomerImages_CustomerProfiles_OwnedCustomerId",
-                        column: x => x.OwnedCustomerId,
+                        name: "FK_CustomerImages_AspNetUsers_AddedUserId",
+                        column: x => x.AddedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CustomerImages_CustomerProfiles_OwnerCustomerId",
+                        column: x => x.OwnerCustomerId,
                         principalTable: "CustomerProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CustomerImages_AspNetUsers_UpdatedUserId",
+                        column: x => x.UpdatedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CustomerImages_VisitingProfiles_VisitingProfileId",
+                        column: x => x.VisitingProfileId,
+                        principalTable: "VisitingProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -269,9 +366,24 @@ namespace Project24.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerImages_OwnedCustomerId",
+                name: "IX_CustomerImages_AddedUserId",
                 table: "CustomerImages",
-                column: "OwnedCustomerId");
+                column: "AddedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerImages_OwnerCustomerId",
+                table: "CustomerImages",
+                column: "OwnerCustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerImages_UpdatedUserId",
+                table: "CustomerImages",
+                column: "UpdatedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerImages_VisitingProfileId",
+                table: "CustomerImages",
+                column: "VisitingProfileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CustomerProfiles_AddedUserId",
@@ -281,6 +393,27 @@ namespace Project24.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_CustomerProfiles_UpdatedUserId",
                 table: "CustomerProfiles",
+                column: "UpdatedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VisitingProfiles_AddedUserId",
+                table: "VisitingProfiles",
+                column: "AddedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VisitingProfiles_Code",
+                table: "VisitingProfiles",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VisitingProfiles_CustomerId",
+                table: "VisitingProfiles",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VisitingProfiles_UpdatedUserId",
+                table: "VisitingProfiles",
                 column: "UpdatedUserId");
         }
 
@@ -308,7 +441,16 @@ namespace Project24.Migrations
                 name: "CustomerImages");
 
             migrationBuilder.DropTable(
+                name: "DailyIndexesInternal");
+
+            migrationBuilder.DropTable(
+                name: "NasCachedFiles");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "VisitingProfiles");
 
             migrationBuilder.DropTable(
                 name: "CustomerProfiles");

@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.11 (2022.11.15)
+ *  Version: 1.12 (2022.11.19)
  *
  *  Contributor
  *      Arime-chan
@@ -25,6 +25,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Project24.App.Services;
 using Project24.App;
+using Project24.Models;
 
 namespace Project24
 {
@@ -176,6 +177,8 @@ namespace Project24
             UserManager<P24IdentityUser> userManager = _serviceProvider.GetRequiredService<UserManager<P24IdentityUser>>();
             await CreateDefaultUsers(userManager);
 
+            _ = _dbContext.DailyIndexes;
+            //await _dbContext.SaveChangesAsync();
         }
 
         #region Initialize Roles

@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.6 (2022.11.06)
+ *  Version: 1.7 (2022.11.27)
  *
  *  Contributor
  *      Arime-chan
@@ -28,7 +28,9 @@ namespace Project24.Models
             public const string DetailService = "Detail Service";
 
             public const string CreateCustomer = "Create Customer";
+            public const string CreateCustomer_CreateImage = "Create Customer Image";
             public const string DeleteCustomer = "Delete Customer";
+            public const string DeleteCustomer_DeleteImage = "Delete Customer Image";
             public const string UpdateCustomer = "Update Customer";
             public const string DetailCustomer = "Detail Customer";
             public const string DetailCustomer_AddImage = "Detail Customer: Add Image";

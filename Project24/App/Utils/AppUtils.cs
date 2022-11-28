@@ -1,5 +1,5 @@
 ﻿/*  AppUtils.cs
- *  Version: 1.0 (2022.11.13)
+ *  Version: 1.1 (2022.11.19)
  *
  *  Contributor
  *      Arime-chan
@@ -71,6 +71,7 @@ namespace Project24.App
 
         public static string CurrentSessionName { get; private set; } = string.Format("{0:yyyy}-{0:MM}-{0:dd}_{0:HH}-{0:mm}-{0:ss}", DateTime.Now);
 
+        public static string Today { get { return DateTime.Now.ToString("yyyy-MM-dd"); } }
 
         public static string CurrentVersion { get; set; }
 
@@ -107,6 +108,24 @@ namespace Project24.App
         public static string FormatDateTimetring_EndsWithMinute(DateTime _dateTime)
         {
             return string.Format("{0:yyyy}/{0:MM}/{0:dd} {0:HH}:{0:mm}", _dateTime);
+        }
+
+        public static string NormalizeGenderString(char _gender)
+        {
+            switch (_gender)
+            {
+                case 'M':
+                    return P24Constants.GenderMale;
+                case 'm':
+                    return P24Constants.GenderMale;
+
+                case 'F':
+                    return P24Constants.GenderFemale;
+                case 'f':
+                    return P24Constants.GenderFemale;
+            }
+
+            return "?";
         }
 
         public static async Task UpdateCurrentVersion()
