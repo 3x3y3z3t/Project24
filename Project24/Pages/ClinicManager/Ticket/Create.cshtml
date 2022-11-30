@@ -1,0 +1,122 @@
+﻿@*  P24/Ticket/Create.cshtml
+    *  Version: 1.0 (2022.11.29)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page "{handle?}"
+
+@model Project24.Pages.ClinicManager.Ticket.CreateModel
+@{
+    ViewData["Title"] = "Đăng ký phiếu khám mới";
+    Layout = "_Layout";
+
+    string formGroupClasses = "col-12 col-md-6";
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="List">Trở về danh sách</a>
+<!--partial name="_StatusMessage" model="Model.StatusMessage" /-->
+<hr />
+
+<div class="">
+    <form method="post" enctype="multipart/form-data" id="create-ticket-form">
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <div class="d-flex flex-wrap">
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="TicketFormData.Code" class="control-label">Mã phiếu khám (tự động điền)</label>
+                    <input asp-for="TicketFormData.Code" class="form-control" value="@Model.NextTicketCode" readonly />
+                    <span asp-validation-for="TicketFormData.Code" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.Diagnose" class="control-label">Chẩn đoán</label>
+                    <input asp-for="TicketFormData.Diagnose" class="form-control" disabled />
+                    <span asp-validation-for="TicketFormData.Diagnose" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.Treatment" class="control-label">Xử trí</label>
+                    <input asp-for="TicketFormData.Treatment" class="form-control" disabled />
+                    <span asp-validation-for="TicketFormData.Treatment" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.Notes" class="control-label">Ghi chú</label>
+                    <input asp-for="TicketFormData.Notes" class="form-control" disabled />
+                    <span asp-validation-for="TicketFormData.Notes" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.UploadedFiles" class="control-label">Ảnh (nhiều file, tối đa 32 MB)</label>
+                    <input asp-for="TicketFormData.UploadedFiles" accept="image/*" class="form-control" disabled/>
+                    <span asp-validation-for="TicketFormData.UploadedFiles" class="text-danger"></span>
+                </div>
+                <hr />
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="TicketFormData.CustomerFormData.Code" class="control-label">Mã bệnh nhân<span id="customer-code-status"></span></label>
+                    <div class="input-group">
+                        <input asp-for="TicketFormData.CustomerFormData.Code" class="form-control" value="@Model.NextCustomerCode" />
+                        <div class="input-group-append">
+                            <a href="#" onclick="ticket_create_resetCustomerInfo()" class="btn btn-outline-danger">&times;</a>
+                            <a href="#" onclick="ticket_create_verifyCustomerCode()" class="btn btn-success">Kiểm tra</a>
+                        </div>
+                    </div>
+                    <span asp-validation-for="TicketFormData.CustomerFormData.Code" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.CustomerFormData.FullName" class="control-label">Họ và Tên bệnh nhân</label>
+                    <input asp-for="TicketFormData.CustomerFormData.FullName" class="form-control" disabled />
+                    <span asp-validation-for="TicketFormData.CustomerFormData.FullName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.CustomerFormData.Gender" class="control-label mr-3">Giới tính</label>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="TicketFormData.CustomerFormData.Gender" type="radio" value="M" id="radio-gender-m" class="form-check-input" disabled />
+                        <label for="radio-gender-m" class="form-check-label">Nam</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="TicketFormData.CustomerFormData.Gender" type="radio" value="F" id="radio-gender-f" class="form-check-input" disabled />
+                        <label for="radio-gender-f" class="form-check-label">Nữ</label>
+                    </div>
+                    <span asp-validation-for="TicketFormData.CustomerFormData.Gender" class="text-danger d-block mt-0"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.CustomerFormData.DateOfBirth" class="control-label">Năm sinh</label>
+                    <input asp-for="TicketFormData.CustomerFormData.DateOfBirth" value="" class="form-control" disabled />
+                    <span asp-validation-for="TicketFormData.CustomerFormData.DateOfBirth" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.CustomerFormData.PhoneNumber" class="control-label">Số điện thoại</label>
+                    <input asp-for="TicketFormData.CustomerFormData.PhoneNumber" class="form-control" disabled />
+                    <span asp-validation-for="TicketFormData.CustomerFormData.PhoneNumber" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.CustomerFormData.Address" class="control-label">Địa chỉ</label>
+                    <textarea asp-for="TicketFormData.CustomerFormData.Address" text-wrap="normal" rows="3" class="form-control" disabled></textarea>
+                    <span asp-validation-for="TicketFormData.CustomerFormData.Address" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TicketFormData.CustomerFormData.Notes" class="control-label">Ghi chú</label>
+                    <textarea asp-for="TicketFormData.CustomerFormData.Notes" text-wrap="normal" rows="3" class="form-control" disabled></textarea>
+                    <span asp-validation-for="TicketFormData.CustomerFormData.Notes" class="text-danger"></span>
+                </div>
+                <hr />
+            </div>
+
+        </div>
+
+        <button type="submit" id="btn-submit" class="btn btn-primary mr-1" disabled>Đăng ký</button>
+        <a asp-page="List" class="btn btn-secondary">Hủy bỏ</a>
+
+        @Html.AntiForgeryToken()
+    </form>
+</div>
+
+@section Scripts {
+<script src="~/js/clinic-manager/ticket-create.js"></script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }

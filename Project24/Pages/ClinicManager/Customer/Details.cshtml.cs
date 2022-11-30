@@ -1,5 +1,5 @@
 ﻿/*  P24/Customer/Details.cshtml
- *  Version: 1.4 (2022.11.28)
+ *  Version: 1.5 (2022.11.29)
  *
  *  Contributor
  *      Arime-chan
@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Project24.Data;
 using Project24.Identity;
+using Project24.Models;
 using Project24.Models.ClinicManager;
 using Project24.Models.ClinicManager.DataModel;
 
@@ -89,6 +90,33 @@ namespace Project24.Pages.ClinicManager.Customer
             };
 
             return Page();
+        }
+
+        // Ajax call only;
+        public async Task<JsonResult> OnGetFetchAsync(string _code)
+        {
+            if (string.IsNullOrEmpty(_code))
+            {
+                DailyIndexes dind = m_DbContext.DailyIndexes;
+                string nextCustomerCode = string.Format(AppConfig.CustomerCodeFormatString, DateTime.Today, dind.CustomerIndex + 1);
+                return new JsonResult(nextCustomerCode);
+            }
+
+            var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
+                                  where _customer.Code == _code
+                                  select new P24CreateCustomerFormDataModel()
+                                  {
+                                      Code = _customer.Code,
+                                      FullName = _customer.FullName,
+                                      Gender = _customer.Gender,
+                                      DateOfBirth = _customer.DateOfBirth,
+                                      PhoneNumber = _customer.PhoneNumber,
+                                      Address = _customer.Address,
+                                      Notes = _customer.Notes
+                                  })
+                            .FirstOrDefaultAsync();
+
+            return new JsonResult(customer);
         }
 
 

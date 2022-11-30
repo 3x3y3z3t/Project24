@@ -1,6 +1,7 @@
 ﻿
-#### v0.10.0 (2022.11.20)
+#### v0.10.1 (2022.11.20)
 - Rework Clinic Manager (Customer).
+- Add Visiting Ticcket (Clinic Manager side).
 
 ---
 

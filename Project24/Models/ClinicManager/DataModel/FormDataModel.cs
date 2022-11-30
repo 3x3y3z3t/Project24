@@ -1,5 +1,5 @@
 ﻿/*  FormDataModel.cs
- *  Version: 1.0 (2022.11.28)
+ *  Version: 1.1 (2022.11.29)
  *
  *  Contributor
  *      Arime-chan
@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Project24.Models.ClinicManager.DataModel
 {
+    #region Customer
     public class P24CreateCustomerFormDataModel
     {
         [Required]
@@ -34,6 +35,12 @@ namespace Project24.Models.ClinicManager.DataModel
         [DataType(DataType.MultilineText)]
         public string Notes { get; set; }
 
+        public P24CreateCustomerFormDataModel()
+        { }
+    }
+
+    public class P24CreateCustomerFormDataModelEx : P24CreateCustomerFormDataModel
+    {
         [DataType(DataType.Upload)]
         public IFormFile[] UploadedFiles { get; set; }
 
@@ -41,7 +48,8 @@ namespace Project24.Models.ClinicManager.DataModel
         //[DataType(DataType.Password)]
         //public string ManagerPassword { get; set; }
 
-        public P24CreateCustomerFormDataModel()
+        public P24CreateCustomerFormDataModelEx()
+            : base()
         { }
     }
 
@@ -72,7 +80,63 @@ namespace Project24.Models.ClinicManager.DataModel
         public P24EditCustomerFormDataModel()
         { }
     }
+    #endregion
 
+    #region Ticket
+    public class P24CreateTicketFormDataModel
+    {
+        [Required]
+        public string Code { get; set; }
+
+        [Required]
+        public string Diagnose { get; set; }
+
+        [Required]
+        public string Treatment { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        public string Notes { get; set; }
+
+        [DataType(DataType.Upload)]
+        public IFormFile[] UploadedFiles { get; set; }
+
+        [Required]
+        public P24CreateCustomerFormDataModel CustomerFormData { get; set; }
+
+        public P24CreateTicketFormDataModel()
+        { }
+    }
+
+    public class P24EditTicketFormDataModel
+    {
+        [Required]
+        public string Code { get; set; }
+
+        [Required(ErrorMessage = P24Message.NameCannotBeEmpty)]
+        public string Fullname { get; set; }
+
+        [Required(ErrorMessage = P24Message.GenderCannotBeEmpty)]
+        public char Gender { get; set; }
+
+        [Required(ErrorMessage = P24Message.DoBCannotBeEmpty)]
+        [Range(1900, AppConfig.ThisYear, ErrorMessage = P24Message.DoBMustBeInRange)]
+        public int DoB { get; set; }
+
+        [DataType(DataType.PhoneNumber)]
+        public string PhoneNumber { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        public string Address { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        public string Notes { get; set; }
+
+        public P24EditTicketFormDataModel()
+        { }
+    }
+    #endregion
+
+    #region Image
     public class P24CreateImageFormDataModel
     {
         [Required]
@@ -97,5 +161,6 @@ namespace Project24.Models.ClinicManager.DataModel
         public P24DeleteImageFormDataModel()
         { }
     }
+    #endregion
 
 }

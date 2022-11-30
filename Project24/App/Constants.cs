@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.5 (2022.11.27)
+ *  Version: 1.6 (2022.11.29)
  *
  *  Contributor
  *      Arime-chan
@@ -87,7 +87,9 @@ namespace Project24
     {
         public const string UseFullWidth = "UseFullWidth";
 
-        public const string Error = "err";
+        public const string Error = "error";
+        public const string Added = "added";
+        public const string Invalid = "invalid";
         public const string Message = "msg";
         public const string Path = "path";
         public const string Filename = "fileName";
@@ -96,7 +98,9 @@ namespace Project24
         public const string SuccessCount = "successCount";
         public const string ErrorCount = "errorCount";
 
+        public const string HasNewCustomer = "newCustomer";
         public const string CustomerCode = "customerCode";
+        public const string TicketCode = "ticketCode";
         public const string ImageId = "imgId";
 
         public const string AddedList = "added";

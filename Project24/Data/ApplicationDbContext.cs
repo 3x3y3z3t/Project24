@@ -1,5 +1,5 @@
 ﻿/*  ApplicationDbContext.cs
- *  Version: 1.9 (2022.11.20)
+ *  Version: 1.10 (2022.11.30)
  *
  *  Contributor
  *      Arime-chan
@@ -30,6 +30,7 @@ namespace Project24.Data
         public DbSet<CustomerImage> CustomerImages { get; set; }
 
         public DbSet<VisitingProfile> VisitingProfiles { get; set; }
+        public DbSet<TicketImage> TicketImages { get; set; }
 
 
         public DbSet<ActionRecord> ActionRecords { get; set; }

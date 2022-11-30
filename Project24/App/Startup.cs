@@ -1,5 +1,5 @@
 ﻿/*  Startup.cs
- *  Version: 1.12 (2022.11.19)
+ *  Version: 1.13 (2022.11.30)
  *
  *  Contributor
  *      Arime-chan
@@ -25,7 +25,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Project24.App.Services;
 using Project24.App;
-using Project24.Models;
+using Project24.App.Services.P24ImageManager;
 
 namespace Project24
 {
@@ -89,6 +89,7 @@ namespace Project24
 
             _services.AddHostedService<NasDiskService>();
             _services.AddSingleton<UpdaterService>();
+            _services.AddScoped<P24ImageManagerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

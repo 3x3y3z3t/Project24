@@ -1,5 +1,5 @@
 ﻿/*  CustomerProfile.cs
- *  Version: 1.2 (2022.11.28)
+ *  Version: 1.3 (2022.11.29)
  *
  *  Contributor
  *      Arime-chan

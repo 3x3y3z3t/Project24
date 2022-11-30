@@ -1,5 +1,5 @@
 ﻿@*  P24/Customer/Details.cshtml
-    *  Version: 1.6 (2022.11.26)
+    *  Version: 1.7 (2022.11.30)
     *
     *  Contributor
     *      Arime-chan
@@ -60,13 +60,15 @@
     <dd class="col-sm-10">@Model.CustomerViewData.UpdatedDate (bởi @Model.CustomerViewData.UpdatedUserName)</dd>
 </dl>
 
-<div class="row">
-    <a asp-page="Edit" asp-route-_code="@Model.CustomerViewData.Code" class="btn btn-primary mr-2">Chỉnh sửa</a>
-</div>
-
-@if (Model.CustomerViewData.DeletedDate != DateTime.MinValue)
+@if (Model.CustomerViewData.DeletedDate == DateTime.MinValue)
 {
-    <a asp-page="Delete" asp-route-_code="@Model.CustomerViewData.Code" class="text-danger font-weight-bold ml-2">Xóa thông tin bệnh nhân</a>
+    <div class="row">
+        <a asp-page="Edit" asp-route-_code="@Model.CustomerViewData.Code" class="btn btn-primary mr-2">Chỉnh sửa</a>
+        <a asp-page="Delete" asp-route-_code="@Model.CustomerViewData.Code" class="text-danger font-weight-bold ml-2 my-auto">Xóa thông tin bệnh nhân</a>
+    </div>
+
+    <div class="row">
+    </div>
 }
 <br />
 

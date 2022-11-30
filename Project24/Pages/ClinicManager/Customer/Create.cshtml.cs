@@ -1,5 +1,5 @@
 ﻿/*  P24/Customer/Create.cshtml
- *  Version: 1.4 (2022.11.28)
+ *  Version: 1.5 (2022.11.30)
  *
  *  Contributor
  *      Arime-chan
@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Project24.App.Services.P24ImageManager;
 using Project24.Data;
 using Project24.Identity;
 using Project24.Models;
@@ -29,17 +30,18 @@ namespace Project24.Pages.ClinicManager.Customer
     [RequestFormLimits(MultipartBodyLengthLimit = 32L * 1024L * 1024L)]
     public class CreateModel : PageModel
     {
-        public P24CreateCustomerFormDataModel FormData { get; }
+        public P24CreateCustomerFormDataModelEx FormData { get; }
 
         public string NextCustomerCode { get; set; }
 
         //public string StatusMessage { get; set; }
 
 
-        public CreateModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<CreateModel> _logger)
+        public CreateModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc, ILogger<CreateModel> _logger)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
+            m_ImageManagerSvc = _imageManagerSvc;
             m_Logger = _logger;
         }
 
@@ -51,24 +53,12 @@ namespace Project24.Pages.ClinicManager.Customer
             NextCustomerCode = string.Format(AppConfig.CustomerCodeFormatString, DateTime.Today, dind.CustomerIndex + 1);
         }
 
-        public async Task<IActionResult> OnPostAsync([Bind] P24CreateCustomerFormDataModel FormData)
+        public async Task<IActionResult> OnPostAsync([Bind] P24CreateCustomerFormDataModelEx FormData)
         {
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-
-            if (!ModelState.IsValid)
-            {
-                await m_DbContext.RecordChanges(
-                    currentUser.UserName,
-                    ActionRecord.Operation_.CreateCustomer,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                    }
-                );
-
+            if (!await ValidateModelState(ActionRecord.Operation_.CreateCustomer))
                 return Page();
-            }
+
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
             DailyIndexes dind = m_DbContext.DailyIndexes;
 
@@ -84,11 +74,34 @@ namespace Project24.Pages.ClinicManager.Customer
                 Notes = FormData.Notes
             };
             await m_DbContext.AddAsync(customer);
-
             ++dind.CustomerIndex;
+
             m_DbContext.DailyIndexes = dind;
 
-            await ProcessUploadedFiles(currentUser, customer, FormData.UploadedFiles, ActionRecord.Operation_.CreateCustomer);
+            Dictionary<string, string> customInfo = new Dictionary<string, string>()
+            {
+                { CustomInfoKey.CustomerCode, customer.Code }
+            };
+
+            if (FormData.UploadedFiles != null && FormData.UploadedFiles.Length > 0)
+            {
+                var resposeData = await m_ImageManagerSvc.UploadAsync(currentUser, customer, FormData.UploadedFiles);
+
+                if (resposeData.IsSuccess)
+                {
+                    customInfo.Add(CustomInfoKey.AddedList, resposeData.AddedFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Invalid, resposeData.InvalidFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
+                }
+            }
+
+            await m_DbContext.RecordChanges(
+                currentUser.UserName,
+                ActionRecord.Operation_.CreateCustomer,
+                ActionRecord.OperationStatus_.Success,
+                customInfo
+            );
+
             return RedirectToPage("List");
         }
 
@@ -119,43 +132,56 @@ namespace Project24.Pages.ClinicManager.Customer
             if (customer == null)
                 return BadRequest();
 
-            await ProcessUploadedFiles(currentUser, customer, _formData.UploadedFiles, ActionRecord.Operation_.CreateCustomer_CreateImage);
+            Dictionary<string, string> customInfo = new Dictionary<string, string>()
+            {
+                { CustomInfoKey.CustomerCode, customer.Code }
+            };
+
+            if (_formData.UploadedFiles != null && _formData.UploadedFiles.Length > 0)
+            {
+                var resposeData = await m_ImageManagerSvc.UploadAsync(currentUser, customer, _formData.UploadedFiles);
+
+                if (resposeData.IsSuccess)
+                {
+                    customInfo.Add(CustomInfoKey.AddedList, resposeData.AddedFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Invalid, resposeData.InvalidFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
+                }
+            }
+
+            await m_DbContext.RecordChanges(
+                currentUser.UserName,
+                ActionRecord.Operation_.CreateCustomer_CreateImage,
+                ActionRecord.OperationStatus_.Success,
+                customInfo
+            );
+
             return RedirectToPage("Details", new { _code = customer.Code });
         }
 
-        private async Task<bool> ProcessUploadedFiles(P24IdentityUser _currentUser, CustomerProfile _customer, IFormFile[] _files, string _operation)
+        private async Task<bool> ValidateModelState(string _operation)
         {
-            if (_files == null && _files.Length <= 0)
-            {
-                await m_DbContext.RecordChanges(
-                    _currentUser.UserName,
-                    _operation,
-                    ActionRecord.OperationStatus_.Success,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.CustomerCode, _customer.Code }
-                    }
-                );
-
+            if (ModelState.IsValid)
                 return true;
-            }
 
-            ImageProcessor processor = new ImageProcessor(m_DbContext, _currentUser, _customer);
-            string operationStatus = await processor.ProcessUpload(_files);
-
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
             await m_DbContext.RecordChanges(
-                _currentUser.UserName,
+                currentUser.UserName,
                 _operation,
-                operationStatus,
-                processor.CustomInfo
+                ActionRecord.OperationStatus_.Failed,
+                new Dictionary<string, string>()
+                {
+                    { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
+                }
             );
 
-            return true;
+            return false;
         }
 
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
+        private readonly P24ImageManagerService m_ImageManagerSvc;
         private readonly ILogger<CreateModel> m_Logger;
     }
 

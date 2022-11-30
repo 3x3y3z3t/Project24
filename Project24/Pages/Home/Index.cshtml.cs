@@ -30,18 +30,27 @@ namespace Project24.Pages.Home
             }
 
             bool isCMSide = HttpContext.User.IsInRole(P24RoleName.Manager);
-            
+
             bool isNasSide = HttpContext.User.IsInRole(P24RoleName.NasUser)
                 || HttpContext.User.IsInRole(P24RoleName.NasTester);
 
             if (isCMSide && isNasSide)
             {
+                //return RedirectToPage("../Home/Updater");
+                return RedirectToPage("../ClinicManager/Ticket/Create", new { _customerCode = "BN22112801" });
+                return RedirectToPage("../ClinicManager/Ticket/Create");
+                return RedirectToPage("../ClinicManager/Customer/Details", new { handler = "Fetch", _code = "BN22112803" });
+                return RedirectToPage("../ClinicManager/Customer/Details", new { _code = "BN22112802" });
+                return RedirectToPage("../ClinicManager/Customer/Delete", new { _code = "BN22112803" });
+                return RedirectToPage("../ClinicManager/Customer/Create");
+                return RedirectToPage("../ClinicManager/Customer/List");
+                return RedirectToPage("../Nas/Upload");
                 return Page();
             }
 
             if (isCMSide)
             {
-                return RedirectToPage("../ClinicManager/Customer/List");
+                return RedirectToPage("../ClinicManager/Index");
             }
 
             if (isNasSide)
