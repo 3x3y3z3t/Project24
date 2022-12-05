@@ -1,4 +1,4 @@
-﻿@*  P24/Customer/List.cshtml
+﻿@*  List.cshtml
     *  Version: 1.1 (2022.12.04)
     *
     *  Contributor
@@ -8,9 +8,9 @@
 @page "{handler?}"
 
 @using System.Globalization
-@model Project24.Pages.ClinicManager.ListCustomerModel
+@model Project24.Pages.ClinicManager.ListTicketsModel
 @{
-    ViewData["Title"] = "Danh sách bệnh nhân";
+    ViewData["Title"] = "Danh sách phiếu khám";
     Layout = "_Layout";
 
     string today = DateTime.Now.ToString("yyyy-MM-dd");
@@ -19,17 +19,17 @@
 <h1>@ViewData["Title"]</h1>
 
 <div>
-    <a asp-page="Create" class="btn btn-primary mr-1">Thêm bệnh nhân mới</a>
-    <a href="#" class="btn btn-secondary" hidden>Bổ sung bệnh nhân cũ</a>
+    <a asp-page="Create" class="btn btn-primary">Thêm phiếu khám mới</a>
+    <a href="#" class="btn btn-secondary" hidden>Bổ sung phiếu khám cũ</a>
 </div>
 <hr />
 
 <h4><a data-toggle="collapse" data-target="#search-form-collapse" style="color: inherit;">Tìm kiếm (click để mở rộng)</a></h4>
 <div id="search-form-collapse" class="collapse">
-    <form method="get" asp-page-handler="Search" enctype="application/x-www-form-urlencoded">
+    <form method="get" asp-page-handler="Search" enctype="application/x-www-form-urlencoded" class="col-md-8 col-lg-6 col-xl-5">
         <div class="form-group">
             <label class="control-label">Ngày tháng</label>
-            <input name="_date" type="date" class="form-control" value="" min="2000-01-01" max="@today" />
+            <input id="search-date" name="_date" type="date" class="form-control" value="" min="2000-01-01" max="@today" />
         </div>
         <div class="form-group">
             <label class="control-label">Tên</label>
@@ -54,11 +54,11 @@
 <div class="" style="font-size: x-large">
     @if (Model.IsSearchMode)
     {
-        <span>Tìm thấy <span class="font-weight-bold">@string.Format(CultureInfo.CreateSpecificCulture("vi-VN"), "{0:#,##0}", Model.Customers.Count)</span> bệnh nhân</span>
+        <span>Tìm thấy <span class="font-weight-bold">@string.Format(CultureInfo.CreateSpecificCulture("vi-VN"), "{0:#,##0}", Model.Tickets.Count)</span> phiếu khám</span>
     }
     else
     {
-        <span>Tổng số bệnh nhân: <span class="font-weight-bold">@string.Format(CultureInfo.CreateSpecificCulture("vi-VN"), "{0:#,##0}", Model.Customers.Count)</span></span>
+        <span>Tổng số phiếu: <span class="font-weight-bold">@string.Format(CultureInfo.CreateSpecificCulture("vi-VN"), "{0:#,##0}", Model.Tickets.Count)</span></span>
     }
 </div>
 
@@ -66,35 +66,31 @@
     <thead>
         <tr>
             <th style="width: 15ch;">Mã</th>
-            <th style="width: 25ch;">Họ và Tên</th>
-            <th style="width: 15ch;">Số điện thoại</th>
-            <th style="">Địa chỉ</th>
+            <th style="width: 25ch;">Họ Tên bệnh nhân</th>
+            <th style="width: 50ch;">Chẩn đoán - Xử trí</th>
             <th style="">Ghi chú</th>
-            <th style="width: 15ch;">Phiếu khám</th>
             <th style="width: 20ch;"></th>
         </tr>
     </thead>
 
     <tbody>
-        @foreach (var customer in Model.Customers)
+        @foreach (var ticket in Model.Tickets)
         {
-            int age = AppConfig.ThisYear - customer.DoB;
+            int age = AppConfig.ThisYear - ticket.CustomerDoB;
             <tr>
-                <td>@customer.Code</td>
-                <td>@customer.Fullname (@age)</td>
-                <td>@customer.PhoneNumber</td>
-                <td>@customer.Address</td>
-                <td>@customer.Notes</td>
-                <td>@customer.TicketCount (<a href="#">Xem</a>)</td>
+                <td>@ticket.Code</td>
+                <td>@ticket.CustomerFullName (@age)</td>
+                <td>@ticket.Diagnose: @ticket.Treatment</td>
+                <td>@ticket.Notes</td>
 
                 <td>
                     <div class="text-center">
                         <div>
-                            <a asp-page="Details" asp-route-_code="@customer.Code">Chi tiết</a> |
-                            <a asp-page="Edit" asp-route-_code="@customer.Code">Sửa thông tin</a>
+                            <a asp-page="Details" asp-route-_code="@ticket.Code">Chi tiết</a> |
+                            <a asp-page="Edit" asp-route-_code="@ticket.Code">Sửa thông tin</a>
                         </div>
                         <div>
-                            <a asp-page="Delete" asp-route-_code="@customer.Code" class="text-danger font-weight-bold">Xóa</a>
+                            <a asp-page="Delete" asp-route-_code="@ticket.Code" class="text-danger font-weight-bold">Xóa</a>
                         </div>
                     </div>
                 </td>
@@ -113,3 +109,4 @@
 </script>
     }
 }
+

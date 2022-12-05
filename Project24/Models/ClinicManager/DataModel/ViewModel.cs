@@ -1,5 +1,5 @@
 ﻿/*  ViewModel.cs
- *  Version: 1.0 (2022.11.28)
+ *  Version: 1.1 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -30,8 +30,48 @@ namespace Project24.Models.ClinicManager.DataModel
         [DataType(DataType.MultilineText)]
         public string Notes { get; set; }
 
+        public DateTime DeletedDate { get; set; }
+
+        public P24CustomerDetailsViewModel()
+        { }
+    }
+
+    public class P24CustomerDetailsViewModelEx : P24CustomerDetailsViewModel
+    {
         public DateTime AddedDate { get; set; }
 
+        public DateTime UpdatedDate { get; set; }
+
+        public string AddedUserName { get; set; }
+
+        public string UpdatedUserName { get; set; }
+
+        List<P24TicketDetailsViewModel> Tickets { get; set; }
+
+        public P24CustomerDetailsViewModelEx()
+            : base()
+        { }
+    }
+
+    public class P24TicketDetailsViewModel
+    {
+        public string Code { get; set; }
+
+        public string Diagnose { get; set; }
+
+        public string Treatment { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        public string Notes { get; set; }
+
+        public DateTime AddedDate { get; set; }
+
+        public P24TicketDetailsViewModel()
+        { }
+    }
+
+    public class P24TicketDetailsViewModelEx : P24TicketDetailsViewModel
+    {
         public DateTime UpdatedDate { get; set; }
 
         public DateTime DeletedDate { get; set; }
@@ -40,10 +80,10 @@ namespace Project24.Models.ClinicManager.DataModel
 
         public string UpdatedUserName { get; set; }
 
-        // TODO: Ticket
+        public P24CustomerDetailsViewModel Customer { get; set; }
 
-
-        public P24CustomerDetailsViewModel()
+        public P24TicketDetailsViewModelEx()
+            : base()
         { }
     }
 

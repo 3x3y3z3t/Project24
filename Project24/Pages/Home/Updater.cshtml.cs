@@ -1,5 +1,5 @@
 /*  Updater.cshtml.cs
- *  Version: 1.0 (2022.11.14)
+ *  Version: 1.1 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -31,7 +31,6 @@ namespace Project24.Pages.Home
         public string StatusMessage { get; set; } = "";
 
 
-
         public UpdaterModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, UpdaterService _updaterSvc, ILogger<UpdaterModel> _logger)
         {
             m_DbContext = _context;
@@ -45,11 +44,7 @@ namespace Project24.Pages.Home
 
         public void OnGet()
         {
-
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
-
-
-
         }
 
         public async Task<IActionResult> OnPostUploadAsync(IList<IFormFile> _files)
@@ -88,12 +83,21 @@ namespace Project24.Pages.Home
 
             foreach (var file in _files)
             {
-                int pos = file.FileName.IndexOf('/');
-                string path = file.FileName.Substring(0, pos);
-                if (path != "")
-                    path += "/";
-                string filename = file.FileName.Substring(pos + 1);
+                string path = file.FileName[7..];
+                int pos = path.LastIndexOf('/');
+                if (pos >= 0)
+                {
+                    path = path[0..pos];
+                }
+
+
+                string filename = file.FileName[(pos + 8)..];
                 string fileFullname = absPath + "/" + filename;
+
+                if (path != "")
+                { 
+                    Directory.CreateDirectory(absPath + "/" + path);
+                }
 
                 string hashCode = AppUtils.ComputeCyrb53HashCode(filename);
 

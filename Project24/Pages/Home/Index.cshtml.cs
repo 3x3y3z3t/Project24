@@ -36,14 +36,19 @@ namespace Project24.Pages.Home
 
             if (isCMSide && isNasSide)
             {
-                //return RedirectToPage("../Home/Updater");
-                return RedirectToPage("../ClinicManager/Ticket/Create", new { _customerCode = "BN22112801" });
+                return RedirectToPage("../ClinicManager/Index");
+                return RedirectToPage("../Home/Updater");
+                return RedirectToPage("../ClinicManager/Ticket/Delete", new { _code = "PK22120401" });
+                return RedirectToPage("../ClinicManager/Ticket/Edit", new { _code = "PK22113001" });
+                return RedirectToPage("../ClinicManager/Ticket/Details", new { _code = "PK22113001" });
+                return RedirectToPage("../ClinicManager/Ticket/List");
+                return RedirectToPage("../ClinicManager/Customer/List");
                 return RedirectToPage("../ClinicManager/Ticket/Create");
+                return RedirectToPage("../ClinicManager/Ticket/Create", new { _customerCode = "BN22112801" });
                 return RedirectToPage("../ClinicManager/Customer/Details", new { handler = "Fetch", _code = "BN22112803" });
                 return RedirectToPage("../ClinicManager/Customer/Details", new { _code = "BN22112802" });
                 return RedirectToPage("../ClinicManager/Customer/Delete", new { _code = "BN22112803" });
                 return RedirectToPage("../ClinicManager/Customer/Create");
-                return RedirectToPage("../ClinicManager/Customer/List");
                 return RedirectToPage("../Nas/Upload");
                 return Page();
             }

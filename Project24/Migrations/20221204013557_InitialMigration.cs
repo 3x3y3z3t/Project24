@@ -242,6 +242,44 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CustomerImages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AddedUserId = table.Column<string>(nullable: true),
+                    UpdatedUserId = table.Column<string>(nullable: true),
+                    Module = table.Column<byte>(nullable: false),
+                    Name = table.Column<string>(nullable: false),
+                    Path = table.Column<string>(nullable: false),
+                    AddedDate = table.Column<DateTime>(nullable: false),
+                    DeletedDate = table.Column<DateTime>(nullable: false),
+                    OwnerCustomerId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomerImages_AspNetUsers_AddedUserId",
+                        column: x => x.AddedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CustomerImages_CustomerProfiles_OwnerCustomerId",
+                        column: x => x.OwnerCustomerId,
+                        principalTable: "CustomerProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CustomerImages_AspNetUsers_UpdatedUserId",
+                        column: x => x.UpdatedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "VisitingProfiles",
                 columns: table => new
                 {
@@ -258,7 +296,7 @@ namespace Project24.Migrations
                     TicketStatus = table.Column<string>(nullable: true),
                     Diagnose = table.Column<string>(nullable: true),
                     ProposeTreatment = table.Column<string>(nullable: true),
-                    Note = table.Column<string>(nullable: true)
+                    Notes = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -284,7 +322,7 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CustomerImages",
+                name: "TicketImages",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -296,34 +334,27 @@ namespace Project24.Migrations
                     Path = table.Column<string>(nullable: false),
                     AddedDate = table.Column<DateTime>(nullable: false),
                     DeletedDate = table.Column<DateTime>(nullable: false),
-                    OwnerCustomerId = table.Column<int>(nullable: false),
-                    VisitingProfileId = table.Column<int>(nullable: true)
+                    OwnerTicketId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CustomerImages", x => x.Id);
+                    table.PrimaryKey("PK_TicketImages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomerImages_AspNetUsers_AddedUserId",
+                        name: "FK_TicketImages_AspNetUsers_AddedUserId",
                         column: x => x.AddedUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CustomerImages_CustomerProfiles_OwnerCustomerId",
-                        column: x => x.OwnerCustomerId,
-                        principalTable: "CustomerProfiles",
+                        name: "FK_TicketImages_VisitingProfiles_OwnerTicketId",
+                        column: x => x.OwnerTicketId,
+                        principalTable: "VisitingProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CustomerImages_AspNetUsers_UpdatedUserId",
+                        name: "FK_TicketImages_AspNetUsers_UpdatedUserId",
                         column: x => x.UpdatedUserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_CustomerImages_VisitingProfiles_VisitingProfileId",
-                        column: x => x.VisitingProfileId,
-                        principalTable: "VisitingProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -381,11 +412,6 @@ namespace Project24.Migrations
                 column: "UpdatedUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerImages_VisitingProfileId",
-                table: "CustomerImages",
-                column: "VisitingProfileId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_CustomerProfiles_AddedUserId",
                 table: "CustomerProfiles",
                 column: "AddedUserId");
@@ -393,6 +419,21 @@ namespace Project24.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_CustomerProfiles_UpdatedUserId",
                 table: "CustomerProfiles",
+                column: "UpdatedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketImages_AddedUserId",
+                table: "TicketImages",
+                column: "AddedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketImages_OwnerTicketId",
+                table: "TicketImages",
+                column: "OwnerTicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketImages_UpdatedUserId",
+                table: "TicketImages",
                 column: "UpdatedUserId");
 
             migrationBuilder.CreateIndex(
@@ -445,6 +486,9 @@ namespace Project24.Migrations
 
             migrationBuilder.DropTable(
                 name: "NasCachedFiles");
+
+            migrationBuilder.DropTable(
+                name: "TicketImages");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

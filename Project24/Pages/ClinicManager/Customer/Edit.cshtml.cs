@@ -1,5 +1,5 @@
 /*  P24/Customer/Edit.cshtml
- *  Version: 1.2 (2022.11.28)
+ *  Version: 1.3 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -25,6 +26,7 @@ using Project24.Utils.ClinicManager;
 
 namespace Project24.Pages.ClinicManager.Customer
 {
+    [Authorize(Roles = P24RoleName.Manager)]
     public class EditModel : PageModel
     {
         [BindProperty]
@@ -104,7 +106,7 @@ namespace Project24.Pages.ClinicManager.Customer
             {
                 await m_DbContext.RecordChanges(
                     currentUser.UserName,
-                    ActionRecord.Operation_.CreateCustomer,
+                    ActionRecord.Operation_.UpdateCustomer,
                     ActionRecord.OperationStatus_.Failed,
                     new Dictionary<string, string>()
                     {
@@ -131,7 +133,7 @@ namespace Project24.Pages.ClinicManager.Customer
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
-                ActionRecord.Operation_.CreateCustomer,
+                ActionRecord.Operation_.UpdateCustomer,
                 ActionRecord.OperationStatus_.Success,
                 new Dictionary<string, string>()
                 {

@@ -1,5 +1,5 @@
 ﻿/*  P24/Ticket/Create.cshtml
- *  Version: 1.0 (2022.11.30)
+ *  Version: 1.1 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -30,8 +29,7 @@ namespace Project24.Pages.ClinicManager.Ticket
     [RequestFormLimits(MultipartBodyLengthLimit = 32L * 1024L * 1024L)]
     public class CreateModel : PageModel
     {
-        public P24CreateTicketFormDataModel TicketFormData { get; }
-        //public P24CreateCustomerFormDataModel CustomerFormData { get; }
+        public P24CreateTicketFormDataModel TicketFormData { get; private set; }
 
         public string NextTicketCode { get; set; }
         public string NextCustomerCode { get; set; }
@@ -48,9 +46,9 @@ namespace Project24.Pages.ClinicManager.Ticket
 
         public void OnGet(string _customerCode)
         {
-            DailyIndexes dind = m_DbContext.DailyIndexes;
+            m_DailyIndexes = m_DbContext.DailyIndexes;
 
-            NextTicketCode = string.Format(AppConfig.TicketCodeFormatString, DateTime.Today, dind.VisitingIndex + 1);
+            NextTicketCode = string.Format(AppConfig.TicketCodeFormatString, DateTime.Today, m_DailyIndexes.VisitingIndex + 1);
 
             if (!string.IsNullOrEmpty(_customerCode))
             {
@@ -64,8 +62,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                 return Page();
 
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-
-            DailyIndexes dind = m_DbContext.DailyIndexes;
+            m_DailyIndexes = m_DbContext.DailyIndexes;
 
             var customer = await (from _customer in m_DbContext.CustomerProfiles
                                   where _customer.Code == TicketFormData.CustomerFormData.Code && _customer.DeletedDate == DateTime.MinValue
@@ -75,44 +72,8 @@ namespace Project24.Pages.ClinicManager.Ticket
             if (customer == null)
                 return BadRequest();
 
-            VisitingProfile ticket = new VisitingProfile(currentUser, customer, dind.VisitingIndex + 1)
-            {
-                Diagnose = TicketFormData.Diagnose,
-                ProposeTreatment = TicketFormData.Treatment,
-                Note = TicketFormData.Notes
-            };
-            await m_DbContext.AddAsync(ticket);
-            ++dind.VisitingIndex;
-
-            m_DbContext.DailyIndexes = dind;
-
-            Dictionary<string, string> customInfo = new Dictionary<string, string>()
-            {
-                { CustomInfoKey.TicketCode, ticket.Code },
-                { CustomInfoKey.CustomerCode, customer.Code },
-                { CustomInfoKey.HasNewCustomer, "false" }
-            };
-
-            if (TicketFormData.UploadedFiles != null && TicketFormData.UploadedFiles.Length > 0)
-            {
-                var resposeData = await m_ImageManagerSvc.UploadAsync(currentUser, ticket, TicketFormData.UploadedFiles);
-
-                if (resposeData.IsSuccess)
-                {
-                    customInfo.Add(CustomInfoKey.AddedList, resposeData.AddedFileNames.Count.ToString());
-                    customInfo.Add(CustomInfoKey.Invalid, resposeData.InvalidFileNames.Count.ToString());
-                    customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
-                }
-            }
-
-            await m_DbContext.RecordChanges(
-                currentUser.UserName,
-                ActionRecord.Operation_.CreateTicket,
-                ActionRecord.OperationStatus_.Success,
-                customInfo
-            );
-
-            return RedirectToPage("List");
+            this.TicketFormData = TicketFormData;
+            return await FinishCreateTicket(currentUser, customer, false);
         }
 
         public async Task<IActionResult> OnPostNewCustomerAsync([Bind] P24CreateTicketFormDataModel TicketFormData)
@@ -121,33 +82,39 @@ namespace Project24.Pages.ClinicManager.Ticket
                 return Page();
 
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            m_DailyIndexes = m_DbContext.DailyIndexes;
 
-            DailyIndexes dind = m_DbContext.DailyIndexes;
+            CustomerProfile customer = await CreateCustomerMinimal(currentUser, m_DailyIndexes.CustomerIndex + 1, TicketFormData.CustomerFormData);
+            ++m_DailyIndexes.CustomerIndex;
 
-            CustomerProfile customer = await CreateCustomerMinimal(currentUser, dind.CustomerIndex + 1, TicketFormData.CustomerFormData);
-            ++dind.CustomerIndex;
+            this.TicketFormData = TicketFormData;
+            return await FinishCreateTicket(currentUser, customer);
+        }
 
-            VisitingProfile ticket = new VisitingProfile(currentUser, customer, dind.VisitingIndex + 1)
-            {
-                Diagnose = TicketFormData.Diagnose,
-                ProposeTreatment = TicketFormData.Treatment,
-                Note = TicketFormData.Notes
-            };
-            await m_DbContext.AddAsync(ticket);
-            ++dind.VisitingIndex;
+        public async Task<IActionResult> OnPostCreateImageAsync([Bind] P24CreateImageFormDataModel _formData)
+        {
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
-            m_DbContext.DailyIndexes = dind;
+            if (!await ValidateModelState(ActionRecord.Operation_.CreateTicket_CreateImage))
+                return BadRequest();
+
+
+            var ticket = await (from _ticket in m_DbContext.CustomerProfiles
+                                where _ticket.Code == _formData.CustomerCode
+                                select _ticket)
+                         .FirstOrDefaultAsync();
+
+            if (ticket == null)
+                return BadRequest();
 
             Dictionary<string, string> customInfo = new Dictionary<string, string>()
             {
-                { CustomInfoKey.TicketCode, ticket.Code },
-                { CustomInfoKey.CustomerCode, customer.Code },
-                { CustomInfoKey.HasNewCustomer, "true" }
+                { CustomInfoKey.TicketCode, ticket.Code }
             };
 
-            if (TicketFormData.UploadedFiles != null && TicketFormData.UploadedFiles.Length > 0)
+            if (_formData.UploadedFiles != null && _formData.UploadedFiles.Length > 0)
             {
-                var resposeData = await m_ImageManagerSvc.UploadAsync(currentUser, ticket, TicketFormData.UploadedFiles);
+                var resposeData = await m_ImageManagerSvc.UploadAsync(currentUser, ticket, _formData.UploadedFiles);
 
                 if (resposeData.IsSuccess)
                 {
@@ -159,6 +126,48 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
+                ActionRecord.Operation_.CreateTicket_CreateImage,
+                ActionRecord.OperationStatus_.Success,
+                customInfo
+            );
+
+            return RedirectToPage("Details", new { _code = ticket.Code });
+        }
+
+        private async Task<IActionResult> FinishCreateTicket(P24IdentityUser _currentUser, CustomerProfile _customer, bool _hasNewCustomer = true)
+        {
+            TicketProfile ticket = new TicketProfile(_currentUser, _customer, m_DailyIndexes.VisitingIndex + 1)
+            {
+                Diagnose = TicketFormData.Diagnose,
+                ProposeTreatment = TicketFormData.Treatment,
+                Notes = TicketFormData.Notes
+            };
+            await m_DbContext.AddAsync(ticket);
+            ++m_DailyIndexes.VisitingIndex;
+
+            m_DbContext.DailyIndexes = m_DailyIndexes;
+
+            Dictionary<string, string> customInfo = new Dictionary<string, string>()
+            {
+                { CustomInfoKey.TicketCode, ticket.Code },
+                { CustomInfoKey.CustomerCode, _customer.Code },
+                { CustomInfoKey.HasNewCustomer, _hasNewCustomer.ToString() }
+            };
+
+            if (TicketFormData.UploadedFiles != null && TicketFormData.UploadedFiles.Length > 0)
+            {
+                var resposeData = await m_ImageManagerSvc.UploadAsync(_currentUser, ticket, TicketFormData.UploadedFiles);
+
+                if (resposeData.IsSuccess)
+                {
+                    customInfo.Add(CustomInfoKey.AddedList, resposeData.AddedFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Invalid, resposeData.InvalidFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
+                }
+            }
+
+            await m_DbContext.RecordChanges(
+                _currentUser.UserName,
                 ActionRecord.Operation_.CreateTicket,
                 ActionRecord.OperationStatus_.Success,
                 customInfo
@@ -205,6 +214,8 @@ namespace Project24.Pages.ClinicManager.Ticket
         }
 
 
+        private DailyIndexes m_DailyIndexes;
+
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
         private readonly P24ImageManagerService m_ImageManagerSvc;
@@ -212,92 +223,3 @@ namespace Project24.Pages.ClinicManager.Ticket
     }
 
 }
-
-
-
-
-///*  P24/Customer/Create.cshtml
-// *  Version: 1.4 (2022.11.28)
-// *
-// *  Contributor
-// *      Arime-chan
-// */
-//namespace Project24.Pages.ClinicManager.Customer
-//{
-//    public class CreateModel : PageModel
-//    {
-
-//        public async Task<IActionResult> OnPostAsync([Bind] P24CreateCustomerFormDataModel FormData)
-//        {
-//            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-
-//            if (!ModelState.IsValid)
-//            {
-//                await m_DbContext.RecordChanges(
-//                    currentUser.UserName,
-//                    ActionRecord.Operation_.CreateCustomer,
-//                    ActionRecord.OperationStatus_.Failed,
-//                    new Dictionary<string, string>()
-//                    {
-//                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-//                    }
-//                );
-
-//                return Page();
-//            }
-
-//            DailyIndexes dind = m_DbContext.DailyIndexes;
-
-//            var tokens = P24Utils.SplitFirstLastName(FormData.FullName);
-//            CustomerProfile customer = new CustomerProfile(currentUser, dind.CustomerIndex + 1)
-//            {
-//                FirstMidName = tokens.Item1,
-//                LastName = tokens.Item2,
-//                Gender = FormData.Gender,
-//                DateOfBirth = FormData.DateOfBirth,
-//                PhoneNumber = FormData.PhoneNumber,
-//                Address = FormData.Address,
-//                Notes = FormData.Notes
-//            };
-//            await m_DbContext.AddAsync(customer);
-
-//            ++dind.CustomerIndex;
-//            m_DbContext.DailyIndexes = dind;
-
-//            await ProcessUploadedFiles(currentUser, customer, FormData.UploadedFiles, ActionRecord.Operation_.CreateCustomer);
-//            return RedirectToPage("List");
-//        }
-
-//        public async Task<IActionResult> OnPostCreateImageAsync([Bind] P24CreateImageFormDataModel _formData)
-//        {
-//            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-
-//            if (!ModelState.IsValid)
-//            {
-//                await m_DbContext.RecordChanges(
-//                    currentUser.UserName,
-//                    ActionRecord.Operation_.CreateCustomer_CreateImage,
-//                    ActionRecord.OperationStatus_.Failed,
-//                    new Dictionary<string, string>()
-//                    {
-//                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-//                    }
-//                );
-
-//                return BadRequest();
-//            }
-
-//            var customer = await (from _customer in m_DbContext.CustomerProfiles
-//                                  where _customer.Code == _formData.CustomerCode
-//                                  select _customer)
-//                           .FirstOrDefaultAsync();
-
-//            if (customer == null)
-//                return BadRequest();
-
-//            await ProcessUploadedFiles(currentUser, customer, _formData.UploadedFiles, ActionRecord.Operation_.CreateCustomer_CreateImage);
-//            return RedirectToPage("Details", new { _code = customer.Code });
-//        }
-//    }
-
-//}

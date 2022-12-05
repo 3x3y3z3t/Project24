@@ -1,0 +1,110 @@
+﻿@*  P24/Ticket/Delete.cshtml
+    *  Version: 1.0 (2022.12.04)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.ClinicManager.Ticket.DeleteModel
+@{
+    ViewData["Title"] = "Xóa phiếu khám";
+    Layout = "_Layout";
+
+    bool deleted = false;
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="List">Trở về danh sách</a>
+<!--partial name="_StatusMessage" model="Model.StatusMessage" /-->
+<hr />
+
+@if (Model.TicketViewData.DeletedDate != DateTime.MinValue)
+{
+    deleted = true;
+
+    <div class="text-danger font-weight-bold" style="font-size: larger;">
+        Bệnh nhân <code>@Model.TicketViewData.Code</code> đã bị xóa vào ngày @Model.TicketViewData.DeletedDate.
+    </div>
+    <br />
+}
+
+<div class="d-flex">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Mã phiếu khám:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Code</dd>
+
+            <dt class="col-sm-4">Chẩn đoán:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Diagnose</dd>
+
+            <dt class="col-sm-4">Xử trí:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Treatment</dd>
+
+            <dt class="col-sm-4">Ghi chú:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Notes</dd>
+
+            <dt class="col-sm-4">Ngày đăng ký:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.AddedDate (bởi @Model.TicketViewData.AddedUserName)</dd>
+
+            <dt class="col-sm-4">Cập nhật lần cuối:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.UpdatedDate (bởi @Model.TicketViewData.UpdatedUserName)</dd>
+        </dl>
+    </div>
+
+    <div class="col-md-5">
+        <div class="font-weight-normal ml-n3" style="font-size: x-large">Thông tin bệnh nhân:</div>
+        <hr class="ml-n3" />
+
+        <dl class="row">
+            <dt class="col-sm-4">Mã bệnh nhân:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Code</dd>
+
+            <dt class="col-sm-4">Họ và Tên bệnh nhân:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Fullname</dd>
+
+            <dt class="col-sm-4">Giới tính:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Gender</dd>
+
+            <dt class="col-sm-4">Năm sinh:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.DoB</dd>
+
+            <dt class="col-sm-4">Số điện thoại:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.PhoneNumber</dd>
+
+            <dt class="col-sm-4">Địa chỉ:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Address</dd>
+
+            <dt class="col-sm-4">Ghi chú:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Notes</dd>
+        </dl>
+
+        <div class="row">
+            <a asp-page="../Customer/Details" asp-route-_code="@Model.TicketViewData.Customer.Code" target="_blank">Xem chi tiết</a>
+        </div>
+    </div>
+</div>
+
+@if (!deleted)
+{
+    <div class="row">
+        <form method="post">
+            <input asp-for="TicketCode" class="form-control" value="@Model.TicketViewData.Code" readonly hidden />
+
+            <button type="submit" class="btn btn-danger mr-1">Xóa phiếu khám</button>
+            <a asp-page="List" class="btn btn-secondary">Hủy bỏ</a>
+
+            @Html.AntiForgeryToken()
+        </form>
+    </div>
+    <hr />
+}
+
+<div id="list-image">
+    <partial name="_CommonListImage" model="@Model.ListImageModel" />
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

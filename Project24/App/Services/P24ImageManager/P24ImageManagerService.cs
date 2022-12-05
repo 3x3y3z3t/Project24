@@ -1,5 +1,5 @@
 ﻿/*  P24ImageManagerService.cs
- *  Version: 1.0 (2022.11.30)
+ *  Version: 1.1 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -39,14 +39,17 @@ namespace Project24.App.Services.P24ImageManager
 
             public List<string> InvalidFileNames { get; set; } = new List<string>();
             public List<string> AddedFileNames { get; set; } = new List<string>();
+            public List<string> DeletedFileNames { get; set; } = new List<string>();
             public List<string> ErrorFileMessages { get; set; } = new List<string>();
         }
+
 
         public P24ImageManagerService(ApplicationDbContext _dbContext, ILogger<P24ImageManagerService> _logger)
         {
             m_DbContext = _dbContext;
             m_Logger = _logger;
         }
+
 
         /// <summary> Process image upload for the current entity, namely CustomerProfile (customer) and VisitingProfile (visiting ticket). </summary>
         /// <param name="_user">The user performing the request.</param>
@@ -66,8 +69,7 @@ namespace Project24.App.Services.P24ImageManager
                 return m_ResponseData;
             }
 
-            VisitingProfile ticket = _entity as VisitingProfile;
-            if (ticket != null)
+            if (_entity is TicketProfile)
             {
                 await UploadTicketImageAsync(_files, _cancellationToken);
                 m_ResponseData.IsSuccess = true;
@@ -79,6 +81,49 @@ namespace Project24.App.Services.P24ImageManager
             return null;
         }
 
+        /// <summary> Delete a list of images from database and move them to deleted storage. </summary>
+        /// <typeparam name="T">The image entity type, namely `CustomerImage` and `TicketImage`.</typeparam>
+        /// <param name="_user">The user performing the request.</param>
+        /// <param name="_images">The list of images to be deletd.</param>
+        /// <param name="_cancellationToken">Cancellation Token.</param>
+        public async Task<ResponseData> DeleteAsync<T>(P24IdentityUser _user, ICollection<T> _images, CancellationToken _cancellationToken = default)
+            where T : P24ImageModelBase
+        {
+            m_RequestData = new RequestData(_user, null);
+            m_ResponseData = new ResponseData();
+
+            foreach (var image in _images)
+            {
+                if (await DeleteImageAsync(image, _cancellationToken))
+                {
+                    image.DeletedDate = DateTime.Now;
+                    image.UpdatedUser = m_RequestData.User;
+
+                    m_DbContext.Update(image);
+                }
+            }
+            m_ResponseData.IsSuccess = true;
+
+            return m_ResponseData;
+        }
+
+        /// <summary> Delete an images from database and move them to deleted storage. </summary>
+        /// <param name="_user">The user performing the request.</param>
+        /// <param name="_image">The image to be deletd.</param>
+        /// <param name="_cancellationToken">Cancellation Token.</param>
+        /// <returns></returns>
+        public async Task<ResponseData> DeleteAsync(P24IdentityUser _user, P24ImageModelBase _image, CancellationToken _cancellationToken = default)
+        {
+            m_RequestData = new RequestData(_user, null);
+            m_ResponseData = new ResponseData();
+
+            await DeleteImageAsync(_image, _cancellationToken);
+            m_ResponseData.IsSuccess = true;
+
+            return m_ResponseData;
+        }
+
+        #region Upload
         /// <summary> Process image upload for CustomerImage. </summary>
         /// <param name="_files">List of files to be processed.</param>
         /// <param name="_cancellationToken">Cancellation Token.</param>
@@ -120,7 +165,7 @@ namespace Project24.App.Services.P24ImageManager
         {
             var validFiles = ValidateFiles(_files);
 
-            VisitingProfile ticket = m_RequestData.Entity as VisitingProfile;
+            TicketProfile ticket = m_RequestData.Entity as TicketProfile;
             CustomerProfile customer = ticket.Customer;
             List<TicketImage> addedImages = new List<TicketImage>(validFiles.Count);
 
@@ -190,6 +235,46 @@ namespace Project24.App.Services.P24ImageManager
 
             return validFiles;
         }
+        #endregion
+
+        #region Delete
+        /// <summary> "Delete an image by moving the physical file to deleted storage. </summary>
+        /// <param name="_image">The image to be deleted.</param>
+        /// <param name="_cancellationToken">Cancellation Token.</param>
+        /// <returns>true if the operation success, otherwise false.</returns>
+        private async Task<bool> DeleteImageAsync(P24ImageModelBase _image, CancellationToken _cancellationToken)
+        {
+            string srcPath = DriveUtils.DataRootPath + "/" + _image.FullName;
+            string dstPath = DriveUtils.DeletedDataRootPath + "/" + _image.Path;
+            Directory.CreateDirectory(dstPath);
+
+            dstPath += "/" + _image.Name;
+
+            try
+            {
+                if (!File.Exists(srcPath))
+                {
+                    m_ResponseData.ErrorFileMessages.Add(_image.Name + ": file doesn't exist");
+                    return false;
+                }
+
+                File.Move(srcPath, dstPath, true);
+                if (!File.Exists(dstPath) || File.Exists(srcPath))
+                {
+                    m_ResponseData.ErrorFileMessages.Add(_image.Name + ": move failed");
+                    return false;
+                }
+            }
+            catch (Exception _e)
+            {
+                m_ResponseData.ErrorFileMessages.Add(_image.Name + ": " + _e.Message);
+                return false;
+            }
+
+            m_ResponseData.DeletedFileNames.Add(_image.Name);
+            return true;
+        }
+        #endregion
 
 
         private RequestData m_RequestData;

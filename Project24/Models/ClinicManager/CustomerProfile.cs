@@ -39,7 +39,7 @@ namespace Project24.Models.ClinicManager
         public string Notes { get; set; }
 
         public virtual ICollection<CustomerImage> CustomerImages { get; protected set; }
-        public virtual ICollection<VisitingProfile> VisitingTickets { get; protected set; }
+        public virtual ICollection<TicketProfile> VisitingTickets { get; protected set; }
 
         public string FullName { get { if (string.IsNullOrEmpty(FirstMidName)) return LastName; return FirstMidName + " " + LastName; } }
 

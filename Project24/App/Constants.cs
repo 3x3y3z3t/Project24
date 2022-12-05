@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.6 (2022.11.29)
+ *  Version: 1.7 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -49,11 +49,15 @@ namespace Project24
         public const string LastNameTooLong = "Last name is too long";
 
         public const string InvalidModelState = "Invalid ModelState";
+        public const string CurrentUserIsNull = "currentUser is null";
+
         public const string CustomerNotFound = "Customer not found";
         public const string CustomerDeleted = "Customer already deleted";
+        
+        public const string TicketDeleted = "Ticket already deleted";
+        
         public const string ImageNotFound = "Image not found";
 
-        public const string CurrentUserIsNull = "currentUser is null";
     }
 
     /// <summary> This class define error message constants for Clinic Manager module, or Project24 (P24) side.</summary>
@@ -104,6 +108,7 @@ namespace Project24
         public const string ImageId = "imgId";
 
         public const string AddedList = "added";
+        public const string DeletedList = "deleted";
         public const string Malfunctions = "malfunctions";
 
         public const string ParentDir = "dir";

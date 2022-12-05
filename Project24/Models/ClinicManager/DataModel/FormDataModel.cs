@@ -1,5 +1,5 @@
 ﻿/*  FormDataModel.cs
- *  Version: 1.1 (2022.11.29)
+ *  Version: 1.2 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -112,21 +112,11 @@ namespace Project24.Models.ClinicManager.DataModel
         [Required]
         public string Code { get; set; }
 
-        [Required(ErrorMessage = P24Message.NameCannotBeEmpty)]
-        public string Fullname { get; set; }
+        [Required]
+        public string Diagnose { get; set; }
 
-        [Required(ErrorMessage = P24Message.GenderCannotBeEmpty)]
-        public char Gender { get; set; }
-
-        [Required(ErrorMessage = P24Message.DoBCannotBeEmpty)]
-        [Range(1900, AppConfig.ThisYear, ErrorMessage = P24Message.DoBMustBeInRange)]
-        public int DoB { get; set; }
-
-        [DataType(DataType.PhoneNumber)]
-        public string PhoneNumber { get; set; }
-
-        [DataType(DataType.MultilineText)]
-        public string Address { get; set; }
+        [Required]
+        public string Treatment { get; set; }
 
         [DataType(DataType.MultilineText)]
         public string Notes { get; set; }

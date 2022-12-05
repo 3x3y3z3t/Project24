@@ -1,5 +1,5 @@
 ﻿/*  P24ImageModels.cs
- *  Version: 1.1 (2022.11.28)
+ *  Version: 1.2 (2022.12.04)
  *
  *  Contributor
  *      Arime-chan
@@ -39,6 +39,8 @@ namespace Project24.Models.ClinicManager
 
         public virtual P24IdentityUser AddedUser { get; protected set; }
         public virtual P24IdentityUser UpdatedUser { get; set; }
+
+        public string FullName { get { return Path + "/" + Name; } }
 
 
         protected P24ImageModelBase()
@@ -82,9 +84,9 @@ namespace Project24.Models.ClinicManager
     public class TicketImage : P24ImageModelBase
     {
         [ForeignKey("OwnerTicket")]
-        public int OwnedTicketId { get; protected set; }
+        public int OwnerTicketId { get; protected set; }
 
-        public virtual VisitingProfile OwnerTicket { get; protected set; }
+        public virtual TicketProfile OwnerTicket { get; protected set; }
 
 
         public TicketImage()
@@ -93,7 +95,7 @@ namespace Project24.Models.ClinicManager
             Module = P24Module.Customer;
         }
 
-        public TicketImage(P24IdentityUser _addedUser, VisitingProfile _ownerTicket)
+        public TicketImage(P24IdentityUser _addedUser, TicketProfile _ownerTicket)
             : base(_addedUser)
         {
             OwnerTicket = _ownerTicket;

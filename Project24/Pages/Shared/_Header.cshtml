@@ -1,5 +1,5 @@
 ﻿@*  _Header.cshtml
-    *  Version: 1.2 (2022.11.29)
+    *  Version: 1.3 (2022.12.04)
     *
     *  Contributor
     *      Arime-chan
@@ -40,15 +40,12 @@
                 <ul class="navbar-nav flex-grow-1">
                     @if (isManager)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/ClinicManager/Customer/List">Quản lý bệnh nhân</a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link text-dark" asp-page="/ClinicManager/Customer/List">Bệnh nhân</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark" asp-page="/ClinicManager/Ticket/List">Phiếu khám</a></li>
                     }
                     @if (isNasUser)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/Nas/Index">NAS</a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link text-dark" asp-page="/Nas/Index">NAS</a></li>
                     }
                 </ul>
             </div>

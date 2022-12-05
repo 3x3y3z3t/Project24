@@ -1,0 +1,101 @@
+﻿@*  P24/Ticket/Details.cshtml
+    *  Version: 1.0 (2022.12.04)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.ClinicManager.Ticket.DetailsModel
+@{
+    ViewData["Title"] = "Phiếu khám";
+    Layout = "_Layout";
+
+    string age = (DateTime.Now.Year - Model.TicketViewData.Customer.DoB) + "t";
+    bool deleted = false;
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="List">Trở về danh sách</a>
+<!--partial name="_StatusMessage" model="Model.StatusMessage" /-->
+<hr />
+
+@if (Model.TicketViewData.Customer.DeletedDate != DateTime.MinValue)
+{
+    deleted = true;
+
+    <div class="text-danger font-weight-bold" style="font-size: larger;">
+        Phiếu khám <code>@Model.TicketViewData.Code</code> đã bị xóa vào ngày @Model.TicketViewData.DeletedDate.
+    </div>
+    <br />
+}
+
+<div class="d-flex">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Mã phiếu khám:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Code</dd>
+
+            <dt class="col-sm-4">Chẩn đoán:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Diagnose</dd>
+
+            <dt class="col-sm-4">Xử trí:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Treatment</dd>
+
+            <dt class="col-sm-4">Ghi chú:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Notes</dd>
+
+            <dt class="col-sm-4">Ngày đăng ký:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.AddedDate (bởi @Model.TicketViewData.AddedUserName)</dd>
+
+            <dt class="col-sm-4">Cập nhật lần cuối:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.UpdatedDate (bởi @Model.TicketViewData.UpdatedUserName)</dd>
+        </dl>
+    </div>
+
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Mã bệnh nhân:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Code</dd>
+
+            <dt class="col-sm-4">Họ và Tên bệnh nhân:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Fullname</dd>
+
+            <dt class="col-sm-4">Giới tính:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Gender</dd>
+
+            <dt class="col-sm-4">Năm sinh:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.DoB (@age)</dd>
+
+            <dt class="col-sm-4">Số điện thoại:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.PhoneNumber</dd>
+
+            <dt class="col-sm-4">Địa chỉ:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Address</dd>
+
+            <dt class="col-sm-4">Ghi chú:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Customer.Notes</dd>
+        </dl>
+    </div>
+</div>
+
+@if (Model.TicketViewData.Customer.DeletedDate == DateTime.MinValue)
+{
+    <div class="row">
+        <a asp-page="Edit" asp-route-_code="@Model.TicketViewData.Code" class="btn btn-primary mr-2">Chỉnh sửa</a>
+        <a asp-page="Delete" asp-route-_code="@Model.TicketViewData.Code" class="text-danger font-weight-bold ml-2 my-auto">Xóa phiếu khám bệnh</a>
+    </div>
+
+    <div class="row">
+    </div>
+}
+<br />
+
+<div id="list-image">
+    <partial name="_CommonListImage" model="@Model.ListImageModel" />
+</div>
+
+@section Scripts {
+<script src="~/js/clinic-manager/clinic-manager-utils.js"></script>
+}

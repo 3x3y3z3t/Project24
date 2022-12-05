@@ -9,8 +9,8 @@ using Project24.Data;
 namespace Project24.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20221130035616_AddTicketImageTracking")]
-    partial class AddTicketImageTracking
+    [Migration("20221204013557_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -277,9 +277,6 @@ namespace Project24.Migrations
                     b.Property<string>("UpdatedUserId")
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<int?>("VisitingProfileId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AddedUserId");
@@ -287,8 +284,6 @@ namespace Project24.Migrations
                     b.HasIndex("OwnerCustomerId");
 
                     b.HasIndex("UpdatedUserId");
-
-                    b.HasIndex("VisitingProfileId");
 
                     b.ToTable("CustomerImages");
                 });
@@ -373,7 +368,7 @@ namespace Project24.Migrations
                         .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("OwnedTicketId")
+                    b.Property<int>("OwnerTicketId")
                         .HasColumnType("int");
 
                     b.Property<string>("Path")
@@ -387,14 +382,14 @@ namespace Project24.Migrations
 
                     b.HasIndex("AddedUserId");
 
-                    b.HasIndex("OwnedTicketId");
+                    b.HasIndex("OwnerTicketId");
 
                     b.HasIndex("UpdatedUserId");
 
                     b.ToTable("TicketImages");
                 });
 
-            modelBuilder.Entity("Project24.Models.ClinicManager.VisitingProfile", b =>
+            modelBuilder.Entity("Project24.Models.ClinicManager.TicketProfile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -422,7 +417,7 @@ namespace Project24.Migrations
                     b.Property<bool>("IsTicketOpen")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Note")
+                    b.Property<string>("Notes")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("ProposeTreatment")
@@ -575,10 +570,6 @@ namespace Project24.Migrations
                     b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
                         .WithMany()
                         .HasForeignKey("UpdatedUserId");
-
-                    b.HasOne("Project24.Models.ClinicManager.VisitingProfile", null)
-                        .WithMany("Images")
-                        .HasForeignKey("VisitingProfileId");
                 });
 
             modelBuilder.Entity("Project24.Models.ClinicManager.CustomerProfile", b =>
@@ -598,9 +589,9 @@ namespace Project24.Migrations
                         .WithMany()
                         .HasForeignKey("AddedUserId");
 
-                    b.HasOne("Project24.Models.ClinicManager.VisitingProfile", "OwnerTicket")
-                        .WithMany()
-                        .HasForeignKey("OwnedTicketId")
+                    b.HasOne("Project24.Models.ClinicManager.TicketProfile", "OwnerTicket")
+                        .WithMany("TicketImages")
+                        .HasForeignKey("OwnerTicketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -609,7 +600,7 @@ namespace Project24.Migrations
                         .HasForeignKey("UpdatedUserId");
                 });
 
-            modelBuilder.Entity("Project24.Models.ClinicManager.VisitingProfile", b =>
+            modelBuilder.Entity("Project24.Models.ClinicManager.TicketProfile", b =>
                 {
                     b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()

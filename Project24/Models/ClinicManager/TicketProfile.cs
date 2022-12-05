@@ -13,7 +13,7 @@ using Project24.Identity;
 
 namespace Project24.Models.ClinicManager
 {
-    public class VisitingProfile : P24ModelBase
+    public class TicketProfile : P24ModelBase
     {
         [ForeignKey("Customer")]
         public int CustomerId { get; protected set; }
@@ -27,17 +27,17 @@ namespace Project24.Models.ClinicManager
         public string ProposeTreatment { get; set; }
 
         [DataType(DataType.MultilineText)]
-        public string Note { get; set; }
+        public string Notes { get; set; }
 
         public virtual CustomerProfile Customer { get; protected set; }
-        public virtual ICollection<CustomerImage> Images { get; protected set; }
+        public virtual ICollection<TicketImage> TicketImages { get; protected set; }
 
 
-        public VisitingProfile()
+        public TicketProfile()
             : base()
         { }
 
-        public VisitingProfile(P24IdentityUser _addedUser, CustomerProfile _customer, int _dailyIndex)
+        public TicketProfile(P24IdentityUser _addedUser, CustomerProfile _customer, int _dailyIndex)
             : base(_addedUser)
         {
             Code = string.Format(AppConfig.TicketCodeFormatString, AddedDate, _dailyIndex);

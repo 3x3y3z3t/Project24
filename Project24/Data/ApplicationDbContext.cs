@@ -29,7 +29,7 @@ namespace Project24.Data
         public DbSet<CustomerProfile> CustomerProfiles { get; set; }
         public DbSet<CustomerImage> CustomerImages { get; set; }
 
-        public DbSet<VisitingProfile> VisitingProfiles { get; set; }
+        public DbSet<TicketProfile> VisitingProfiles { get; set; }
         public DbSet<TicketImage> TicketImages { get; set; }
 
 
@@ -130,7 +130,7 @@ namespace Project24.Data
         {
             base.OnModelCreating(_builder);
 
-            _builder.Entity<VisitingProfile>()
+            _builder.Entity<TicketProfile>()
                 .HasIndex(_ticket => _ticket.Code)
                 .IsUnique();
 

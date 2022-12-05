@@ -30,7 +30,7 @@ namespace Project24.Pages.ClinicManager.Customer
     {
         public string CustomerCode { get; private set; }
 
-        public P24CustomerDetailsViewModel CustomerViewData { get; private set; }
+        public P24CustomerDetailsViewModelEx CustomerViewData { get; private set; }
 
         public P24ImageListingModel ListImageModel { get; private set; }
 
@@ -50,7 +50,7 @@ namespace Project24.Pages.ClinicManager.Customer
 
             var customers = from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
                             where _customer.Code == _code
-                            select new P24CustomerDetailsViewModel()
+                            select new P24CustomerDetailsViewModelEx()
                             {
                                 Code = _code,
                                 Fullname = _customer.FullName,

@@ -23,14 +23,14 @@ using Project24.Models.ClinicManager.DataModel;
 namespace Project24.Pages.ClinicManager.Customer
 {
     [Authorize(Roles = P24RoleName.Manager)]
-    public class DetailsrModel : PageModel
+    public class DetailsModel : PageModel
     {
-        public P24CustomerDetailsViewModel CustomerViewData { get; private set; }
+        public P24CustomerDetailsViewModelEx CustomerViewData { get; private set; }
 
         public P24ImageListingModel ListImageModel { get; private set; }
 
 
-        public DetailsrModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<DetailsrModel> _logger)
+        public DetailsModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<DetailsModel> _logger)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
@@ -45,7 +45,7 @@ namespace Project24.Pages.ClinicManager.Customer
 
             var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
                                   where _customer.Code == _code
-                                  select new P24CustomerDetailsViewModel()
+                                  select new P24CustomerDetailsViewModelEx()
                                   {
                                       Code = _customer.Code,
                                       Fullname = _customer.FullName,
@@ -122,7 +122,7 @@ namespace Project24.Pages.ClinicManager.Customer
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
-        private readonly ILogger<DetailsrModel> m_Logger;
+        private readonly ILogger<DetailsModel> m_Logger;
     }
 
 }

@@ -7,7 +7,7 @@
 
 @page
 
-@model Project24.Pages.ClinicManager.Customer.DetailsrModel
+@model Project24.Pages.ClinicManager.Customer.DetailsModel
 @{
     ViewData["Title"] = "Thông tin bệnh nhân";
     Layout = "_Layout";
@@ -44,11 +44,11 @@
     <dt class="col-sm-2">Năm sinh:</dt>
     <dd class="col-sm-10">@Model.CustomerViewData.DoB (@age)</dd>
 
-    <dt class="col-sm-2">Địa chỉ:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.Address</dd>
-
     <dt class="col-sm-2">Số điện thoại:</dt>
     <dd class="col-sm-10">@Model.CustomerViewData.PhoneNumber</dd>
+
+    <dt class="col-sm-2">Địa chỉ:</dt>
+    <dd class="col-sm-10">@Model.CustomerViewData.Address</dd>
 
     <dt class="col-sm-2">Ghi chú:</dt>
     <dd class="col-sm-10">@Model.CustomerViewData.Notes</dd>

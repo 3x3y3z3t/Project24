@@ -25,7 +25,7 @@ namespace Project24.App.Services
         public TimeSpan RemainingTime { get { return LaunchTime - DateTime.Now; } }
 
 
-        public UpdaterService(IServiceProvider _serviceProvider, ILogger<NasDiskService> _logger)
+        public UpdaterService(IServiceProvider _serviceProvider, ILogger<UpdaterService> _logger)
         {
             m_ServiceProvider = _serviceProvider;
             m_Logger = _logger;
@@ -164,7 +164,7 @@ namespace Project24.App.Services
 
 
         private readonly IServiceProvider m_ServiceProvider;
-        private readonly ILogger<NasDiskService> m_Logger;
+        private readonly ILogger<UpdaterService> m_Logger;
     }
 
 }

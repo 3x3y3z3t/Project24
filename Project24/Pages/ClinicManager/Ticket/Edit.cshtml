@@ -1,0 +1,96 @@
+﻿@*  P24/Ticket/Edit.cshtml
+    *  Version: 1.0 (2022.12.04)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.ClinicManager.Ticket.EditModel
+@{
+    ViewData["Title"] = "Sửa thông tin";
+    Layout = "_Layout";
+
+    string age = (DateTime.Now.Year - Model.Customer.DoB) + "t";
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="List">Trở về danh sách</a>
+<!--partial name="_StatusMessage" model="Model.StatusMessage" /-->
+<hr />
+
+<div class="d-flex">
+
+    <div class="col-md-6">
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="FormData.Code" class="control-label">Mã phiếu khám (tự động điền)</label>
+                <input asp-for="FormData.Code" class="form-control" readonly />
+                <span asp-validation-for="FormData.Code" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Diagnose" class="control-label">Chẩn đoán</label>
+                <input asp-for="FormData.Diagnose" class="form-control" />
+                <span asp-validation-for="FormData.Diagnose" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Treatment" class="control-label">Xử trí</label>
+                <input asp-for="FormData.Treatment" class="form-control" />
+                <span asp-validation-for="FormData.Treatment" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Notes" class="control-label">Ghi chú</label>
+                <textarea asp-for="FormData.Notes" text-wrap="normal" rows="4" class="form-control"></textarea>
+                <span asp-validation-for="FormData.Notes" class="text-danger"></span>
+            </div>
+            <hr />
+
+            <button type="submit" class="btn btn-primary mr-1">Cập nhật</button>
+            <a asp-page="List" class="btn btn-secondary">Hủy bỏ</a>
+
+            @Html.AntiForgeryToken()
+        </form>
+    </div>
+
+    <div class="col-md-1"></div>
+
+    <div class="col-md-5">
+        <div class="font-weight-normal ml-n3" style="font-size: x-large">Thông tin bệnh nhân:</div>
+        <hr class="ml-n3" />
+
+        <dl class="row">
+            <dt class="col-sm-4">Mã bệnh nhân:</dt>
+            <dd class="col-sm-8">@Model.Customer.Code</dd>
+
+            <dt class="col-sm-4">Họ và Tên bệnh nhân:</dt>
+            <dd class="col-sm-8">@Model.Customer.Fullname</dd>
+
+            <dt class="col-sm-4">Giới tính:</dt>
+            <dd class="col-sm-8">@Model.Customer.Gender</dd>
+
+            <dt class="col-sm-4">Năm sinh:</dt>
+            <dd class="col-sm-8">@Model.Customer.DoB (@age)</dd>
+
+            <dt class="col-sm-4">Số điện thoại:</dt>
+            <dd class="col-sm-8">@Model.Customer.PhoneNumber</dd>
+
+            <dt class="col-sm-4">Địa chỉ:</dt>
+            <dd class="col-sm-8">@Model.Customer.Address</dd>
+
+            <dt class="col-sm-4">Ghi chú:</dt>
+            <dd class="col-sm-8">@Model.Customer.Notes</dd>
+        </dl>
+
+        <div class="row">
+            <a asp-page="../Customer/Edit" asp-route-_code="@Model.Customer.Code" target="_blank">Sửa thông tin bệnh nhân</a>
+        </div>
+        </>
+
+    </div>
+
+    @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }
