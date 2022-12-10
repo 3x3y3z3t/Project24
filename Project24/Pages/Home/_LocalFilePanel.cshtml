@@ -1,5 +1,5 @@
 ﻿@*  _LocalFilePanel.cshtml
-    *  Version: 1.0 (2022.11.14)
+    *  Version: 1.1 (2022.12.08)
     *
     *  Contributor
     *      Arime-chan
@@ -51,11 +51,11 @@
             <h5>Newer build detected: <span class="text-success">@nextVersion.ToString()</span></h5>
             @if (_updaterService.IsUpdateInProgress)
             {
-                <button type="button" class="btn btn-warning" onclick="abortVerUpButton_OnClick()">Abort</button>
+                <button type="button" id="btn-abort" class="btn btn-warning" onclick="abortVerUpButton_OnClick()">Abort</button>
             }
             else
             {
-                <button type="button" class="btn btn-primary" onclick="verUpButton_OnClick()">Update</button>
+                <button type="button" id="btn-ver-up" class="btn btn-primary" onclick="verUpButton_OnClick()">Update</button>
             }
         }
         else if (versionComparison < 0)
@@ -64,7 +64,7 @@
             <p class="text-danger">Version Down currently not supported</p>
         }
 
-        <button type="button" class="btn btn-danger" onclick="purgeButton_OnClick()">Purge Next version files</button>
+        <button type="button" id="btn-purge" class="btn btn-danger" onclick="purgeButton_OnClick()">Purge Next version files</button>
     </div>
 </div>
 

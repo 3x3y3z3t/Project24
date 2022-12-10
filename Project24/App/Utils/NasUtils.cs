@@ -1,9 +1,10 @@
 ﻿/*  NasUtils.cs
- *  Version: 1.0 (2022.10.26)
+ *  Version: 1.1 (2022.12.06)
  *
  *  Contributor
  *      Arime-chan
  */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -110,7 +111,14 @@ namespace Project24.App
             var files = dirInfo.EnumerateFiles("*", new EnumerationOptions() { RecurseSubdirectories = true });
             foreach (FileInfo fi in files)
             {
-                string parent = fi.FullName.Replace(absPath, "").Replace(fi.Name, "").Trim(new char[] { '/', '\\' });
+                string fullname = fi.FullName.Replace(absPath, "").Replace('\\', '/').Trim('/');
+
+                string parent = "";
+                int pos = fullname.LastIndexOf('/');
+                if (pos > 0)
+                {
+                    parent = fullname[0..pos];
+                }
 
                 list.Add(new FileModel()
                 {

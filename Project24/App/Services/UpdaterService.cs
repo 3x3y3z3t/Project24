@@ -1,16 +1,17 @@
 ﻿/*  UpdaterService.cshtml
- *  Version: 1.0 (2022.11.15)
+ *  Version: 1.1 (2022.12.10)
  *
  *  Contributor
  *      Arime-chan
  */
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Project24.App.Utils;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,13 +26,15 @@ namespace Project24.App.Services
         public TimeSpan RemainingTime { get { return LaunchTime - DateTime.Now; } }
 
 
-        public UpdaterService(IServiceProvider _serviceProvider, ILogger<UpdaterService> _logger)
+        public UpdaterService(IConfiguration _configuration, IHostApplicationLifetime _appLifetime, ILogger<UpdaterService> _logger)
         {
-            m_ServiceProvider = _serviceProvider;
+            m_Configuration = _configuration;
+            m_ApplicationLifetime = _appLifetime;
             m_Logger = _logger;
 
             UpdatePreparationTime();
         }
+
 
         public Task StartAsync(CancellationToken _cancellationToken)
         {
@@ -99,30 +102,6 @@ namespace Project24.App.Services
         {
             m_Logger.LogWarning("Timeout. Commencing update..");
 
-            string nextAbsPath = DriveUtils.AppNextRootPath.Replace(" ", " ");
-            string appAbsPath = DriveUtils.AppRootPath.Replace(" ", " ");
-
-            Process proc = new Process();
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                proc.StartInfo.UseShellExecute = true;
-                proc.StartInfo.FileName = "cmd.exe";
-                proc.StartInfo.Arguments = $"/K \"\"{nextAbsPath}\\update.bat\" \"{nextAbsPath}\" \"{appAbsPath}\"";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                proc.StartInfo.UseShellExecute = true;
-                proc.StartInfo.FileName = "/bin/bash";
-                proc.StartInfo.Arguments = $"\"{nextAbsPath}/update.sh\" \"{nextAbsPath}\" \"{appAbsPath}\"";
-            }
-            else
-            {
-                // Unsupported platform, but IDC because I never deploy this app on this "platform".
-            }
-
-            proc.Start();
-
             IsUpdateInProgress = false;
             LaunchTime = DateTime.MaxValue;
 
@@ -137,6 +116,23 @@ namespace Project24.App.Services
                 m_LoggerTimer.Change(Timeout.Infinite, 0);
                 m_LoggerTimer.Dispose();
             }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                InvokeUpdatereOnLinux();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            { }
+            else
+            {
+                // Unsupported platform, but IDC because I never deploy this app on this "platform".
+                throw new PlatformNotSupportedException("Your platform is not supported.");
+            }
+
+            Task.Delay(2000).Wait(); // wait 2 seconds for the launcher to start up;
+            m_Logger.LogInformation("Exiting app..");
+
+            m_ApplicationLifetime.StopApplication();
         }
 
         private void LogProgress(object? _state)
@@ -150,20 +146,56 @@ namespace Project24.App.Services
             m_Logger.LogWarning(RemainingTime.Minutes + " minutes left until update.");
         }
 
+        private void InvokeUpdatereOnLinux()
+        {
+            m_Logger.LogInformation("Performing update on Linux..");
+            
+            string nextAbsPath = DriveUtils.AppNextRootPath;
+            string appAbsPath = DriveUtils.AppRootPath;
+
+            // create updater argument file;
+            WriteArgumentsFile();
+
+            // modify file permission;
+            PlatformUtils.ExecUnixCommand($"chmod 777 \"{nextAbsPath}/Project24\"");
+            PlatformUtils.ExecUnixCommand($"chmod 777 \"{nextAbsPath}/Updater\"");
+            PlatformUtils.ExecUnixCommand($"chmod 777 \"{nextAbsPath}/update.sh\"");
+            m_Logger.LogInformation("chmod command sent.");
+
+            // call script to start updater service;
+            PlatformUtils.ExecUnixCommand($"{nextAbsPath}/update.sh -launchUpdater");
+            m_Logger.LogInformation("Launcher start command sent.");
+        }
+
         private void UpdatePreparationTime()
         {
-            using (var scope = m_ServiceProvider.CreateScope())
-            {
-                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                PreparationTime = configuration.GetValue("Updater:PreparationTime", 10);
-            }
+            PreparationTime = m_Configuration.GetValue("Updater:PreparationTime", 10);
         }
+
+        private void WriteArgumentsFile()
+        {
+            string nextAbsPath = DriveUtils.AppNextRootPath;
+            string appAbsPath = DriveUtils.AppRootPath;
+            int processId = Process.GetCurrentProcess().Id;
+
+            string filename = Path.GetFullPath(nextAbsPath + "/updater_args.cfg");
+
+            StreamWriter writer = File.CreateText(filename);
+            writer.WriteLine(processId);
+            writer.WriteLine(appAbsPath);
+            writer.WriteLine(nextAbsPath);
+
+            writer.Close();
+
+            m_Logger.LogInformation("Argument file written.");
+        }
+
 
         private Timer m_Timer = null;
         private Timer m_LoggerTimer = null;
 
-
-        private readonly IServiceProvider m_ServiceProvider;
+        private readonly IConfiguration m_Configuration;
+        private readonly IHostApplicationLifetime m_ApplicationLifetime;
         private readonly ILogger<UpdaterService> m_Logger;
     }
 

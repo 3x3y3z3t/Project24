@@ -36,8 +36,8 @@ namespace Project24.Pages.Home
 
             if (isCMSide && isNasSide)
             {
-                return RedirectToPage("../ClinicManager/Index");
                 return RedirectToPage("../Home/Updater");
+                return RedirectToPage("../ClinicManager/Index");
                 return RedirectToPage("../ClinicManager/Ticket/Delete", new { _code = "PK22120401" });
                 return RedirectToPage("../ClinicManager/Ticket/Edit", new { _code = "PK22113001" });
                 return RedirectToPage("../ClinicManager/Ticket/Details", new { _code = "PK22113001" });

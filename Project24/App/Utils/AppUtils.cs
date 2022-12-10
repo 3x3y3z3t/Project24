@@ -1,14 +1,16 @@
 ﻿/*  AppUtils.cs
- *  Version: 1.1 (2022.11.19)
+ *  Version: 1.2 (2022.12.06)
  *
  *  Contributor
  *      Arime-chan
  */
 
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Project24.App.Utils;
 
 namespace Project24.App
 {
@@ -67,13 +69,15 @@ namespace Project24.App
 
     public class AppUtils
     {
+        public static int ProcessId { get; private set; } = Process.GetCurrentProcess().Id;
         public static string AppRoot { get; private set; } = System.IO.Directory.GetCurrentDirectory();
+        public static string Today { get { return DateTime.Now.ToString("yyyy-MM-dd"); } }
 
         public static string CurrentSessionName { get; private set; } = string.Format("{0:yyyy}-{0:MM}-{0:dd}_{0:HH}-{0:mm}-{0:ss}", DateTime.Now);
 
-        public static string Today { get { return DateTime.Now.ToString("yyyy-MM-dd"); } }
-
         public static string CurrentVersion { get; set; }
+
+        public static UpdaterStats UpdaterStats { get; set; } = new UpdaterStats();
 
         public static string FormatDataSize(long _size)
         {

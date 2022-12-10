@@ -1,48 +1,48 @@
+#!/bin/bash
 
-echo "Next Path: $1"
-echo "App Path: $2"
-echo 
+sleep 1
 
-echo "Sending command to stop service.."
-sudo systemctl stop kestrel-p24app.service
+echo "$(date +'%Y/%m/%d %H:%M:%S'): Starting script.."
+echo "    switch   : $1"
+echo "    PID      : $2"
+echo "    App Path : $3"
+echo "    Next Path: $4"
 
-while :
-do
-    status=`systemctl show -p SubState kestrel-p24app.service --value`
-    if [[ $status != "dead" ]]
-    then
-        echo "    Waiting for service to stop.."
-        sleep 1
-    else
-        break
-    fi
-done
-echo $'Service stopped.\n'
-
-echo "Copying files.."
-
-rsync -r -p "$1" "$2"
-errCode=$?
-if [[ $errCode == 0 ]]
+if [[ $1 == "-launchUpdater" ]]
 then
-    echo $'Files copied ('$errCode$').\n'
-else
-    echo $'Rsync error ('$errCode$').\n'
-fi
+    # start updater (launcher)
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Sending command to start updater service.."
+    sudo systemctl start p24app-updater.service
+elif [[ $1 == "-launchApp" ]]
+then
+    # start main app
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Sending command to start Project24 app.."
+    sudo systemctl start kestrel-p24app.service
+elif [[ $1 == "-main" ]]
+then
+    # do update here..
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Starting update.."
 
-echo "Restarting service.."
-sudo systemctl start kestrel-p24app.service
+    # From rsync's man page: 
+    #   A trailing / on a source name means "copy the contents of this directory".
+    #   Without a trailing slash it means "copy the directory".
 
-while :
-do
-    status=`systemctl show -p SubState kestrel-p24app.service --value`
-
-    if [[ $status == "dead" ]]
+    rsync -rpvv "$4" "$3"
+    errCode=$?
+    if [[ $errCode == 0 ]]
     then
-        echo "    Service is still dead.."
-        sleep 1
+        echo $'    Files copied ('$errCode$').\n'
     else
-        break
+        echo $'    Rsync error ('$errCode$').\n'
     fi
-done
-echo "Service restarted. Updating done!"
+    
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Files updating success."
+
+    # start main app
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Sending command to start Project24 app.."
+    sudo systemctl start kestrel-p24app.service
+
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Updating done!"
+else
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Invalid first argument."
+fi

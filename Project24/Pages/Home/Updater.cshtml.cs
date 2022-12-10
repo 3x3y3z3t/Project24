@@ -1,5 +1,5 @@
 /*  Updater.cshtml.cs
- *  Version: 1.1 (2022.12.04)
+ *  Version: 1.2 (2022.12.06)
  *
  *  Contributor
  *      Arime-chan
@@ -11,6 +11,7 @@ using System.IO;
 using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +19,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.Services;
+using Project24.App.Utils;
 using Project24.Data;
 using Project24.Identity;
 using Project24.Models;
 
 namespace Project24.Pages.Home
 {
+    [Authorize(Roles = P24RoleName.Power)]
     public class UpdaterModel : PageModel
     {
         public List<NasUtils.FileModel> LocalFiles { get; set; }
@@ -47,30 +50,36 @@ namespace Project24.Pages.Home
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
         }
 
+        public async Task<IActionResult> OnPostInitUploadAsync()
+        {
+            if (!await ValidateModelState(ActionRecord.Operation_.Updater_UploadNextFiles))
+                return BadRequest();
+
+            string json = Request.Headers["TotalFiles"];
+            int.TryParse(json, out int totalFiles);
+            AppUtils.UpdaterStats.TotalFilesToUpload = totalFiles;
+            AppUtils.UpdaterStats.TotalUploadedFiles = 0;
+
+            return StatusCode(StatusCodes.Status200OK);
+        }
+
+        public async Task<IActionResult> OnPostFinalizeUploadAsync()
+        {
+            if (!await ValidateModelState(ActionRecord.Operation_.Updater_UploadNextFiles))
+                return BadRequest();
+
+            AppUtils.UpdaterStats.TotalFilesToUpload = 0;
+            AppUtils.UpdaterStats.TotalUploadedFiles = 0;
+
+            return StatusCode(StatusCodes.Status200OK);
+        }
+
         public async Task<IActionResult> OnPostUploadAsync(IList<IFormFile> _files)
         {
-            #region Common Validation
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return Content(ErrorMessage.CurrentUserIsNull, MediaTypeNames.Text.Plain);
-            }
-
-            if (!ModelState.IsValid)
-            {
-                await m_DbContext.RecordChanges(
-                    currentUser.UserName,
-                    ActionRecord.Operation_.Updater_UploadNextFiles,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                    }
-                );
-
+            if (!await ValidateModelState(ActionRecord.Operation_.Updater_UploadNextFiles))
                 return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
-            }
-            #endregion
+
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
             string absPath = DriveUtils.AppNextRootPath;
             DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
@@ -83,34 +92,25 @@ namespace Project24.Pages.Home
 
             foreach (var file in _files)
             {
-                string path = file.FileName[7..];
-                int pos = path.LastIndexOf('/');
-                if (pos >= 0)
-                {
-                    path = path[0..pos];
-                }
-
-
-                string filename = file.FileName[(pos + 8)..];
-                string fileFullname = absPath + "/" + filename;
-
-                if (path != "")
-                { 
-                    Directory.CreateDirectory(absPath + "/" + path);
-                }
-
-                string hashCode = AppUtils.ComputeCyrb53HashCode(filename);
+                UpdaterUtils.UploadFileInfo fi = UpdaterUtils.ComputeUploadFileInfo(file.FileName[8..]);
 
                 DateTime dt = epoch;
-                if (lastModDates.ContainsKey(hashCode))
+                if (lastModDates.ContainsKey(fi.HashCode))
                 {
-                    long millis = lastModDates[hashCode];
+                    long millis = lastModDates[fi.HashCode];
                     dt = epoch.AddMilliseconds(millis).ToLocalTime();
                 }
 
+                if (fi.Path != "")
+                {
+                    Directory.CreateDirectory(absPath + "/" + fi.Path);
+                }
+
+                string fileFullname = absPath + "/" + fi.Path + fi.Name;
+
                 try
                 {
-                    Stream stream = System.IO.File.Create(fileFullname, 4 * 1024);
+                    Stream stream = System.IO.File.Create(fileFullname, 8 * 1024);
                     await file.CopyToAsync(stream);
                     stream.Close();
 
@@ -136,13 +136,18 @@ namespace Project24.Pages.Home
                 }
             );
 
+            AppUtils.UpdaterStats.TotalUploadedFiles += _files.Count;
+
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
-            StatusMessage = _files.Count + " files uploaded succesfully.";
+            StatusMessage = AppUtils.UpdaterStats.TotalUploadedFiles + "/" + AppUtils.UpdaterStats.TotalFilesToUpload + " files uploaded succesfully.";
             return Partial("_LocalFilePanel", this);
         }
 
         public async Task<IActionResult> OnPostVersionUp()
         {
+            if (!await ValidateModelState(ActionRecord.Operation_.Updater_PurgeNextFiles))
+                return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
+
             m_UpdaterService.Start();
 
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
@@ -152,6 +157,9 @@ namespace Project24.Pages.Home
 
         public async Task<IActionResult> OnPostAbortVersionUp()
         {
+            if (!await ValidateModelState(ActionRecord.Operation_.Updater_PurgeNextFiles))
+                return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
+
             m_UpdaterService.Abort();
 
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
@@ -161,28 +169,10 @@ namespace Project24.Pages.Home
 
         public async Task<IActionResult> OnPostPurgeNext()
         {
-            #region Common Validation
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-            if (currentUser == null)
-            {
-                return Content(ErrorMessage.CurrentUserIsNull, MediaTypeNames.Text.Plain);
-            }
-
-            if (!ModelState.IsValid)
-            {
-                await m_DbContext.RecordChanges(
-                    currentUser.UserName,
-                    ActionRecord.Operation_.Updater_PurgeNextFiles,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                    }
-                );
-
+            if (!await ValidateModelState(ActionRecord.Operation_.Updater_PurgeNextFiles))
                 return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
-            }
-            #endregion
+
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
 
@@ -228,8 +218,28 @@ namespace Project24.Pages.Home
                 );
             }
 
+            LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
             StatusMessage = "Next version files purged.";
             return Partial("_LocalFilePanel", this);
+        }
+
+        private async Task<bool> ValidateModelState(string _operation)
+        {
+            if (ModelState.IsValid)
+                return true;
+
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            await m_DbContext.RecordChanges(
+                currentUser.UserName,
+                _operation,
+                ActionRecord.OperationStatus_.Failed,
+                new Dictionary<string, string>()
+                {
+                    { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
+                }
+            );
+
+            return false;
         }
 
 

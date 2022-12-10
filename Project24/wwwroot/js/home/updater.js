@@ -1,5 +1,5 @@
 ﻿/*  updater.js
- *  Version: 1.0 (2022.11.05)
+ *  Version: 1.1 (2022.12.10)
  *
  *  Contributor
  *      Arime-chan
@@ -35,8 +35,11 @@ $(document).ready(function () {
 });
 
 function uploadButton_onClick() {
+    $("#button-upload").attr("disabled", true);
+
     if (Updater.m_UploadFileList == null || Updater.m_UploadFileList.length <= 0) {
         console.error("There is no file to upload!");
+        $("#button-upload").removeAttr("disabled");
         return;
     }
 
@@ -44,43 +47,7 @@ function uploadButton_onClick() {
         Updater.m_BatchStatus[i] = "idle";
     }
 
-    let formData = new FormData();
-
-    let hasPendingUpload = false;
-    let totalSize = 0;
-    let currentBatch = 0;
-    let uploadFileLastModDates = {};
-
-
-    for (let i = 0; i < Updater.m_UploadFileList.length; ++i) {
-        if (!Updater.m_ShouldUploadList[i])
-            continue;
-
-        let file = Updater.m_UploadFileList[i];
-        if (totalSize + file.size < c_MaxUploadSize) {
-            hasPendingUpload = true;
-
-            formData.append("_files", file);
-            totalSize += file.size;
-
-            let hashCode = Updater.m_UploadFileHashCodes[i];
-            uploadFileLastModDates[hashCode] = file.lastModified;
-
-            continue;
-        }
-
-        uploadBatch(currentBatch + 1, formData, uploadFileLastModDates);
-
-        hasPendingUpload = false;
-        ++currentBatch;
-        formData = new FormData();
-        totalSize = 0;
-        uploadFileLastModDates = {};
-    }
-
-    if (hasPendingUpload) {
-        uploadBatch(currentBatch + 1, formData, uploadFileLastModDates);
-    }
+    initUpload();
 }
 
 function purgeButton_OnClick() {
@@ -95,6 +62,7 @@ function purgeButton_OnClick() {
         processData: false,
         success: function (_content) {
             $("#local-file-panel").html(_content);
+            localFileList_OnChanged();
         },
         error: function (_xhr, _status, _errorThrow) {
             console.error("Purge Request error (" + _status + ")\nServer msg: " + _xhr.responseText);
@@ -104,6 +72,9 @@ function purgeButton_OnClick() {
 
 function verUpButton_OnClick() {
     let token = $("input[name='__RequestVerificationToken']").val();
+
+    $("#btn-ver-up").attr("disabled", true);
+    $("#btn-purge").attr("disabled", true);
 
     $.ajax({
         type: 'POST',
@@ -123,6 +94,9 @@ function verUpButton_OnClick() {
 
 function abortVerUpButton_OnClick() {
     let token = $("input[name='__RequestVerificationToken']").val();
+
+    $("#btn-abort").attr("disabled", true);
+    $("#btn-purge").attr("disabled", true);
 
     $.ajax({
         type: 'POST',
@@ -155,11 +129,10 @@ function localFileList_OnChanged() {
 
         Updater.m_LocalFileModDates[hashCode] = new Date(date);
     }
-
 }
 
 function ajaxPost_Success(_batch) {
-    Updater.m_BatchStatus[_batch] = "success";
+    Updater.m_BatchStatus[_batch - 1] = "success";
 
     console.info("Batch " + _batch + " success.");
 
@@ -174,10 +147,89 @@ function ajaxPost_Success(_batch) {
     if (!isFinished)
         return;
 
-    if (Updater.m_HasError)
+    if (Updater.m_HasError) {
         window.alert("Some upload batches failed. See console for more info.");
-    else
-        location.reload();
+    }
+    else {
+        //location.reload();
+    }
+
+    localFileList_OnChanged();
+    $("#button-upload").removeAttr("disabled");
+}
+
+function initUpload() {
+    let token = $("input[name='__RequestVerificationToken']").val();
+
+    let count = 0;
+    for (let i = 0; i < Updater.m_UploadFileList.length; ++i) {
+        if (Updater.m_ShouldUploadList[i])
+            ++count;
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: 'Updater/InitUpload',
+        headers: { "RequestVerificationToken": token, "TotalFiles": count },
+        success: function (_data, _status, _xhr) {
+            if (_xhr.status != 200) {
+                console.warn("initUpload success, but server returned '" + _status + "' (" + _xhr.status + ") instead.");
+                return;
+            }
+
+            startUpload();
+        },
+        error: function (_xhr, _status, _errorThrow) {
+            console.error("Upload init failed: " + _status + "\nServer msg: " + _xhr.responseText);
+        }
+    });
+}
+
+function startUpload() {
+    let formData = new FormData();
+
+    let hasPendingUpload = false;
+    let totalSize = 0;
+    let currentBatch = 0;
+    let uploadFileLastModDates = {};
+
+    for (let i = 0; i < Updater.m_UploadFileList.length; ++i) {
+        if (!Updater.m_ShouldUploadList[i])
+            continue;
+
+        let file = Updater.m_UploadFileList[i];
+        if (totalSize + file.size < c_MaxUploadSize) {
+            hasPendingUpload = true;
+
+            formData.append("_files", file);
+            totalSize += file.size;
+
+            // =====
+            let poss = file.webkitRelativePath.lastIndexOf("/");
+            let paths = file.webkitRelativePath.substring(8, poss + 1);
+            let hc = computeCyrb53HashCode(paths + file.name);
+            // =====
+
+            let hashCode = Updater.m_UploadFileHashCodes[i];
+            uploadFileLastModDates[hashCode] = file.lastModified;
+
+            continue;
+        }
+
+        uploadBatch(currentBatch + 1, formData, uploadFileLastModDates);
+
+        hasPendingUpload = false;
+        ++currentBatch;
+        formData = new FormData();
+        totalSize = 0;
+        uploadFileLastModDates = {};
+
+        --i;
+    }
+
+    if (hasPendingUpload) {
+        uploadBatch(currentBatch + 1, formData, uploadFileLastModDates);
+    }
 }
 
 function uploadBatch(_batch, _formData, _extraHeader) {

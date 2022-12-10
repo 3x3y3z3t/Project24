@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>aspnet-Project24-0059BB15-91C7-4DAF-9038-AB9A60512256</UserSecretsId>
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,7 +16,7 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <Authors>Arime-chan</Authors>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="1.1.1" />
     <PackageReference Include="Markdig.Signed" Version="0.30.4" />
@@ -30,8 +31,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.5" ExcludeAssets="All" />
     <PackageReference Include="NReco.Logging.File" Version="1.1.5" />
-      <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.7" />
-      <PackageReference Include="tusdotnet" Version="2.6.2" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.7" />
+    <PackageReference Include="tusdotnet" Version="2.6.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,12 +41,12 @@
     <Content Update="wwwroot\lib\**\*.js" CopyToPublishDirectory="never" />
     <Content Update="wwwroot\lib\**\*.min.js" CopyToPublishDirectory="always" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Folder Include="App\TusDotNetExt\" />
     <Folder Include="wwwroot\lib\tus-js-client\" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <None Include="update.sh" CopyToPublishDirectory="Always" />
   </ItemGroup>
@@ -79,7 +80,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v16.0\TextTemplating\Microsoft.TextTemplating.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $(IsPublish) != 'true'" />
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(SolutionDir)VersioningHelper/bin/Debug/netcoreapp3.1/VersioningHelper.exe $(TargetDir) $(TargetFileName)" />
+    <Exec Command="$(SolutionDir)VersioningHelper/bin/$(ConfigurationName)/netcoreapp3.1/VersioningHelper.exe $(TargetDir) $(TargetFileName)" />
   </Target>
 
   <Target Name="BeforePublish">
@@ -87,8 +88,10 @@
       <IsPublish>true</IsPublish>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="AfterPublishEx" AfterTargets="AfterPublish">
+    <Exec Command="copy $(SolutionDir)Updater\\bin\\$(ConfigurationName)\\netcoreapp3.1\\linux-arm64\\publish\\Updater.dll $(PublishDir)Updater.dll" />
+    <Exec Command="copy $(SolutionDir)Updater\\bin\\$(ConfigurationName)\\netcoreapp3.1\\linux-arm64\\publish\\Updater.deps.json $(PublishDir)Updater.deps.json" />
     <Exec Command="copy /v $(PublishDir)..\\version.xml $(PublishDir)version.xml" />
     <Exec Command="del /f $(PublishDir)appsettings.Development.json" />
     <Exec Command="del /f $(PublishDir)VersioningHelper*" />
