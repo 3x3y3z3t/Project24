@@ -1,5 +1,5 @@
 ﻿/*  P24ImageManagerService.cs
- *  Version: 1.1 (2022.12.04)
+ *  Version: 1.2 (2022.12.12)
  *
  *  Contributor
  *      Arime-chan
@@ -13,8 +13,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Project24.Data;
-using Project24.Identity;
+using Project24.Models;
 using Project24.Models.ClinicManager;
+using Project24.Models.Identity;
 
 namespace Project24.App.Services.P24ImageManager
 {
@@ -134,6 +135,8 @@ namespace Project24.App.Services.P24ImageManager
             CustomerProfile customer = m_RequestData.Entity as CustomerProfile;
             List<CustomerImage> addedImages = new List<CustomerImage>(validFiles.Count);
 
+            long totalSize = 0L;
+
             string path = customer.Code;
             string absPath = DriveUtils.DataRootPath + "/" + path;
             Directory.CreateDirectory(absPath);
@@ -153,9 +156,13 @@ namespace Project24.App.Services.P24ImageManager
                 addedImages.Add(image);
 
                 m_ResponseData.AddedFileNames.Add(file.FileName);
+                totalSize += file.Length;
             }
 
+            UserUpload upload = new UserUpload(m_RequestData.User, AppModule.P24_ClinicManager, addedImages.Count, totalSize);
+
             await m_DbContext.AddRangeAsync(addedImages);
+            await m_DbContext.AddAsync(upload);
         }
 
         /// <summary> Process image upload for TicketImage. </summary>
@@ -168,6 +175,8 @@ namespace Project24.App.Services.P24ImageManager
             TicketProfile ticket = m_RequestData.Entity as TicketProfile;
             CustomerProfile customer = ticket.Customer;
             List<TicketImage> addedImages = new List<TicketImage>(validFiles.Count);
+
+            long totalSize = 0L;
 
             string path = customer.Code + "/" + ticket.Code;
             string absPath = DriveUtils.DataRootPath + "/" + path;
@@ -188,9 +197,13 @@ namespace Project24.App.Services.P24ImageManager
                 addedImages.Add(image);
 
                 m_ResponseData.AddedFileNames.Add(file.FileName);
+                totalSize += file.Length;
             }
 
+            UserUpload upload = new UserUpload(m_RequestData.User, AppModule.P24_ClinicManager, addedImages.Count, totalSize);
+
             await m_DbContext.AddRangeAsync(addedImages);
+            await m_DbContext.AddAsync(upload);
         }
 
         /// <summary> Save a single IFormFile file to disk at the specified path. </summary>

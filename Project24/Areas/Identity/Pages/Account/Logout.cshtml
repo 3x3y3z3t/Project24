@@ -1,0 +1,35 @@
+﻿@*  Identity/Account/Logout.cshtml
+    *  Version: 1.0 (2022.12.11)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+@using Project24
+@model LogoutModel
+@{
+    ViewData["Title"] = "Đăng xuất";
+    ViewData[CustomInfoKey.DisableUserInfo] = true;
+}
+
+<div>
+    <h1>@ViewData["Title"]</h1>
+
+    <p class="font-weight-bold">Bạn đã đăng xuất thành công.</p>
+
+    <div>Hệ thống sẽ tự động trở về trang đăng nhập sau 10 giây.</div>
+    <div>(<a asp-area="Identity" asp-page="/Account/Login">Trở về trang đăng nhập ngay</a>)</div>
+</div>
+
+@section Scripts {
+<script type="text/javascript">
+    $(document).ready(function() {
+        window.setTimeout(redirect, 10 * 1000);
+    });
+
+    function redirect() {
+        location.href="/Identity/Account/Login";
+    }
+</script>
+}

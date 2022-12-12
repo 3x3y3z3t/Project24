@@ -1,12 +1,12 @@
 ﻿@*  _Header.cshtml
-    *  Version: 1.3 (2022.12.04)
+    *  Version: 1.4 (2022.12.11)
     *
     *  Contributor
     *      Arime-chan
 *@
 
 @using Microsoft.AspNetCore.Identity
-@using Project24.Identity
+@using Project24.Models.Identity
 @inject UserManager<P24IdentityUser> _userManager
 
 @{
@@ -27,7 +27,7 @@
 <header>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container">
-            <a href="/Home/Index" class="navbar-brand font-weight-bold">P24</a>
+            <a asp-page="Index" class="navbar-brand font-weight-bold">P24</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -35,17 +35,17 @@
 
             <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
 
-                <partial name="_UserInfo" />
+                <partial name="_LoginPartial" />
 
                 <ul class="navbar-nav flex-grow-1">
                     @if (isManager)
                     {
-                        <li class="nav-item"><a class="nav-link text-dark" asp-page="/ClinicManager/Customer/List">Bệnh nhân</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-page="/ClinicManager/Ticket/List">Phiếu khám</a></li>
+                        <li class="nav-item"><a asp-page="/ClinicManager/Customer/List" class="nav-link text-dark">Bệnh nhân</a></li>
+                        <li class="nav-item"><a asp-page="/ClinicManager/Ticket/List" class="nav-link text-dark">Phiếu khám</a></li>
                     }
                     @if (isNasUser)
                     {
-                        <li class="nav-item"><a class="nav-link text-dark" asp-page="/Nas/Index">NAS</a></li>
+                        <li class="nav-item"><a asp-page="/Nas/Index" class="nav-link text-dark">NAS</a></li>
                     }
                 </ul>
             </div>

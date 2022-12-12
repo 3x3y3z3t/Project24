@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Project24.Data;
-using Project24.Identity;
+using Project24.Models.Identity;
 
 namespace Project24.Pages.Nas
 {

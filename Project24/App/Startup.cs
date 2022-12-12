@@ -12,7 +12,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Storage;
-using Project24.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -26,6 +25,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Project24.App.Services;
 using Project24.App;
 using Project24.App.Services.P24ImageManager;
+using Project24.Models.Identity;
+using Project24.Areas.Identity;
 
 namespace Project24
 {
@@ -79,7 +80,7 @@ namespace Project24
             _services.AddControllersWithViews();
             _services.AddRazorPages(_options =>
             {
-                _options.Conventions.AddPageRoute("/Home/Index", "/");
+                //_options.Conventions.AddPageRoute("/Index", "/");
             });
 
             _services.Configure<KestrelServerOptions>(_options =>

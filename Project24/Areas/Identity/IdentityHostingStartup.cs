@@ -1,11 +1,11 @@
-﻿using System;
+﻿/*  Identity/IdentityHostingStartup.cs
+ *  Version: 1.0 (2022.12.11)
+ *
+ *  Contributor
+ *      Arime-chan
+ */
+
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Project24.Data;
 
 [assembly: HostingStartup(typeof(Project24.Areas.Identity.IdentityHostingStartup))]
 namespace Project24.Areas.Identity
@@ -18,4 +18,5 @@ namespace Project24.Areas.Identity
             });
         }
     }
+
 }

@@ -18,14 +18,14 @@ using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.Services.P24ImageManager;
 using Project24.Data;
-using Project24.Identity;
 using Project24.Models;
 using Project24.Models.ClinicManager;
 using Project24.Models.ClinicManager.DataModel;
+using Project24.Models.Identity;
 
 namespace Project24.Pages.ClinicManager.Ticket
 {
-        [Authorize(Roles = P24RoleName.Manager)]
+    [Authorize(Roles = P24RoleName.Manager)]
     public class DeleteModel : PageModel
     {
         public string TicketCode { get; }

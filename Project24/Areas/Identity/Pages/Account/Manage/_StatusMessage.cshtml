@@ -1,10 +1,10 @@
-﻿@model string
+﻿@*  Identity/Account/Manage/_StatusMessage.cshtml
+    *  Version: 1.1 (2022.12.11)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
 
-@if (!String.IsNullOrEmpty(Model))
-{
-    var statusMessageClass = Model.StartsWith("Error") ? "danger" : "success";
-    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        @Model
-    </div>
-}
+@model string
+
+<partial name="/Pages/Shared/_StatusMessage.cshtml" model="@Model" />

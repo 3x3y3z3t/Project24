@@ -1,5 +1,5 @@
 ﻿@*  P24/Ticket/Create.cshtml
-    *  Version: 1.1 (2022.12.04)
+    *  Version: 1.2 (2022.12.12)
     *
     *  Contributor
     *      Arime-chan
@@ -47,7 +47,7 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="TicketFormData.UploadedFiles" class="control-label">Ảnh (nhiều file, tối đa 32 MB)</label>
-                    <input asp-for="TicketFormData.UploadedFiles" accept="image/*" class="form-control" disabled/>
+                    <input asp-for="TicketFormData.UploadedFiles" accept="image/*" class="form-control" disabled />
                     <span asp-validation-for="TicketFormData.UploadedFiles" class="text-danger"></span>
                 </div>
                 <hr />
@@ -89,7 +89,13 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="TicketFormData.CustomerFormData.PhoneNumber" class="control-label">Số điện thoại</label>
-                    <input asp-for="TicketFormData.CustomerFormData.PhoneNumber" class="form-control" disabled />
+                    <div class="input-group">
+                        <input asp-for="TicketFormData.CustomerFormData.PhoneNumber" class="form-control" />
+                        <div class="input-group-append">
+                            <a href="#" onclick="ticket_create_resetCustomerInfo()" class="btn btn-outline-danger">&times;</a>
+                            <a href="#" onclick="ticket_create_verifyCustomerCode()" class="btn btn-success">Kiểm tra</a>
+                        </div>
+                    </div>
                     <span asp-validation-for="TicketFormData.CustomerFormData.PhoneNumber" class="text-danger"></span>
                 </div>
                 <div class="form-group">

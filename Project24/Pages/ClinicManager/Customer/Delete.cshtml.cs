@@ -17,10 +17,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Project24.Data;
-using Project24.Identity;
 using Project24.Models;
 using Project24.Models.ClinicManager;
 using Project24.Models.ClinicManager.DataModel;
+using Project24.Models.Identity;
 using Project24.Utils.ClinicManager;
 
 namespace Project24.Pages.ClinicManager.Customer

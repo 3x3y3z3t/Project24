@@ -1,4 +1,7 @@
 ﻿
+#### v0.11.0 (2022.12.12)
+- Update User Account management.
+
 #### v0.10.3 (2022.12.10)
 - Rework Updater (Home side).
 

@@ -21,8 +21,8 @@ using Project24.App;
 using Project24.App.Services;
 using Project24.App.Utils;
 using Project24.Data;
-using Project24.Identity;
 using Project24.Models;
+using Project24.Models.Identity;
 
 namespace Project24.Pages.Home
 {

@@ -1,9 +1,10 @@
-﻿/*  Login.cshtml.cs
-*   Version: 1.0 (2022.09.02)
-*
-*   Contributor
-*       Arime-chan
-*/
+﻿/*  Identity/Account/Login.cshtml.cs
+ *  Version: 1.1 (2022.12.11)
+ *
+ *  Contributor
+ *      Arime-chan
+ */
+
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
@@ -13,38 +14,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Project24.Data;
 using Project24.Models;
-using Project24.Identity;
+using Project24.Models.Identity;
 
 namespace Project24.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class LoginModel : PageModel
     {
-        private readonly UserManager<P24IdentityUser> _userManager;
-        private readonly SignInManager<P24IdentityUser> _signInManager;
-        private readonly ILogger<LoginModel> _logger;
-
-        public LoginModel(SignInManager<P24IdentityUser> signInManager, 
-            ILogger<LoginModel> logger,
-            UserManager<P24IdentityUser> userManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _logger = logger;
-        }
-
-        [BindProperty]
-        public InputModel Input { get; set; }
-
-        public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
-        public string ReturnUrl { get; set; }
-
-        [TempData]
-        public string ErrorMessage { get; set; }
-
-        public class InputModel
+        public class DataModel
         {
             [Required]
             public string Username { get; set; }
@@ -53,59 +32,98 @@ namespace Project24.Areas.Identity.Pages.Account
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
-            [Display(Name = "RememberLogin")]
             public bool RememberLogin { get; set; }
+
+            public DataModel()
+            { }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
-        {
-            if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                ModelState.AddModelError(string.Empty, ErrorMessage);
-            }
+        [BindProperty]
+        public DataModel FormData { get; set; }
 
-            returnUrl = returnUrl ?? Url.Content("~/");
+        public string ReturnUrl { get; set; }
+
+        public string StatusMessage { get; private set; }
+
+
+        public LoginModel(ApplicationDbContext _dbContext, SignInManager<P24IdentityUser> _signInManager, ILogger<LoginModel> _logger)
+        {
+            m_DbContext = _dbContext;
+            m_SignInManager = _signInManager;
+            m_Logger = _logger;
+        }
+
+
+        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
+        {
+            if (returnUrl == null)
+                returnUrl = Url.Content("~/");
+
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
+                return LocalRedirect("/");
+            }
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-            //ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
             ReturnUrl = returnUrl;
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            if (returnUrl == null)
+                returnUrl = Url.Content("~/");
 
-            if (ModelState.IsValid)
+            ReturnUrl = returnUrl;
+
+            if (!ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberLogin, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberLogin });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Đăng nhập thất bại.");
-                    return Page();
-                }
+                await m_DbContext.RecordChanges(
+                    FormData.Username,
+                    ActionRecord.Operation_.Account_AttemptLogin,
+                    ActionRecord.OperationStatus_.Failed,
+                    new Dictionary<string, string>()
+                    {
+                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
+                    }
+                );
+
+                return Page();
             }
 
-            // If we got this far, something failed, redisplay form
-            return Page();
+            // This doesn't count login failures towards account lockout
+            // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+            var result = await m_SignInManager.PasswordSignInAsync(FormData.Username, FormData.Password, FormData.RememberLogin, false);
+            if (!result.Succeeded)
+            {
+                await m_DbContext.RecordChanges(
+                    FormData.Username,
+                    ActionRecord.Operation_.Account_AttemptLogin,
+                    ActionRecord.OperationStatus_.Failed
+                );
+                m_Logger.LogInformation("User " + FormData.Username + "login failed.");
+
+                StatusMessage = CustomInfoTag.Error + "Đăng nhập thất bại.";
+
+                return Page();
+            }
+
+            await m_DbContext.RecordChanges(
+                FormData.Username,
+                ActionRecord.Operation_.Account_AttemptLogin,
+                ActionRecord.OperationStatus_.Success
+            );
+            m_Logger.LogInformation("User " + FormData.Username + "logged in.");
+
+            return LocalRedirect(returnUrl);
         }
+
+
+        private readonly ApplicationDbContext m_DbContext;
+        private readonly SignInManager<P24IdentityUser> m_SignInManager;
+        private readonly ILogger<LoginModel> m_Logger;
     }
+
 }

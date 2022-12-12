@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Project24.App;
 using Project24.Data;
-using Project24.Identity;
 using Project24.Models;
 using Project24.Models.ClinicManager;
+using Project24.Models.Identity;
 
 namespace Project24.Utils.ClinicManager
 {

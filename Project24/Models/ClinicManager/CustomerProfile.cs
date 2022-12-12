@@ -5,11 +5,11 @@
  *      Arime-chan
  */
 
-using Project24.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Project24.Models.Identity;
 
 namespace Project24.Models.ClinicManager
 {

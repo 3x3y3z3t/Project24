@@ -1,5 +1,5 @@
 ﻿/*  ApplicationDbContext.cs
- *  Version: 1.10 (2022.11.30)
+ *  Version: 1.11 (2022.12.12)
  *
  *  Contributor
  *      Arime-chan
@@ -7,9 +7,9 @@
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Project24.Identity;
 using Project24.Models;
 using Project24.Models.ClinicManager;
+using Project24.Models.Identity;
 using Project24.Models.Nas;
 using System;
 using System.Collections.Generic;
@@ -31,6 +31,8 @@ namespace Project24.Data
 
         public DbSet<TicketProfile> VisitingProfiles { get; set; }
         public DbSet<TicketImage> TicketImages { get; set; }
+
+        public DbSet<UserUpload> UserUploads { get; set; }
 
 
         public DbSet<ActionRecord> ActionRecords { get; set; }

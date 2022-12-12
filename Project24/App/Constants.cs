@@ -1,5 +1,5 @@
 ﻿/*  Constants.cs
- *  Version: 1.7 (2022.12.04)
+ *  Version: 1.8 (2022.12.12)
  *
  *  Contributor
  *      Arime-chan
@@ -70,6 +70,8 @@ namespace Project24
         public const string NameCannotBeEmpty = "Họ Tên không được để trống.";
         public const string GenderCannotBeEmpty = "Giới tính không được để trống.";
 
+        public const string PasswordCannotBeEmpty = "Mật khẩu không được để trống.";
+
     }
 
     public static class P24Constants
@@ -79,6 +81,10 @@ namespace Project24
 
         public const string GenderMale = "Nam";
         public const string GenderFemale = "Nữ";
+
+        public const string No = "Không";
+        public const string Yes = "Có";
+        public const string Restricted = "Giới hạn";
     }
 
     public static class ServerAnnouncementMessage
@@ -116,6 +122,8 @@ namespace Project24
 
         public const string MoveMode = "move";
 
+        public const string DisableUserInfo = "DisableUserInfo";
+
         public const string Language = "lang";
 
         public const string Lang_Vi_VN = "vi-VN";
@@ -126,6 +134,7 @@ namespace Project24
     {
         public const int TagLength = 6;
 
+        public const string Success = "<done>";
         public const string Info = "<info>";
         public const string Warning = "<warn>";
         public const string Error = "<fail>";

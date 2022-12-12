@@ -1,5 +1,5 @@
 ﻿@*  _StatusMessage.cshtml
-    *  Version: 1.0 (2022.11.19)
+    *  Version: 1.1 (2022.12.11)
     *
     *  Contributor
     *      Arime-chan
@@ -9,9 +9,12 @@
 
 @if (!String.IsNullOrEmpty(Model))
 {
-    var statusMsgClass = "success";
+    var statusMsgClass = "primary";
+
     if (Model.StartsWith(CustomInfoTag.Info))
-        statusMsgClass = "primary";
+        statusMsgClass = "info";
+    else if (Model.StartsWith(CustomInfoTag.Success))
+        statusMsgClass = "success";
     else if (Model.StartsWith(CustomInfoTag.Warning))
         statusMsgClass = "warning";
     else if (Model.StartsWith(CustomInfoTag.Error))

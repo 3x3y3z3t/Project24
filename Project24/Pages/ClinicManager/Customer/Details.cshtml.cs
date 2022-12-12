@@ -1,5 +1,5 @@
 ﻿/*  P24/Customer/Details.cshtml
- *  Version: 1.5 (2022.11.29)
+ *  Version: 1.6 (2022.12.12)
  *
  *  Contributor
  *      Arime-chan
@@ -15,10 +15,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Project24.Data;
-using Project24.Identity;
 using Project24.Models;
 using Project24.Models.ClinicManager;
 using Project24.Models.ClinicManager.DataModel;
+using Project24.Models.Identity;
 
 namespace Project24.Pages.ClinicManager.Customer
 {
@@ -93,9 +93,14 @@ namespace Project24.Pages.ClinicManager.Customer
         }
 
         // Ajax call only;
-        public async Task<JsonResult> OnGetFetchAsync(string _code)
+        public async Task<JsonResult> OnGetFetchAsync(string _code, string _phone)
         {
-            if (string.IsNullOrEmpty(_code))
+            if (_code == null)
+                _code = "";
+            if (_phone == null)
+                _phone = "";
+
+            if (_code == "" && _phone == "")
             {
                 DailyIndexes dind = m_DbContext.DailyIndexes;
                 string nextCustomerCode = string.Format(AppConfig.CustomerCodeFormatString, DateTime.Today, dind.CustomerIndex + 1);
@@ -103,7 +108,7 @@ namespace Project24.Pages.ClinicManager.Customer
             }
 
             var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
-                                  where _customer.Code == _code
+                                  where _customer.Code.Contains(_code) && _customer.PhoneNumber.Contains(_phone)
                                   select new P24CreateCustomerFormDataModel()
                                   {
                                       Code = _customer.Code,

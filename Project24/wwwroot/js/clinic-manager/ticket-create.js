@@ -1,5 +1,5 @@
 ﻿/*  ticket-create.js
- *  Version: 1.1 (2022.11.30)
+ *  Version: 1.2 (2022.12.12)
  *
  *  Contributor
  *      Arime-chan
@@ -52,10 +52,11 @@ $(document).ready(function () {
 
 function ticket_create_verifyCustomerCode() {
     let code = TicketCreateForm.m_CustomerCodeInput.val();
+    let phone = TicketCreateForm.m_CustomerPhoneInput.val()
 
     $.ajax({
         type: 'GET',
-        url: "/ClinicManager/Customer/Details?handler=Fetch&_code=" + code,
+        url: "/ClinicManager/Customer/Details?handler=Fetch&_code=" + code + "&_phone=" + phone,
         success: function (_content) {
             if (_content == null) {
                 console.error("Error fetching customer info (" + code + ").");
@@ -144,7 +145,7 @@ function ticket_create_resetCustomerInfo() {
     TicketCreateForm.m_CustomerDobInput.attr("disabled", true);
 
     TicketCreateForm.m_CustomerPhoneInput.val(null);
-    TicketCreateForm.m_CustomerPhoneInput.attr("disabled", true);
+    //TicketCreateForm.m_CustomerPhoneInput.attr("disabled", true);
 
     TicketCreateForm.m_CustomerAddrInput.val(null);
     TicketCreateForm.m_CustomerAddrInput.attr("disabled", true);

@@ -1,9 +1,12 @@
-﻿/*  ForgotPassword.cshtml.cs
-*   Version: 1.0 (2022.09.02)
-*
-*   Contributor
-*       Arime-chan
-*/
+﻿/*  Identity/Account/ForgotPassword.cshtml.cs
+ *  Version: 1.1 (2022.12.11)
+ *
+ *  Contributor
+ *      Arime-chan
+ */
+
+#pragma warning disable CS0162 // Unreachable code detected
+
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Text;
@@ -14,18 +17,16 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Project24.Models;
-using Project24.Identity;
 
 namespace Project24.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class ForgotPasswordModel : PageModel
     {
-        private readonly UserManager<P24IdentityUser> _userManager;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailSender _emailSender;
 
-        public ForgotPasswordModel(UserManager<P24IdentityUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _emailSender = emailSender;
@@ -41,8 +42,15 @@ namespace Project24.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
 
+        public IActionResult OnGet()
+        {
+            return NotFound();
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
+            return NotFound();
+
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(Input.Email);
@@ -51,7 +59,6 @@ namespace Project24.Areas.Identity.Pages.Account
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToPage("./ForgotPasswordConfirmation");
                 }
-                return RedirectToPage("./ForgotPasswordConfirmation");
 
                 // For more information on how to enable account confirmation and password reset please 
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713

@@ -484,7 +484,35 @@ namespace Project24.Migrations
                     b.ToTable("NasCachedFiles");
                 });
 
-            modelBuilder.Entity("Project24.Identity.P24IdentityUser", b =>
+            modelBuilder.Entity("Project24.Models.UserUpload", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<long>("BytesCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("FilesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Module")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedDateTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserUploads");
+                });
+
+            modelBuilder.Entity("Project24.Models.Identity.P24IdentityUser", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
@@ -555,7 +583,7 @@ namespace Project24.Migrations
 
             modelBuilder.Entity("Project24.Models.ClinicManager.CustomerImage", b =>
                 {
-                    b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()
                         .HasForeignKey("AddedUserId");
 
@@ -565,25 +593,25 @@ namespace Project24.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
                         .WithMany()
                         .HasForeignKey("UpdatedUserId");
                 });
 
             modelBuilder.Entity("Project24.Models.ClinicManager.CustomerProfile", b =>
                 {
-                    b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()
                         .HasForeignKey("AddedUserId");
 
-                    b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
                         .WithMany()
                         .HasForeignKey("UpdatedUserId");
                 });
 
             modelBuilder.Entity("Project24.Models.ClinicManager.TicketImage", b =>
                 {
-                    b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()
                         .HasForeignKey("AddedUserId");
 
@@ -593,14 +621,14 @@ namespace Project24.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
                         .WithMany()
                         .HasForeignKey("UpdatedUserId");
                 });
 
             modelBuilder.Entity("Project24.Models.ClinicManager.TicketProfile", b =>
                 {
-                    b.HasOne("Project24.Identity.P24IdentityUser", "AddedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()
                         .HasForeignKey("AddedUserId");
 
@@ -610,9 +638,16 @@ namespace Project24.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project24.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
                         .WithMany()
                         .HasForeignKey("UpdatedUserId");
+                });
+
+            modelBuilder.Entity("Project24.Models.UserUpload", b =>
+                {
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "User")
+                        .WithMany("Uploads")
+                        .HasForeignKey("UserId");
                 });
 #pragma warning restore 612, 618
         }

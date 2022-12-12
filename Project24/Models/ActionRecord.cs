@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.9 (2022.12.04)
+ *  Version: 1.10 (2022.12.12)
  *
  *  Contributor
  *      Arime-chan
@@ -13,7 +13,8 @@ namespace Project24.Models
     {
         public static class Operation_
         {
-            public const string AttemptLogin = "Attempt Login";
+            public const string Account_AttemptLogin = "Attempt Login";
+            public const string Account_ChangePassword = "Account Change Password";
 
             public const string AttendanceRequest = "Attendance Request";
 

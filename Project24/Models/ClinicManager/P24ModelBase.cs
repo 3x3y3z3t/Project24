@@ -8,7 +8,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Project24.Identity;
+using Project24.Models.Identity;
 
 namespace Project24.Models.ClinicManager
 {

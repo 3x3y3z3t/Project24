@@ -1,0 +1,43 @@
+﻿@*  Index.cshtml
+    *  Version: 1.0 (2022.12.12)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+@model Project24.Pages.IndexModel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "_Layout";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+
+<div class="d-flex align-items-center justify-content-center">
+
+    <a asp-page="ClinicManager/Index" class="btn btn-primary m-2" style="width: 50ch">
+        <div style="font-size: larger">Clinic Manager</div>
+        <div style="font-size: small">(Project24)</div>
+    </a>
+
+    <a asp-page="Nas/Index" class="btn btn-primary m-2" style="width: 50ch">
+        <div style="font-size: larger">NAS</div>
+        <div style="font-size: small">(Project24b)</div>
+    </a>
+
+
+    <div style="max-width: 1366px">
+    </div>
+</div>
+
+@if (Model.IsAdmin)
+{
+    <br />
+    <div class="d-flex align-items-center justify-content-center">
+        <a asp-page="Home/Dashboard" class="btn btn-secondary m-2" style="width: 50ch">
+            <div style="font-size: larger">Dashboard</div>
+        </a>
+    </div>
+}
