@@ -1,9 +1,11 @@
 ﻿/*  UpdaterService.cshtml
- *  Version: 1.1 (2022.12.10)
+ *  Version: 1.1 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
  */
+
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

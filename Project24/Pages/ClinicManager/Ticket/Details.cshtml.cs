@@ -1,5 +1,5 @@
 /*  P24/Ticket/Details.cshtml.cs
- *  Version: 1.0 (2022.12.04)
+ *  Version: 1.1 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -44,7 +44,7 @@ namespace Project24.Pages.ClinicManager.Ticket
             if (string.IsNullOrEmpty(_code))
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Ticket, "null", "List"));
 
-            var ticket = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.Customer)
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                 where _ticket.Code == _code
                                 select new P24TicketDetailsViewModelEx()
                                 {
@@ -75,7 +75,7 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             TicketViewData = ticket;
 
-            var id = await (from _ticket in m_DbContext.VisitingProfiles
+            var id = await (from _ticket in m_DbContext.TicketProfiles
                             where _ticket.Code == _code
                             select _ticket.Id)
                      .FirstOrDefaultAsync();
@@ -92,9 +92,9 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             ListImageModel = new P24ImageListingModel()
             {
+                Module = P24Module.Ticket,
+                OwnerCode = _code,
                 Images = images,
-                CustomerCode = _code,
-                IsReadonly = false
             };
 
             return Page();

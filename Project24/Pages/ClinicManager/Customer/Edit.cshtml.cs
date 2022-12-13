@@ -1,5 +1,5 @@
 /*  P24/Customer/Edit.cshtml
- *  Version: 1.3 (2022.12.04)
+ *  Version: 1.4 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -130,6 +130,8 @@ namespace Project24.Pages.ClinicManager.Customer
             customer.UpdatedUser = currentUser;
 
             m_DbContext.Update(customer);
+
+            await m_DbContext.RecordUpdateCustomerProfile(currentUser, customer);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,

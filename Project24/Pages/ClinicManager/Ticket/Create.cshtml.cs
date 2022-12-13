@@ -1,5 +1,5 @@
 ﻿/*  P24/Ticket/Create.cshtml
- *  Version: 1.1 (2022.12.04)
+ *  Version: 1.2 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -99,8 +99,8 @@ namespace Project24.Pages.ClinicManager.Ticket
                 return BadRequest();
 
 
-            var ticket = await (from _ticket in m_DbContext.CustomerProfiles
-                                where _ticket.Code == _formData.CustomerCode
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
+                                where _ticket.Code == _formData.OwnerCode
                                 select _ticket)
                          .FirstOrDefaultAsync();
 
@@ -114,15 +114,17 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             if (_formData.UploadedFiles != null && _formData.UploadedFiles.Length > 0)
             {
-                var resposeData = await m_ImageManagerSvc.UploadAsync(currentUser, ticket, _formData.UploadedFiles);
+                var responseData = await m_ImageManagerSvc.UploadAsync(currentUser, ticket, _formData.UploadedFiles);
 
-                if (resposeData.IsSuccess)
+                if (responseData.IsSuccess)
                 {
-                    customInfo.Add(CustomInfoKey.AddedList, resposeData.AddedFileNames.Count.ToString());
-                    customInfo.Add(CustomInfoKey.Invalid, resposeData.InvalidFileNames.Count.ToString());
-                    customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
+                    customInfo.Add(CustomInfoKey.AddedList, responseData.AddedFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Invalid, responseData.InvalidFileNames.Count.ToString());
+                    customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
                 }
             }
+
+            await m_DbContext.RecordUpdateTicketProfile(currentUser, ticket);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -165,6 +167,8 @@ namespace Project24.Pages.ClinicManager.Ticket
                     customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
                 }
             }
+
+            await m_DbContext.RecordCreateTicketProfile(_currentUser, ticket);
 
             await m_DbContext.RecordChanges(
                 _currentUser.UserName,

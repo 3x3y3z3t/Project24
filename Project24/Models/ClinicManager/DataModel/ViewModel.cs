@@ -1,5 +1,5 @@
 ﻿/*  ViewModel.cs
- *  Version: 1.1 (2022.12.04)
+ *  Version: 1.2 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Project24.App;
 
 namespace Project24.Models.ClinicManager.DataModel
 {
@@ -101,9 +102,11 @@ namespace Project24.Models.ClinicManager.DataModel
 
     public class P24ImageListingModel
     {
-        public bool IsReadonly { get; set; } = false;
+        public P24Module Module { get; set; }
 
-        public string CustomerCode { get; set; }
+        public string OwnerCode { get; set; }
+
+        public bool IsReadonly { get; set; } = false;
 
         public List<P24ImageViewModel> Images { get; set; }
 

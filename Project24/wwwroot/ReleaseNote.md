@@ -1,13 +1,18 @@
 ﻿
+#### v0.11.1 (2022.12.13)
+- Added Profile Changelog (Customer Profile, Ticket Profile) (Clinic Manager side).
+
 #### v0.11.0 (2022.12.12)
-- Update User Account management.
+- Updated User Account management.
+
+---
 
 #### v0.10.3 (2022.12.10)
-- Rework Updater (Home side).
+- Reworked Updater (Home side).
 
 #### v0.10.2-beta (2022.12.04)
-- Rework Clinic Manager (Customer).
-- Add Visiting Ticcket (Clinic Manager side).
+- Reworked Clinic Manager (Customer).
+- Added Visiting Ticcket (Clinic Manager side).
 
 ---
 

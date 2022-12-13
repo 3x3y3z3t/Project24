@@ -1,5 +1,5 @@
 ﻿/*  Modules.cs
- *  Version: 1.0 (2022.12.12)
+ *  Version: 1.0 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -15,7 +15,7 @@ namespace Project24.App
 
     public enum P24Module
     {
-        Customer,
+        Customer = 1,
         Ticket
     }
 

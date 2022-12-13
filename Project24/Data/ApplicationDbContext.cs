@@ -1,5 +1,5 @@
 ﻿/*  ApplicationDbContext.cs
- *  Version: 1.11 (2022.12.12)
+ *  Version: 1.12 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -28,9 +28,11 @@ namespace Project24.Data
 
         public DbSet<CustomerProfile> CustomerProfiles { get; set; }
         public DbSet<CustomerImage> CustomerImages { get; set; }
+        public DbSet<CustomerProfileChangelog> CustomerProfileChangelogs { get; set; }
 
-        public DbSet<TicketProfile> VisitingProfiles { get; set; }
+        public DbSet<TicketProfile> TicketProfiles { get; set; }
         public DbSet<TicketImage> TicketImages { get; set; }
+        public DbSet<TicketProfileChangelog> TicketProfileChangelogs { get; set; }
 
         public DbSet<UserUpload> UserUploads { get; set; }
 
@@ -50,7 +52,7 @@ namespace Project24.Data
                                      where _dind.Date == DateTime.Today
                                      select _dind)
                                     .FirstOrDefault();
-                                    
+
                 if (dind == null)
                 {
                     dind = new DailyIndexes();
@@ -97,6 +99,40 @@ namespace Project24.Data
 
         }
 
+
+        protected override void OnConfiguring(DbContextOptionsBuilder _optionsBuilder)
+        {
+            //_optionsBuilder.UseSnakeCaseNamingConvention();
+            _optionsBuilder.EnableSensitiveDataLogging();
+            _optionsBuilder.EnableDetailedErrors();
+
+
+        }
+
+        protected override void OnModelCreating(ModelBuilder _builder)
+        {
+            base.OnModelCreating(_builder);
+
+            _builder.Entity<TicketProfile>()
+                .HasIndex(_ticket => _ticket.Code)
+                .IsUnique();
+
+        }
+
+        public async Task RecordCreateCustomerProfile(P24IdentityUser _updatedUser, CustomerProfile _profile)
+            => await AddAsync(new CustomerProfileChangelog(_updatedUser, _profile, P24EntityOperation.Create));
+        public async Task RecordDeleteCustomerProfile(P24IdentityUser _updatedUser, CustomerProfile _profile)
+            => await AddAsync(new CustomerProfileChangelog(_updatedUser, _profile, P24EntityOperation.Delete));
+        public async Task RecordUpdateCustomerProfile(P24IdentityUser _updatedUser, CustomerProfile _profile)
+            => await AddAsync(new CustomerProfileChangelog(_updatedUser, _profile, P24EntityOperation.Update));
+
+        public async Task RecordCreateTicketProfile(P24IdentityUser _updatedUser, TicketProfile _profile)
+            => await AddAsync(new TicketProfileChangelog(_updatedUser, _profile, P24EntityOperation.Create));
+        public async Task RecordDeleteTicketProfile(P24IdentityUser _updatedUser, TicketProfile _profile)
+            => await AddAsync(new TicketProfileChangelog(_updatedUser, _profile, P24EntityOperation.Delete));
+        public async Task RecordUpdateTicketProfile(P24IdentityUser _updatedUser, TicketProfile _profile)
+            => await AddAsync(new TicketProfileChangelog(_updatedUser, _profile, P24EntityOperation.Update));
+
         public async Task RecordChanges(
             string _username,
             string _operation,
@@ -117,25 +153,6 @@ namespace Project24.Data
             };
             await AddAsync(record);
             await SaveChangesAsync();
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder _optionsBuilder)
-        {
-            //_optionsBuilder.UseSnakeCaseNamingConvention();
-            _optionsBuilder.EnableSensitiveDataLogging();
-            _optionsBuilder.EnableDetailedErrors();
-
-
-        }
-
-        protected override void OnModelCreating(ModelBuilder _builder)
-        {
-            base.OnModelCreating(_builder);
-
-            _builder.Entity<TicketProfile>()
-                .HasIndex(_ticket => _ticket.Code)
-                .IsUnique();
-
         }
     }
 

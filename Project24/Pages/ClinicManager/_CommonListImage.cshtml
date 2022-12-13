@@ -1,10 +1,11 @@
 ﻿@*  P24/Customer > _CommonListImage.cshtml
-    *  Version: 1.0 (2022.11.27)
+    *  Version: 1.1 (2022.12.13)
     *
     *  Contributor
     *      Arime-chan
 *@
 
+@using Project24.App
 @model Project24.Models.ClinicManager.DataModel.P24ImageListingModel
 
 @{
@@ -33,9 +34,9 @@
         <div id="add-image-form" class="collapse">
             <form method="post" asp-page="Create" asp-page-handler="CreateImage" enctype="multipart/form-data" id="add-image-form" class="col-md-6" style="@ViewData["AddImgFormStyles"]">
                 <hr />
-                <div class="form-group" hidden>
-                    <input asp-for="_formData.CustomerCode" class="form-control" value="@Model.CustomerCode" readonly />
-                    <span asp-validation-for="_formData.CustomerCode" class="text-danger"></span>
+                <div class="form-group" >
+                    <input asp-for="_formData.OwnerCode" class="form-control" value="@Model.OwnerCode" readonly />
+                    <span asp-validation-for="_formData.OwnerCode" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="_formData.UploadedFiles" class="control-label">Ảnh (nhiều file, tối đa 32 MB)</label>
@@ -64,11 +65,21 @@
 
                 <figure class="figure m-2">
                     <img src="@fullpath" class="figure-img img-fluid" style="max-height:200px;" />
-                    <figcaption class="figure-caption">@path</figcaption>
+                    <figcaption class="figure-caption">@image.Name</figcaption>
 
                     @if (!Model.IsReadonly)
                     {
-                        string func = "customer_commonListImage_SubmitDeleteImageForm('" + image.Id + "', '" + Model.CustomerCode + "')";
+                        string func = "";
+                        switch (@Model.Module)
+                        {
+                            case P24Module.Customer:
+                                func = "customer_commonListImage_DeleteCustomerImage('" + image.Id + "')";
+                                break;
+                            case P24Module.Ticket:
+                                func = "customer_commonListImage_DeleteTicketImage('" + image.Id + "')";
+                                break;
+                        }
+
                         <a href="#" onclick="@func">Xóa</a>
                     }
 

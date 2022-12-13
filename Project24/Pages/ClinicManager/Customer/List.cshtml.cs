@@ -1,5 +1,5 @@
 /*  P24/Customer/List.cshtml
- *  Version: 1.1 (2022.12.04)
+ *  Version: 1.2 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -86,7 +86,7 @@ namespace Project24.Pages.ClinicManager
                                        PhoneNumber = _customer.PhoneNumber,
                                        Address = _customer.Address,
                                        Notes = _customer.Notes,
-                                       TicketCount = (from _ticket in m_DbContext.VisitingProfiles
+                                       TicketCount = (from _ticket in m_DbContext.TicketProfiles
                                                       where _ticket.CustomerId == _customer.Id && _ticket.DeletedDate == DateTime.MinValue
                                                       select _ticket.Id).Count()
                                    })
@@ -109,7 +109,7 @@ namespace Project24.Pages.ClinicManager
             if (_name != "")
                 _name = StringUtils.ToTitleCase(_name);
 
-            var customers = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.Customer)
+            var customers = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                    where _ticket.Customer.DeletedDate == DateTime.MinValue
                                        && (_date == DateTime.MinValue || _ticket.AddedDate.Date == _date.Date)
                                        && (_name == "" || _ticket.Customer.LastName == _name)
@@ -123,7 +123,7 @@ namespace Project24.Pages.ClinicManager
                                        PhoneNumber = _ticket.Customer.PhoneNumber,
                                        Address = _ticket.Customer.Address,
                                        Notes = _ticket.Customer.Notes,
-                                       TicketCount = (from _tk in m_DbContext.VisitingProfiles
+                                       TicketCount = (from _tk in m_DbContext.TicketProfiles
                                                       where _tk.CustomerId == _ticket.Customer.Id && _ticket.DeletedDate == DateTime.MinValue
                                                       select _tk.Id).Count()
                                    })

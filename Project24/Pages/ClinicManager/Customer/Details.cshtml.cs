@@ -1,5 +1,5 @@
 ﻿/*  P24/Customer/Details.cshtml
- *  Version: 1.6 (2022.12.12)
+ *  Version: 1.7 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Project24.App;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.ClinicManager;
@@ -84,9 +85,9 @@ namespace Project24.Pages.ClinicManager.Customer
 
             ListImageModel = new P24ImageListingModel()
             {
-                Images = images,
-                CustomerCode = _code,
-                IsReadonly = false
+                Module = P24Module.Customer,
+                OwnerCode = _code,
+                Images = images
             };
 
             return Page();

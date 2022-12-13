@@ -1,5 +1,5 @@
 ﻿/*  P24/Ticket/Delete.cshtml
- *  Version: 1.0 (2022.12.04)
+ *  Version: 1.1 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -49,7 +49,7 @@ namespace Project24.Pages.ClinicManager.Ticket
             if (string.IsNullOrEmpty(_code))
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Ticket, "null", "List"));
 
-            var ticket = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.AddedUser).Include(_t => _t.UpdatedUser).Include(_t => _t.Customer)
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.AddedUser).Include(_t => _t.UpdatedUser).Include(_t => _t.Customer)
                                 where _ticket.Code == _code
                                 select new P24TicketDetailsViewModelEx()
                                 {
@@ -82,9 +82,10 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             ListImageModel = new P24ImageListingModel()
             {
-                Images = await FetchImages(_code),
-                CustomerCode = _code,
-                IsReadonly = true
+                Module = P24Module.Ticket,
+                OwnerCode = _code,
+                IsReadonly = true,
+                Images = await FetchImages(_code)
             };
 
             return Page();
@@ -97,12 +98,12 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
-            var ticket = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.TicketImages)
-                                  where _ticket.Code == TicketCode
-                                  select _ticket)
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.TicketImages)
+                                where _ticket.Code == TicketCode
+                                select _ticket)
                            .FirstOrDefaultAsync();
 
-            var customerCode = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.Customer)
+            var customerCode = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                       where _ticket.Code == TicketCode
                                       select _ticket.Customer.Code)
                                .FirstOrDefaultAsync();
@@ -120,12 +121,14 @@ namespace Project24.Pages.ClinicManager.Ticket
                 { CustomInfoKey.CustomerCode, customerCode },
             };
 
-            var responseData = await m_ImageManagerSvc.DeleteAsync(currentUser, ticket.TicketImages);
+            var responseData = m_ImageManagerSvc.Delete(currentUser, ticket.TicketImages);
             if (responseData.IsSuccess)
             {
                 customInfo.Add(CustomInfoKey.DeletedList, responseData.DeletedFileNames.Count.ToString());
                 customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
             }
+
+            await m_DbContext.RecordDeleteTicketProfile(currentUser, ticket);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -137,75 +140,55 @@ namespace Project24.Pages.ClinicManager.Ticket
             return RedirectToPage("List");
         }
 
-        //        // Ajax call only;
-        //        public async Task<IActionResult> OnPostDeleteImageAsync([FromBody] P24DeleteImageFormDataModel _formData)
-        //        {
-        //            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+        // Ajax call only;
+        public async Task<IActionResult> OnPostDeleteImageAsync([FromBody] string _imageId)
+        {
+            if (!await ValidateModelState(ActionRecord.Operation_.DeleteTicket_DeleteImage))
+                return BadRequest();
 
-        //            if (!ModelState.IsValid)
-        //            {
-        //                await m_DbContext.RecordChanges(
-        //                    currentUser.UserName,
-        //                    ActionRecord.Operation_.DeleteCustomer_DeleteImage,
-        //                    ActionRecord.OperationStatus_.Failed,
-        //                    new Dictionary<string, string>()
-        //                    {
-        //                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-        //                    }
-        //                );
+            if (!int.TryParse(_imageId, out int imgId))
+                return BadRequest();
 
-        //                return BadRequest();
-        //            }
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
-        //            //if (_formData == null)
-        //            //    return BadRequest();
+            var image = await (from _image in m_DbContext.TicketImages.Include(_img => _img.OwnerTicket)
+                               where _image.Id == imgId && _image.DeletedDate == DateTime.MinValue
+                               select _image)
+                         .FirstOrDefaultAsync();
 
-        //            //if (string.IsNullOrEmpty(_formData.ImageId) || string.IsNullOrEmpty(_formData.CustomerCode))
-        //            //    return BadRequest();
+            if (image == null)
+                return BadRequest();
 
-        //            int imageId = -1;
-        //            if (!int.TryParse(_formData.ImageId, out imageId))
-        //                return BadRequest();
+            Dictionary<string, string> customInfo = new Dictionary<string, string>()
+            {
+                { CustomInfoKey.TicketCode, image.OwnerTicket.Code }
+            };
 
-        //            var customer = await (from _customer in m_DbContext.CustomerProfiles
-        //                                  where _customer.Code == _formData.CustomerCode
-        //                                  select _customer)
-        //                           .FirstOrDefaultAsync();
+            var responseData = m_ImageManagerSvc.Delete(currentUser, image);
+            if (responseData.IsSuccess)
+            {
+                customInfo.Add(CustomInfoKey.DeletedList, responseData.DeletedFileNames.Count.ToString());
+                customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
+            }
 
-        //            if (customer == null)
-        //                return BadRequest();
+            await m_DbContext.RecordUpdateTicketProfile(currentUser, image.OwnerTicket);
 
-        //            var image = await (from _image in m_DbContext.CustomerImages
-        //                               where _image.Id == imageId
-        //                               select _image)
-        //                        .FirstOrDefaultAsync();
+            await m_DbContext.RecordChanges(
+                currentUser.UserName,
+                ActionRecord.Operation_.DeleteTicket_DeleteImage,
+                ActionRecord.OperationStatus_.Success,
+                customInfo
+            );
 
-        //            if (image == null)
-        //                return BadRequest();
+            ListImageModel = new P24ImageListingModel()
+            {
+                Module = P24Module.Ticket,
+                OwnerCode = image.OwnerTicket.Code,
+                Images = await FetchImages(image.OwnerTicket.Code)
+            };
 
-        //            string operationStatus = ActionRecord.OperationStatus_.Success;
-        //            ImageProcessor processor = new ImageProcessor(m_DbContext, currentUser, customer);
-        //            if (!await processor.ProcessDelete(image))
-        //            {
-        //                operationStatus = ActionRecord.OperationStatus_.Failed;
-        //                return StatusCode(StatusCodes.Status410Gone);
-        //            }
-
-        //            await m_DbContext.RecordChanges(
-        //                currentUser.UserName,
-        //                ActionRecord.Operation_.DeleteCustomer_DeleteImage,
-        //                operationStatus,
-        //                processor.CustomInfo
-        //            );
-
-        //            ListImageModel = new P24ImageListingModel()
-        //            {
-        //                Images = await FetchImages(customer.Code),
-        //                CustomerCode = customer.Code,
-        //                IsReadonly = false
-        //            };
-        //            return Partial("_CommonListImage", ListImageModel);
-        //        }
+            return Partial("_CommonListImage", ListImageModel);
+        }
 
         private async Task<List<P24ImageViewModel>> FetchImages(string _ticketCode)
         {

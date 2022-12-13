@@ -1,5 +1,5 @@
 ﻿/*  FormDataModel.cs
- *  Version: 1.2 (2022.12.04)
+ *  Version: 1.3 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -130,7 +130,7 @@ namespace Project24.Models.ClinicManager.DataModel
     public class P24CreateImageFormDataModel
     {
         [Required]
-        public string CustomerCode { get; set; }
+        public string OwnerCode { get; set; }
 
         [Required]
         [DataType(DataType.Upload)]
@@ -146,7 +146,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public string ImageId { get; set; }
 
         [Required]
-        public string CustomerCode { get; set; }
+        public string OwnerCode { get; set; }
 
         public P24DeleteImageFormDataModel()
         { }

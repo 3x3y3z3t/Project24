@@ -1,5 +1,5 @@
 ﻿/*  P24/Customer/Create.cshtml
- *  Version: 1.5 (2022.11.30)
+ *  Version: 1.6 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -94,6 +94,8 @@ namespace Project24.Pages.ClinicManager.Customer
                 }
             }
 
+            await m_DbContext.RecordCreateCustomerProfile(currentUser, customer);
+
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
                 ActionRecord.Operation_.CreateCustomer,
@@ -124,7 +126,7 @@ namespace Project24.Pages.ClinicManager.Customer
             }
 
             var customer = await (from _customer in m_DbContext.CustomerProfiles
-                                  where _customer.Code == _formData.CustomerCode
+                                  where _customer.Code == _formData.OwnerCode
                                   select _customer)
                            .FirstOrDefaultAsync();
 
@@ -147,6 +149,8 @@ namespace Project24.Pages.ClinicManager.Customer
                     customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
                 }
             }
+
+            await m_DbContext.RecordUpdateCustomerProfile(currentUser, customer);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,

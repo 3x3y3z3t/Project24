@@ -1,5 +1,5 @@
 ﻿@*  P24/Customer/Details.cshtml
-    *  Version: 1.7 (2022.11.30)
+    *  Version: 1.8 (2022.12.13)
     *
     *  Contributor
     *      Arime-chan
@@ -13,7 +13,6 @@
     Layout = "_Layout";
 
     string age = (DateTime.Now.Year - Model.CustomerViewData.DoB) + "t";
-    bool deleted = false;
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -23,8 +22,6 @@
 
 @if (Model.CustomerViewData.DeletedDate != DateTime.MinValue)
 {
-    deleted = true;
-
     <div class="text-danger font-weight-bold" style="font-size: larger;">
         Bệnh nhân <code>@Model.CustomerViewData.Code</code> đã bị xóa vào ngày @Model.CustomerViewData.DeletedDate.
     </div>

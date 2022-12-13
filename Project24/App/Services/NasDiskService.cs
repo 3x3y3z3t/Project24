@@ -1,9 +1,11 @@
 ﻿/*  NasDiskService.cshtml
- *  Version: 1.1 (2022.10.29)
+ *  Version: 1.1 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
  */
+
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

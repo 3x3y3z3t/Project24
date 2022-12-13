@@ -1,5 +1,5 @@
 ﻿@*  P24/Ticket/Details.cshtml
-    *  Version: 1.0 (2022.12.04)
+    *  Version: 1.1 (2022.12.13)
     *
     *  Contributor
     *      Arime-chan
@@ -13,7 +13,6 @@
     Layout = "_Layout";
 
     string age = (DateTime.Now.Year - Model.TicketViewData.Customer.DoB) + "t";
-    bool deleted = false;
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -23,8 +22,6 @@
 
 @if (Model.TicketViewData.Customer.DeletedDate != DateTime.MinValue)
 {
-    deleted = true;
-
     <div class="text-danger font-weight-bold" style="font-size: larger;">
         Phiếu khám <code>@Model.TicketViewData.Code</code> đã bị xóa vào ngày @Model.TicketViewData.DeletedDate.
     </div>

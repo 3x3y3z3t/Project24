@@ -1,5 +1,5 @@
 ﻿/*  CustomerProfile.cs
- *  Version: 1.3 (2022.11.29)
+ *  Version: 1.4 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -40,6 +40,7 @@ namespace Project24.Models.ClinicManager
 
         public virtual ICollection<CustomerImage> CustomerImages { get; protected set; }
         public virtual ICollection<TicketProfile> VisitingTickets { get; protected set; }
+        public virtual ICollection<CustomerProfileChangelog> Changelog { get; protected set; }
 
         public string FullName { get { if (string.IsNullOrEmpty(FirstMidName)) return LastName; return FirstMidName + " " + LastName; } }
 

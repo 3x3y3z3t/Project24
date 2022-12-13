@@ -1,5 +1,5 @@
 ﻿/*  P24/Customer/Edit.cshtml
- *  Version: 1.2 (2022.12.04)
+ *  Version: 1.3 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -46,7 +46,7 @@ namespace Project24.Pages.ClinicManager.Ticket
             if (string.IsNullOrEmpty(_code))
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Ticket, "null", "List"));
 
-            var deleted = await (from _ticket in m_DbContext.VisitingProfiles
+            var deleted = await (from _ticket in m_DbContext.TicketProfiles
                                  where _ticket.Code == _code && _ticket.DeletedDate != DateTime.MinValue
                                  select _ticket.Code)
                           .FirstOrDefaultAsync();
@@ -56,7 +56,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                 return RedirectToPage("Details", new { _code = _code });
             }
 
-            var ticket = await (from _ticket in m_DbContext.VisitingProfiles
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles
                                 where _ticket.Code == _code
                                 select new P24EditTicketFormDataModel()
                                 {
@@ -70,7 +70,7 @@ namespace Project24.Pages.ClinicManager.Ticket
             if (ticket == null)
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Ticket, _code, "List"));
 
-            var customer = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.Customer)
+            var customer = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                   where _ticket.Code == _code
                                   select new P24CustomerDetailsViewModel()
                                   {
@@ -112,7 +112,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                 return Page();
             }
 
-            var ticket = await (from _ticket in m_DbContext.VisitingProfiles
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles
                                 where _ticket.Code == FormData.Code
                                 select _ticket)
                            .FirstOrDefaultAsync();
@@ -143,6 +143,8 @@ namespace Project24.Pages.ClinicManager.Ticket
             ticket.UpdatedUser = currentUser;
 
             m_DbContext.Update(ticket);
+
+            await m_DbContext.RecordUpdateTicketProfile(currentUser, ticket);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,

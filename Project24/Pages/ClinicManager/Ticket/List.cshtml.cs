@@ -1,5 +1,5 @@
 /*  List.cshtml.cs
- *  Version: 1.1 (2022.12.04)
+ *  Version: 1.2 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -70,13 +70,12 @@ namespace Project24.Pages.ClinicManager
         {
             m_DbContext = _context;
             m_Logger = _logger;
-
         }
 
 
         public async Task OnGetAsync()
         {
-            var tickets = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.Customer)
+            var tickets = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                  where _ticket.DeletedDate == DateTime.MinValue
                                  select new TicketViewModel()
                                  {
@@ -106,7 +105,7 @@ namespace Project24.Pages.ClinicManager
             if (_name != "")
                 _name = StringUtils.ToTitleCase(_name);
 
-            var tickets = await (from _ticket in m_DbContext.VisitingProfiles.Include(_t => _t.Customer)
+            var tickets = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                    where _ticket.Customer.DeletedDate == DateTime.MinValue
                                        && (_date == DateTime.MinValue || _ticket.AddedDate.Date == _date.Date)
                                        && (_name == "" || _ticket.Customer.LastName == _name)

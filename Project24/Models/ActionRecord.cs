@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.10 (2022.12.12)
+ *  Version: 1.11 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -40,7 +40,7 @@ namespace Project24.Models
             public const string CreateTicket = "Create Visiting Ticket";
             public const string CreateTicket_CreateImage = "Create Ticket Image";
             public const string DeleteTicket = "Delete Visiting Ticket";
-            public const string CreateTicket_DeleteImage = "Delete Ticket Image";
+            public const string DeleteTicket_DeleteImage = "Delete Ticket Image";
             public const string UpdateTicket = "Update Visiting Ticket";
             public const string DetailTicket = "Detail Visiting Ticket";
 

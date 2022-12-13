@@ -1,5 +1,5 @@
 ﻿/*  P24ImageManagerService.cs
- *  Version: 1.2 (2022.12.12)
+ *  Version: 1.3 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -87,7 +87,7 @@ namespace Project24.App.Services.P24ImageManager
         /// <param name="_user">The user performing the request.</param>
         /// <param name="_images">The list of images to be deletd.</param>
         /// <param name="_cancellationToken">Cancellation Token.</param>
-        public async Task<ResponseData> DeleteAsync<T>(P24IdentityUser _user, ICollection<T> _images, CancellationToken _cancellationToken = default)
+        public ResponseData Delete<T>(P24IdentityUser _user, ICollection<T> _images, CancellationToken _cancellationToken = default)
             where T : P24ImageModelBase
         {
             m_RequestData = new RequestData(_user, null);
@@ -95,7 +95,7 @@ namespace Project24.App.Services.P24ImageManager
 
             foreach (var image in _images)
             {
-                if (await DeleteImageAsync(image, _cancellationToken))
+                if (DeleteImage(image, _cancellationToken))
                 {
                     image.DeletedDate = DateTime.Now;
                     image.UpdatedUser = m_RequestData.User;
@@ -113,12 +113,18 @@ namespace Project24.App.Services.P24ImageManager
         /// <param name="_image">The image to be deletd.</param>
         /// <param name="_cancellationToken">Cancellation Token.</param>
         /// <returns></returns>
-        public async Task<ResponseData> DeleteAsync(P24IdentityUser _user, P24ImageModelBase _image, CancellationToken _cancellationToken = default)
+        public ResponseData Delete(P24IdentityUser _user, P24ImageModelBase _image, CancellationToken _cancellationToken = default)
         {
             m_RequestData = new RequestData(_user, null);
             m_ResponseData = new ResponseData();
 
-            await DeleteImageAsync(_image, _cancellationToken);
+            if (DeleteImage(_image, _cancellationToken))
+            {
+                _image.DeletedDate = DateTime.Now;
+                _image.UpdatedUser = m_RequestData.User;
+
+                m_DbContext.Update(_image);
+            }
             m_ResponseData.IsSuccess = true;
 
             return m_ResponseData;
@@ -215,7 +221,7 @@ namespace Project24.App.Services.P24ImageManager
             try
             {
                 FileStream stream = File.Create(_absPath + "/" + _file.FileName);
-                _file.CopyTo(stream);
+                await _file.CopyToAsync(stream);
                 stream.Close();
 
                 return true;
@@ -255,7 +261,7 @@ namespace Project24.App.Services.P24ImageManager
         /// <param name="_image">The image to be deleted.</param>
         /// <param name="_cancellationToken">Cancellation Token.</param>
         /// <returns>true if the operation success, otherwise false.</returns>
-        private async Task<bool> DeleteImageAsync(P24ImageModelBase _image, CancellationToken _cancellationToken)
+        private bool DeleteImage(P24ImageModelBase _image, CancellationToken _cancellationToken)
         {
             string srcPath = DriveUtils.DataRootPath + "/" + _image.FullName;
             string dstPath = DriveUtils.DeletedDataRootPath + "/" + _image.Path;

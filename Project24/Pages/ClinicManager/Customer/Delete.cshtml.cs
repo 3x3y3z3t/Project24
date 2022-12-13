@@ -1,5 +1,5 @@
 /*  P24/Customer/Delete.cshtml
- *  Version: 1.2 (2022.11.28)
+ *  Version: 1.3 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -10,18 +10,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Project24.App;
+using Project24.App.Services.P24ImageManager;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.ClinicManager;
 using Project24.Models.ClinicManager.DataModel;
 using Project24.Models.Identity;
-using Project24.Utils.ClinicManager;
 
 namespace Project24.Pages.ClinicManager.Customer
 {
@@ -35,10 +35,11 @@ namespace Project24.Pages.ClinicManager.Customer
         public P24ImageListingModel ListImageModel { get; private set; }
 
 
-        public DeleteModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<DeleteModel> _logger)
+        public DeleteModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc, ILogger<DeleteModel> _logger)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
+            m_ImageManagerSvc = _imageManagerSvc;
             m_Logger = _logger;
         }
 
@@ -72,9 +73,10 @@ namespace Project24.Pages.ClinicManager.Customer
 
             ListImageModel = new P24ImageListingModel()
             {
-                Images = await FetchImages(_code),
-                CustomerCode = _code,
-                IsReadonly = true
+                Module = P24Module.Customer,
+                OwnerCode = _code,
+                IsReadonly = true,
+                Images = await FetchImages(_code)
             };
 
             return Page();
@@ -82,22 +84,10 @@ namespace Project24.Pages.ClinicManager.Customer
 
         public async Task<IActionResult> OnPostAsync([Bind] string CustomerCode)
         {
+            if (!await ValidateModelState(ActionRecord.Operation_.DeleteCustomer))
+                return Page();
+
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-
-            if (!ModelState.IsValid)
-            {
-                await m_DbContext.RecordChanges(
-                    currentUser.UserName,
-                    ActionRecord.Operation_.DeleteCustomer,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                    }
-                );
-
-                return BadRequest();
-            }
 
             var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.CustomerImages)
                                   where _customer.Code == CustomerCode
@@ -109,30 +99,21 @@ namespace Project24.Pages.ClinicManager.Customer
 
             customer.DeletedDate = DateTime.Now;
             customer.UpdatedUser = currentUser;
-
             m_DbContext.Update(customer);
-
-            string error = "";
-            ImageProcessor processor = new ImageProcessor(m_DbContext, currentUser, customer);
-            foreach (var image in customer.CustomerImages)
-            {
-                if (image.DeletedDate != DateTime.MinValue)
-                    continue;
-
-                if (!await processor.ProcessDelete(image))
-                    error += image.Id + ", ";
-            }
 
             Dictionary<string, string> customInfo = new Dictionary<string, string>()
             {
-                { CustomInfoKey.CustomerCode, customer.Code }
+                { CustomInfoKey.CustomerCode, customer.Code },
             };
 
-            if (error != "")
+            var responseData = m_ImageManagerSvc.Delete(currentUser, customer.CustomerImages);
+            if (responseData.IsSuccess)
             {
-                error = error[0..^2];
-                customInfo[CustomInfoKey.Error] = error;
+                customInfo.Add(CustomInfoKey.DeletedList, responseData.DeletedFileNames.Count.ToString());
+                customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
             }
+
+            await m_DbContext.RecordDeleteCustomerProfile(currentUser, customer);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -145,84 +126,59 @@ namespace Project24.Pages.ClinicManager.Customer
         }
 
         // Ajax call only;
-        public async Task<IActionResult> OnPostDeleteImageAsync([FromBody] P24DeleteImageFormDataModel _formData)
+        public async Task<IActionResult> OnPostDeleteImageAsync([FromBody] string _imageId)
         {
+            if (!await ValidateModelState(ActionRecord.Operation_.DeleteCustomer_DeleteImage))
+                return BadRequest();
+
+            if (!int.TryParse(_imageId, out int imgId))
+                return BadRequest();
+
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
-            if (!ModelState.IsValid)
-            {
-                await m_DbContext.RecordChanges(
-                    currentUser.UserName,
-                    ActionRecord.Operation_.DeleteCustomer_DeleteImage,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                    }
-                );
-
-                return BadRequest();
-            }
-
-            //if (_formData == null)
-            //    return BadRequest();
-
-            //if (string.IsNullOrEmpty(_formData.ImageId) || string.IsNullOrEmpty(_formData.CustomerCode))
-            //    return BadRequest();
-
-            int imageId = -1;
-            if (!int.TryParse(_formData.ImageId, out imageId))
-                return BadRequest();
-
-            var customer = await (from _customer in m_DbContext.CustomerProfiles
-                                  where _customer.Code == _formData.CustomerCode
-                                  select _customer)
-                           .FirstOrDefaultAsync();
-
-            if (customer == null)
-                return BadRequest();
-
-            var image = await (from _image in m_DbContext.CustomerImages
-                               where _image.Id == imageId
+            var image = await (from _image in m_DbContext.CustomerImages.Include(_img => _img.OwnerCustomer)
+                               where _image.Id == imgId && _image.DeletedDate == DateTime.MinValue
                                select _image)
-                        .FirstOrDefaultAsync();
+                         .FirstOrDefaultAsync();
 
             if (image == null)
                 return BadRequest();
 
-            string operationStatus = ActionRecord.OperationStatus_.Success;
-            ImageProcessor processor = new ImageProcessor(m_DbContext, currentUser, customer);
-            if (!await processor.ProcessDelete(image))
+            Dictionary<string, string> customInfo = new Dictionary<string, string>()
             {
-                operationStatus = ActionRecord.OperationStatus_.Failed;
-                return StatusCode(StatusCodes.Status410Gone);
+                { CustomInfoKey.TicketCode, image.OwnerCustomer.Code }
+            };
+
+            var responseData = m_ImageManagerSvc.Delete(currentUser, image);
+            if (responseData.IsSuccess)
+            {
+                customInfo.Add(CustomInfoKey.DeletedList, responseData.DeletedFileNames.Count.ToString());
+                customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
             }
+
+            await m_DbContext.RecordUpdateCustomerProfile(currentUser, image.OwnerCustomer);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
-                ActionRecord.Operation_.DeleteCustomer_DeleteImage,
-                operationStatus,
-                processor.CustomInfo
+                ActionRecord.Operation_.DeleteTicket_DeleteImage,
+                ActionRecord.OperationStatus_.Success,
+                customInfo
             );
 
             ListImageModel = new P24ImageListingModel()
             {
-                Images = await FetchImages(customer.Code),
-                CustomerCode = customer.Code,
-                IsReadonly = false
+                Module = P24Module.Customer,
+                OwnerCode = image.OwnerCustomer.Code,
+                Images = await FetchImages(image.OwnerCustomer.Code)
             };
+
             return Partial("_CommonListImage", ListImageModel);
         }
 
         private async Task<List<P24ImageViewModel>> FetchImages(string _customerCode)
         {
-            var id = await (from _customer in m_DbContext.CustomerProfiles
-                            where _customer.Code == _customerCode
-                            select _customer.Id)
-                           .FirstOrDefaultAsync();
-
-            var images = from _image in m_DbContext.CustomerImages
-                         where _image.OwnerCustomerId == id && _image.DeletedDate == DateTime.MinValue
+            var images = from _image in m_DbContext.CustomerImages.Include(_i => _i.OwnerCustomer)
+                         where _image.OwnerCustomer.Code == _customerCode && _image.DeletedDate == DateTime.MinValue
                          select new P24ImageViewModel()
                          {
                              Id = _image.Id,
@@ -232,9 +188,29 @@ namespace Project24.Pages.ClinicManager.Customer
             return await images.ToListAsync();
         }
 
+        private async Task<bool> ValidateModelState(string _operation)
+        {
+            if (ModelState.IsValid)
+                return true;
+
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            await m_DbContext.RecordChanges(
+                currentUser.UserName,
+                _operation,
+                ActionRecord.OperationStatus_.Failed,
+                new Dictionary<string, string>()
+                {
+                    { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
+                }
+            );
+
+            return false;
+        }
+
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
+        private readonly P24ImageManagerService m_ImageManagerSvc;
         private readonly ILogger<DeleteModel> m_Logger;
     }
 

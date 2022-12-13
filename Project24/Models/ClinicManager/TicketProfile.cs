@@ -1,11 +1,10 @@
 ﻿/*  VisitingProfile.cs
- *  Version: 1.0 (2022.11.29)
+ *  Version: 1.1 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
  */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,6 +30,7 @@ namespace Project24.Models.ClinicManager
 
         public virtual CustomerProfile Customer { get; protected set; }
         public virtual ICollection<TicketImage> TicketImages { get; protected set; }
+        public virtual ICollection<TicketProfileChangelog> Changelog { get; protected set; }
 
 
         public TicketProfile()

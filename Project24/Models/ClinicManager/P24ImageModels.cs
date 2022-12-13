@@ -1,5 +1,5 @@
 ﻿/*  P24ImageModels.cs
- *  Version: 1.2 (2022.12.04)
+ *  Version: 1.3 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -8,8 +8,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Project24.App;
 using Project24.Models.Identity;
-using Project24.Utils.ClinicManager;
 
 namespace Project24.Models.ClinicManager
 {
@@ -25,7 +25,7 @@ namespace Project24.Models.ClinicManager
         public string UpdatedUserId { get; protected set; }
 
         [Required]
-        public P24Module Module { get; protected set; } = P24Module.Unset;
+        public P24Module Module { get; protected set; }
 
         [Required(AllowEmptyStrings = false)]
         public string Name { get; set; }
