@@ -1,5 +1,5 @@
 /*  Updater.cshtml.cs
- *  Version: 1.2 (2022.12.06)
+ *  Version: 1.3 (2022.12.15)
  *
  *  Contributor
  *      Arime-chan
@@ -89,6 +89,7 @@ namespace Project24.Pages.Home
 
             int successCount = 0;
             int errorCount = 0;
+            long successLength = 0L;
 
             foreach (var file in _files)
             {
@@ -117,6 +118,7 @@ namespace Project24.Pages.Home
                     System.IO.File.SetLastWriteTime(fileFullname, dt);
 
                     ++successCount;
+                    successLength += file.Length;
                 }
                 catch (Exception _e)
                 {
@@ -124,6 +126,8 @@ namespace Project24.Pages.Home
                     m_Logger.LogError("Error during upload file " + fileFullname + ":\r\n" + _e.ToString());
                 }
             }
+
+            await m_DbContext.AddAsync(new UserUpload(currentUser, AppModule.Dashboard, successCount, successLength));
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,

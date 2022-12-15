@@ -1,21 +1,19 @@
 ﻿@*  _NasStatsDisplay.cshtml
-    *  Version: 1.0 (2022.10.22)
+    *  Version: 1.1 (2022.12.14)
     *
     *  Contributor
     *      Arime-chan
 *@
 
 @using Project24.App
-@model object[]
-@{
-
-}
+@using Project24.Models.Nas
+@model NasStatDisplayModel
 
 <div class="d-flex flex-nowrap text-left col-12 col-md-12 col-lg-6 col-xl-5 px-2">
-    <div class="font-weight-bold mx-1">@Model[0]</div>
+    <div class="font-weight-bold mx-1">@Model.Name</div>
     <div class="flex-fill ml-1">
         @{
-            DriveUtils driveUtils = (DriveUtils)Model[1];
+            DriveUtils driveUtils = Model.Data;
             float percent = driveUtils.UsedRatio * 100.0f;
 
             string colorClassname = "";

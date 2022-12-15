@@ -1,5 +1,5 @@
 ﻿@*  Identity/Account/Manage/Index.cshtml
-    *  Version: 1.1 (2022.12.12)
+    *  Version: 1.2 (2022.12.15)
     *
     *  Contributor
     *      Arime-chan
@@ -50,6 +50,7 @@
         <hr />
 
         <dl class="row">
+            @IndexModel.GetUploadDataHtmlString(P24RoleClaimUtils.Module.Dashboard, Model.Profile.Access.DashboardAccess, Model.Profile.DashboardUploads.BytesCount)
             @IndexModel.GetUploadDataHtmlString(P24RoleClaimUtils.Module.P24_ClinicManager, Model.Profile.Access.ClinicManagerAccess, Model.Profile.ClinicManagerUploads.BytesCount)
             @IndexModel.GetUploadDataHtmlString(P24RoleClaimUtils.Module.P24b_Nas, Model.Profile.Access.NasAccess, Model.Profile.NasUploads.BytesCount)
         </dl>

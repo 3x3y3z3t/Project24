@@ -1,5 +1,5 @@
 ﻿/*  Modules.cs
- *  Version: 1.0 (2022.12.13)
+ *  Version: 1.1 (2022.12.15)
  *
  *  Contributor
  *      Arime-chan
@@ -9,7 +9,8 @@ namespace Project24.App
 {
     public enum AppModule
     {
-        P24_ClinicManager = 1,
+        Dashboard = 1,
+        P24_ClinicManager,
         P24b_Nas
     }
 

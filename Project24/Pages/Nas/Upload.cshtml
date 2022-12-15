@@ -1,5 +1,5 @@
 ﻿@*  Upload.cshtml
-    *  Version: 1.7 (2022.10.27)
+    *  Version: 1.8 (2022.12.16)
     *
     *  Contributor
     *      Arime-chan
@@ -18,11 +18,8 @@
 
 <div class="d-flex flex-wrap">
 
-    <div id="upload-mode" hidden>true</div>
-
     <div id="nas-browser" class="col-12 col-lg-6 col-xl-6 px-3 border-left">
-        <h4>NAS Browser</h4>
-        <hr />
+        <partial name="_NasBrowser" model="@Model.Data" />
 
         @Html.AntiForgeryToken()
     </div>
@@ -88,29 +85,11 @@
 
 </div>
 
+<partial name="_Upload_Modal" />
+
 @section Scripts {
-<script src="~/js/nas-upload.js"></script>
+<script src="~/js/nas/nas-upload.js"></script>
+<script src="~/js/nas/nas-upload-tus-uploader.js"></script>
 <script src="~/js/nas/nas-utils.js"></script>
 <script src="~/lib/tus-js-client/tus.min.js"></script>
-
-<script type="text/javascript">
-    $(document).ready(function() {
-        browseNas("<upload>");
-    });
-
-    function inputNewFolderName_OnChange() {
-        if ($("#input-new-folder-name").val())
-            $("#btn-create-folder").show();
-        else
-            $("#btn-create-folder").hide();
-    }
-
-    function underlineMe(_x) {
-        _x.style.textDecoration = "underline";
-    }
-
-    function normalizeMe(_x) {
-        _x.style.textDecoration = "initial";
-    }
-</script>
 }

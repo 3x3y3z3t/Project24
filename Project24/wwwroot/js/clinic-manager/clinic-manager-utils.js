@@ -1,12 +1,12 @@
 ﻿/*  clinic-manager-utils.js
- *  Version: 1.1 (2022.12.13)
+ *  Version: 1.2 (2022.12.15)
  *
  *  Contributor
  *      Arime-chan
  */
 
 function customer_commonListImage_DeleteCustomerImage(_imageId) {
-    var token = $("input[name='__RequestVerificationToken']").val();
+    let token = $("input[name='__RequestVerificationToken']").val();
 
     $.ajax({
         type: 'POST',
@@ -28,7 +28,7 @@ function customer_commonListImage_DeleteCustomerImage(_imageId) {
 }
 
 function customer_commonListImage_DeleteTicketImage(_imageId) {
-    var token = $("input[name='__RequestVerificationToken']").val();
+    let token = $("input[name='__RequestVerificationToken']").val();
 
     $.ajax({
         type: 'POST',

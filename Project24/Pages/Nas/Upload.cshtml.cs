@@ -1,36 +1,52 @@
 /*  Upload.cshtml.cs
- *  Version: 1.0 (2022.10.16)
+ *  Version: 1.1 (2022.12.16)
  *
  *  Contributor
  *      Arime-chan
  */
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Project24.Data;
-using Project24.Models.Identity;
+using Project24.App;
+using Project24.Models.Nas;
 
 namespace Project24.Pages.Nas
 {
-    [Authorize(Roles = P24RoleName.NasUser + "," + P24RoleName.NasTester)]
+    [Authorize(Roles = P24RoleName.NasUser)]
     public class UploadModel : PageModel
     {
-        public UploadModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager)
+        public NasBrowserViewModel Data { get; private set; }
+
+
+        public UploadModel()
+        { }
+
+
+        public IActionResult OnGet()
         {
-            m_DbContext = _context;
-            m_UserManager = _userManager;
+            string currentLocation = "";
+            if (TempData.ContainsKey("CurrentLocation"))
+            {
+                currentLocation = (string)TempData["CurrentLocation"];
+            }
+
+            NasBrowserUtils.RequestResult result = NasBrowserUtils.HandleBrowseRequest(currentLocation, true);
+            Data = result.Data;
+
+            return Page();
         }
 
-        public async Task OnGetAsync()
+        public IActionResult OnGetBrowse(string _path)
         {
+            if (_path == null)
+                _path = "";
 
+            NasBrowserUtils.RequestResult result = NasBrowserUtils.HandleBrowseRequest(_path, true);
+            return Partial("_NasBrowser", result.Data);
         }
 
-
-        private readonly ApplicationDbContext m_DbContext;
-        private readonly UserManager<P24IdentityUser> m_UserManager;
+        public void OnPost() => BadRequest();
     }
 
 }

@@ -1,5 +1,5 @@
 ﻿/*  NasUtils.cs
- *  Version: 1.1 (2022.12.06)
+ *  Version: 1.2 (2022.12.14)
  *
  *  Contributor
  *      Arime-chan
@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Project24.Models.Nas;
 
 namespace Project24.App
 {
@@ -107,7 +108,6 @@ namespace Project24.App
 
             DirectoryInfo dirInfo = new DirectoryInfo(absPath);
 
-
             var files = dirInfo.EnumerateFiles("*", new EnumerationOptions() { RecurseSubdirectories = true });
             foreach (FileInfo fi in files)
             {
@@ -132,6 +132,56 @@ namespace Project24.App
             }
 
             return list;
+        }
+    }
+
+    public static class NasBrowserUtils
+    {
+        public class RequestResult
+        {
+            public bool IsFileRequested = false;
+            public string RequestedFilePath = null;
+            public NasBrowserViewModel Data = null;
+        }
+
+        public static RequestResult HandleBrowseRequest(string _path, bool _isUploadMode = false)
+        {
+            RequestResult result = new RequestResult()
+            {
+                Data = new NasBrowserViewModel()
+                {
+                    IsUploadMode = _isUploadMode
+                }
+            };
+
+            string absPath = Path.GetFullPath(DriveUtils.NasRootPath + "/" + _path);
+            if (!absPath.Contains("nasData"))
+                return result;
+
+            FileAttributes attrib = File.GetAttributes(absPath);
+            if (!attrib.HasFlag(FileAttributes.Directory))
+            {
+                int pos = _path.LastIndexOf('/');
+                if (pos < 0)
+                    _path = "";
+                else
+                    _path = _path[0..pos];
+
+                result.IsFileRequested = true;
+                result.RequestedFilePath = absPath;
+            }
+
+            List<NasUtils.FileModel> files = NasUtils.GetDirectoryContent(_path);
+            if (files == null)
+                return result;
+
+            List<string> pathLayers = new List<string>(_path.Split('/', StringSplitOptions.RemoveEmptyEntries));
+
+            result.Data.Path = _path.Trim('/');
+            result.Data.PathLayers = pathLayers;
+            result.Data.Files = files;
+
+            return result;
         }
 
     }

@@ -1,5 +1,5 @@
 ﻿@*  Index.cshtml
-    *  Version: 1.2 (2022.10.22)
+    *  Version: 1.3 (2022.12.14)
     *
     *  Contributor
     *      Arime-chan
@@ -9,6 +9,12 @@
 
 @model Project24.Pages.Nas.IndexModel
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Nas Browser";
     Layout = "_Layout";
+}
+
+<partial name="_NasBrowser" model="@Model.Data" />
+
+@section Scripts {
+<script src="~/js/nas/nas-index.js"></script>
 }

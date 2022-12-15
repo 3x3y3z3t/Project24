@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.11 (2022.12.13)
+ *  Version: 1.12 (2022.12.15)
  *
  *  Contributor
  *      Arime-chan
@@ -44,11 +44,6 @@ namespace Project24.Models
             public const string UpdateTicket = "Update Visiting Ticket";
             public const string DetailTicket = "Detail Visiting Ticket";
 
-            //public const string CreateVisitingProfile = "Create Visiting Profile";
-            //public const string RemoveVisitingProfile = "Delete Visiting Profile";
-            //public const string UpdateVisitingProfile = "Update Visiting Profile";
-            //public const string DetailVisitingProfile = "Detail Visiting Profile";
-
             public const string CreateNasFolder = "Create NAS Folder";
             public const string DeleteNasFile = "Delete NAS File";
             public const string CopyNasFile = "Copy NAS File";
@@ -60,6 +55,10 @@ namespace Project24.Models
             public const string Updater_UploadNextFiles = "Upload Next version files";
             public const string Updater_PurgeNextFiles = "Purge Next version files";
             public const string Updater_VersionUp = "Version Up";
+
+            public const string Nas_CreateFolder = "Nas Create Folder";
+            public const string Nas_RenameFile = "Nas Rename File";
+            public const string Nas_DeleteFile = "Nas Delete File";
 
         }
 

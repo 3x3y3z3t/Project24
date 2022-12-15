@@ -1,5 +1,5 @@
 ﻿/*  site.js
- *  Version: 1.2 (2022.11.06)
+ *  Version: 1.3 (2022.12.13)
  *
  *  Contributor
  *      Arime-chan
@@ -59,4 +59,20 @@ function formatDateString(_date) {
     let minute = String(_date.getMinutes()).padStart(2, "0");
 
     return year + "/" + month + "/" + date + " " + hour + ":" + minute;
+}
+
+function getFileExtension(_fileName) {
+    let pos = _fileName.lastIndexOf('.');
+    if (pos <= 0)
+        return "";
+    else
+        return _fileName.substring(pos + 1);
+}
+
+function underlineMe(_x) {
+    _x.style.textDecoration = "underline";
+}
+
+function normalizeMe(_x) {
+    _x.style.textDecoration = "initial";
 }

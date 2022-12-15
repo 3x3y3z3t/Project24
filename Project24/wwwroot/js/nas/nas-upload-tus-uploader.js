@@ -1,4 +1,4 @@
-﻿/*  nas-upload.js
+﻿/*  nas-upload-tus-uploader.js
  *  Version: 1.7 (2022.10.29)
  *
  *  Contributor

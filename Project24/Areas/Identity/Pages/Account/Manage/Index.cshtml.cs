@@ -1,5 +1,5 @@
 ﻿/*  Identity/Account/Manage/Index.cshtml.cs
- *  Version: 1.1 (2022.12.12)
+ *  Version: 1.2 (2022.12.15)
  *
  *  Contributor
  *      Arime-chan
@@ -40,6 +40,7 @@ namespace Project24.Areas.Identity.Pages.Account.Manage
 
             public DateTime JoinedDate { get; set; }
             
+            public UserUploadInfo DashboardUploads { get; set; }
             public UserUploadInfo ClinicManagerUploads { get; set; }
             public UserUploadInfo NasUploads { get; set; }
 
@@ -87,6 +88,7 @@ namespace Project24.Areas.Identity.Pages.Account.Manage
 
                 JoinedDate = currentUser.JoinDateTime,
 
+                DashboardUploads = uploads.GetValueOrDefault(AppModule.Dashboard),
                 ClinicManagerUploads = uploads.GetValueOrDefault(AppModule.P24_ClinicManager),
                 NasUploads = uploads.GetValueOrDefault(AppModule.P24b_Nas),
             };
@@ -140,6 +142,8 @@ namespace Project24.Areas.Identity.Pages.Account.Manage
                 moduleNameStatic = "Clinic Manager";
             else if (_module == P24RoleClaimUtils.Module.P24b_Nas)
                 moduleNameStatic = "NAS";
+            else if (_module == P24RoleClaimUtils.Module.Dashboard)
+                moduleNameStatic = "App";
 
             string textClass = (_access == P24RoleClaimUtils.AccessAllowance.NoAccess) ? "text-muted" : null;
             string moduleName = (_access == P24RoleClaimUtils.AccessAllowance.NoAccess) ? "???" : (moduleNameStatic + " upload");
