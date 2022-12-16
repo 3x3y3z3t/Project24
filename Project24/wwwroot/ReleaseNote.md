@@ -1,4 +1,11 @@
 ﻿
+#### v0.12.0 (2022.12.17)
+- Reworked NAS.
+- Fixed error with special characters in upload file name.
+- Added user upload tracking. Now every bytes you have uploaded will be counted.
+
+---
+
 #### v0.11.1 (2022.12.13)
 - Added Profile Changelog (Customer Profile, Ticket Profile) (Clinic Manager side).
 

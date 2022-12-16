@@ -1,5 +1,5 @@
 /*  Manage.cshtml.cs
- *  Version: 1.0 (2022.12.16)
+ *  Version: 1.1 (2022.12.16)
  *
  *  Contributor
  *      Arime-chan
@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
@@ -132,6 +131,9 @@ namespace Project24.Pages.Nas
             NasBrowserUtils.RequestResult result = NasBrowserUtils.HandleBrowseRequest(parentDir, true);
             return Partial("_NasBrowser", result.Data);
         }
+
+        public async Task<IActionResult> OnPostCopyToAsync([FromBody] OperationData _data) => BadRequest();
+        public async Task<IActionResult> OnPostMoveToAsync([FromBody] OperationData _data) => BadRequest();
 
         public async Task<IActionResult> OnPostDeleteAsync([FromBody] OperationData _data)
         {

@@ -1,5 +1,5 @@
 ﻿/*  NasCachedFile.cshtml
- *  Version: 1.0 (2022.10.27)
+ *  Version: 1.1 (2022.12.16)
  *
  *  Contributor
  *      Arime-chan
@@ -14,11 +14,13 @@ namespace Project24.Models.Nas
     {
         [Key]
         public int Id { get; set; }
+        public DateTime AddedDate { get; set; }
+        public int FailCount { get; set; }
         
         public string Path { get; set; }
         public string Name { get; set; }
-
-        public DateTime AddedDate { get; set; }
+        public long Length { get; set; }
+        public DateTime LastModDate { get; set; }
 
 
         public NasCachedFile()

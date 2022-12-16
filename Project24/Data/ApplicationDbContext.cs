@@ -1,5 +1,5 @@
 ﻿/*  ApplicationDbContext.cs
- *  Version: 1.12 (2022.12.13)
+ *  Version: 1.13 (2022.12.16)
  *
  *  Contributor
  *      Arime-chan
@@ -141,7 +141,7 @@ namespace Project24.Data
         {
             string customInfo = null;
             if (_customInfo != null)
-                JsonSerializer.Serialize(_customInfo);
+                customInfo =  JsonSerializer.Serialize(_customInfo);
 
             ActionRecord record = new ActionRecord()
             {

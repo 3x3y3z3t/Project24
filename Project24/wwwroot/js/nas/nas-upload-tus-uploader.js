@@ -1,5 +1,5 @@
 ﻿/*  nas-upload-tus-uploader.js
- *  Version: 1.7 (2022.10.29)
+ *  Version: 1.8 (2022.12.16)
  *
  *  Contributor
  *      Arime-chan
@@ -43,7 +43,7 @@ $(document).ready(function () {
     enableFunctionButtons(false);
 
     window.setInterval(function () {
-        NasUploader.m_UploadFilePath = $("#upload-location").html();
+        NasUploader.m_UploadFilePath = $("#upload-location").text();
         updateStatistic();
     }, 500);
 });
@@ -196,15 +196,15 @@ function tryStartUpload(_index) {
     });
 
     // Check if there are any previous uploads to continue.
-    //upload.findPreviousUploads().then(function (previousUploads) {
-    //    // Found previous uploads so we select the first one. 
-    //    if (previousUploads.length) {
-    //        upload.resumeFromPreviousUpload(previousUploads[0]);
-    //    }
+    NasUploader.m_ActiveTusUpload.findPreviousUploads().then(function (_previousUploads) {
+        // Found previous uploads so we select the first one. 
+        if (_previousUploads.length) {
+            NasUploader.m_ActiveTusUpload.resumeFromPreviousUpload(previousUploads[0]);
+        }
 
-    //    // Restart the upload
-    //    NasUploader.m_ActiveTusUpload.start();
-    //});
+        // Restart the upload
+        NasUploader.m_ActiveTusUpload.start();
+    });
 
     NasUploader.m_ActiveTusUpload.start();
 

@@ -1,5 +1,5 @@
 ﻿/*  AppUtils.cs
- *  Version: 1.2 (2022.12.06)
+ *  Version: 1.3 (2022.12.16)
  *
  *  Contributor
  *      Arime-chan
@@ -106,7 +106,7 @@ namespace Project24.App
                 return string.Format("{0:##0.00} KB", (float)_size / oneKiB);
             }
 
-            return string.Format("{0:##0.00}   B", (float)_size);
+            return string.Format("{0:##0.00}  B", (float)_size);
         }
 
         public static string FormatDateTimetring_EndsWithMinute(DateTime _dateTime)

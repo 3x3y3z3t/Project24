@@ -1,5 +1,5 @@
 ﻿/*  NasDiskService.cshtml
- *  Version: 1.1 (2022.12.13)
+ *  Version: 1.2 (2022.12.16)
  *
  *  Contributor
  *      Arime-chan
@@ -23,11 +23,23 @@ namespace Project24.App.Services
 {
     public class NasDiskService : IHostedService, IDisposable
     {
+        private class RequestData
+        {
+            public ApplicationDbContext DbContext = null;
+
+            public string NasRootAbsPath = null;
+            public string NasCacheAbsPath = null;
+        }
+
+
         public NasDiskService(IServiceProvider _serviceProvider, ILogger<NasDiskService> _logger)
         {
             m_ServiceProvider = _serviceProvider;
             m_Logger = _logger;
+
+            m_TransferInProgress = new HashSet<int>();
         }
+
 
         public Task StartAsync(CancellationToken _cancellationToken)
         {
@@ -44,6 +56,9 @@ namespace Project24.App.Services
                 m_Timer.Change(Timeout.Infinite, 0);
             }
 
+            if (m_TransferInProgress.Count > 0)
+                m_Logger.LogWarning("There are still " + m_TransferInProgress + " transfer(s) in progress, arbort anyway.");
+
             m_Logger.LogInformation("NasDiskService stopped.");
             return Task.CompletedTask;
         }
@@ -57,84 +72,149 @@ namespace Project24.App.Services
         private void DoWork(object? _state)
         {
             var count = Interlocked.Increment(ref m_ExecutionCount);
+            var scope = m_ServiceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            if (dbContext.NasCachedFiles.Count() <= 0)
+                return;
 
             string nasRootAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.NasRoot);
             string nasCacheAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.TmpRoot);
-
-            using (var scope = m_ServiceProvider.CreateScope())
+            RequestData requestData = new RequestData()
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                DbContext = dbContext,
+                NasRootAbsPath = nasRootAbsPath,
+                NasCacheAbsPath = nasCacheAbsPath
+            };
 
-                if (dbContext.NasCachedFiles.Count() <= 0)
-                    return;
+            int fileCount = 0;
+            long fileLength = 0L;
+            DateTime start = DateTime.Now;
 
-                int processed = 0;
-                DateTime start = DateTime.Now;
-                long length = 0L;
-
-                List<NasCachedFile> list = dbContext.NasCachedFiles.OrderBy(_file => _file.AddedDate).ToList();
-                foreach (NasCachedFile file in list)
+            List<NasCachedFile> list = dbContext.NasCachedFiles.OrderBy(_file => _file.AddedDate).ToList();
+            foreach (NasCachedFile file in list)
+            {
+                if (CheckIfFileNotExists(requestData, file))
                 {
-                    string src = nasCacheAbsPath + "/" + file.Path + "/" + file.Name;
-                    string dst = nasRootAbsPath + "/" + file.Path + "/" + file.Name;
-
-                    if (!File.Exists(src))
-                    {
-                        string logStr = "NasDiskService cycle " + m_ExecutionCount + ":\r\n";
-                        logStr += "File " + file.Path + "/" + file.Name + " doesn't exist anymore";
-                        m_Logger.LogWarning(logStr);
-
-                        dbContext.Remove(file);
-                        continue;
-                    }
-
-                    try
-                    {
-                        File.Copy(src, dst, true);
-
-                        if (File.Exists(dst))
-                        {
-                            FileInfo fi = new FileInfo(src);
-                            length += fi.Length;
-                            ++processed;
-
-                            dbContext.Remove(file);
-
-                            File.Delete(src);
-                        }
-
-                    }
-                    catch (Exception _e)
-                    {
-                        string logStr = "NasDiskService cycle " + m_ExecutionCount + ":\r\n";
-                        logStr += _e.ToString();
-
-                        m_Logger.LogError(logStr);
-                    }
+                    continue;
                 }
 
-                TimeSpan elapsed = DateTime.Now - start;
+                if (CheckIfTransferInProgress(requestData, file))
+                {
+                    continue;
+                }
 
-                dbContext.SaveChanges();
-
-                string log = "NasDiskService cycle " + m_ExecutionCount + "\r\n";
-                log += "    Moved " + processed + " files (" + AppUtils.FormatDataSize(length) + ")";
-                log += ", avg " + AppUtils.FormatDataSize((long)(length / elapsed.TotalSeconds)) + "/s";
-
-                m_Logger.LogInformation(log);
+                // all check pass, perform file moving;
+                if (MoveFile(requestData, file))
+                {
+                    ++fileCount;
+                    fileLength += file.Length;
+                }
             }
 
+            TimeSpan elapsed = DateTime.Now - start;
 
+            string log = "NasDiskService cycle " + m_ExecutionCount + "\r\n";
+            log += "    Moved " + fileCount + " files (" + AppUtils.FormatDataSize(fileLength) + ")";
+            log += ", avg " + AppUtils.FormatDataSize((long)(fileLength / elapsed.TotalSeconds)) + "/s";
 
+            m_Logger.LogInformation(log);
+        }
 
+        private bool CheckIfFileNotExists(RequestData _data, NasCachedFile _file)
+        {
+            string src = _data.NasCacheAbsPath + "/" + _file.Path + "/" + _file.Name;
 
+            if (File.Exists(src))
+                return false;
 
+            string logStr = "NasDiskService cycle " + m_ExecutionCount + ":\r\n";
+            logStr += "File " + _file.Path + "/" + _file.Name + " doesn't exist anymore";
+            m_Logger.LogWarning(logStr);
 
+            lock (this)
+            {
+                m_TransferInProgress.Remove(_file.Id);
+            }
+            _data.DbContext.Remove(_file);
+            _data.DbContext.SaveChanges();
+
+            return true;
+        }
+
+        private bool CheckIfTransferInProgress(RequestData _data, NasCachedFile _file)
+        {
+            bool isTransfering;
+            lock (this)
+            {
+                isTransfering = m_TransferInProgress.Contains(_file.Id);
+            }
+
+            return isTransfering;
+
+            //if (!isTransfering)
+            //    return false;
+
+            //string src = _data.NasCacheAbsPath + "/" + _file.Path + "/" + _file.Name;
+
+            //if (File.Exists(src))
+            //{
+            //    // src existing -> still transfering;
+            //    return true;
+            //}
+
+            //// src gone -> transfer done;
+            //lock (this)
+            //{
+            //    m_TransferInProgress.Remove(_file.Id);
+            //}
+
+            //_data.DbContext.Remove(_file);
+
+            //return false;
+        }
+
+        private bool MoveFile(RequestData _data, NasCachedFile _file)
+        {
+            string src = _data.NasCacheAbsPath + "/" + _file.Path + "/" + _file.Name;
+            string dst = _data.NasRootAbsPath + "/" + _file.Path + "/" + _file.Name;
+
+            try
+            {
+                File.Move(src, dst, true);
+
+                lock (this)
+                {
+                    m_TransferInProgress.Remove(_file.Id);
+                }
+                _data.DbContext.Remove(_file);
+                _data.DbContext.SaveChanges();
+            }
+            catch (Exception _e)
+            {
+                ++_file.FailCount;
+                _data.DbContext.Update(_file);
+                _data.DbContext.SaveChanges();
+
+                string logStr = "NasDiskService cycle " + m_ExecutionCount + ":\r\n";
+                logStr += "    path: \"" + _file.Path + "\"\r\n";
+                logStr += "    name: \"" + _file.Name + "\"\r\n";
+                logStr += "    src: \"" + src + "\"\r\n";
+                logStr += "    dst: \"" + dst + "\"\r\n";
+                logStr += "    Fail count: " + _file.FailCount + "\r\n";
+                logStr += _e;
+
+                m_Logger.LogError(logStr);
+                return false;
+            }
+
+            return true;
         }
 
 
         private long m_ExecutionCount = 0;
         private Timer m_Timer = null;
+        private HashSet<int> m_TransferInProgress = null;
 
         private readonly IServiceProvider m_ServiceProvider;
         private readonly ILogger<NasDiskService> m_Logger;
