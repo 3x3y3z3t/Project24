@@ -196,15 +196,15 @@ function tryStartUpload(_index) {
     });
 
     // Check if there are any previous uploads to continue.
-    NasUploader.m_ActiveTusUpload.findPreviousUploads().then(function (_previousUploads) {
-        // Found previous uploads so we select the first one. 
-        if (_previousUploads.length) {
-            NasUploader.m_ActiveTusUpload.resumeFromPreviousUpload(previousUploads[0]);
-        }
+    //NasUploader.m_ActiveTusUpload.findPreviousUploads().then(function (_previousUploads) {
+    //    // Found previous uploads so we select the first one. 
+    //    if (_previousUploads.length) {
+    //        NasUploader.m_ActiveTusUpload.resumeFromPreviousUpload(previousUploads[0]);
+    //    }
 
-        // Restart the upload
-        NasUploader.m_ActiveTusUpload.start();
-    });
+    //    // Restart the upload
+    //    NasUploader.m_ActiveTusUpload.start();
+    //});
 
     NasUploader.m_ActiveTusUpload.start();
 

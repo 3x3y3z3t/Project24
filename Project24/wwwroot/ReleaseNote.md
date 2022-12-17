@@ -1,8 +1,12 @@
 ﻿
-#### v0.12.0 (2022.12.17)
+#### v0.12.2 (2022.12.18)
+- Fixed some URL issues with NAS.
+
+#### v0.12.1 (2022.12.17)
 - Reworked NAS.
 - Fixed error with special characters in upload file name.
 - Added user upload tracking. Now every bytes you have uploaded will be counted.
+- Hotfix 1: Disabled NAS resume upload.
 
 ---
 

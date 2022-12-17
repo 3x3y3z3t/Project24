@@ -1,5 +1,5 @@
 ﻿/*  NasUtils.cs
- *  Version: 1.2 (2022.12.14)
+ *  Version: 1.3 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -21,7 +21,7 @@ namespace Project24.App
             File
         }
 
-        public class FileModel
+        public class FileModel : IComparable
         {
             public FileType FileType { get; set; } = FileType.Unset;
             public string Name { get; set; }
@@ -29,6 +29,19 @@ namespace Project24.App
             public string RelativePath { get; set; }
             public DateTime LastModified { get; set; }
             public long Size { get; set; }
+
+            public int CompareTo(object _other)
+            {
+                FileModel other = _other as FileModel;
+
+                if (FileType > other.FileType)
+                    return 1;
+
+                if (FileType < other.FileType)
+                    return -1;
+
+                return Name.CompareTo(other.Name);
+            }
         }
 
         /// <summary>Returns a list of all folders and files in the directory specified by <c>_path</c>.</summary>
@@ -70,6 +83,8 @@ namespace Project24.App
                     Size = fi.Length
                 });
             }
+
+            list.Sort();
 
             return list;
         }

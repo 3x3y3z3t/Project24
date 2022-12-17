@@ -1,5 +1,5 @@
 ﻿/*  TusDotNetConfig.cs
- *  Version: 1.3 (2022.12.16)
+ *  Version: 1.4 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -19,7 +19,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using tusdotnet.Interfaces;
 using tusdotnet.Models;
@@ -152,63 +151,20 @@ namespace Project24.App
 
             ITusFile file = await _eventContext.GetFileAsync();
             UploadedFileMetadata metadata = GetUploadedFileMetadata(await file.GetMetadataAsync(_eventContext.CancellationToken));
-            RequestData requestData = new RequestData()
-            {
-                HttpContext = _eventContext.HttpContext,
-                DbContext = dbContext,
-                Logger = logger,
-                Metadata = metadata
-            };
 
-            Stream fileContent = await file.GetContentAsync(_eventContext.CancellationToken);
-            if (!await ValidateFileContentLengthAsync(requestData, fileContent.Length, _eventContext.CancellationToken))
+            string nasCacheAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.TmpRoot);
+            try
             {
-                fileContent.Close();
-                await DeleteTempFile(_eventContext);
-                return;
+                File.Move(nasCacheAbsPath + "/" + _eventContext.FileId, nasCacheAbsPath + "/" + metadata.Name);
+            }
+            catch (Exception _e)
+            {
+                logger.LogError("TusDotNet_OnFileCompleteAsync: " + _e);
             }
 
-            if (! await WriteFileAsync(requestData, fileContent, _eventContext.CancellationToken))
-            {
-                fileContent.Close();
-                await DeleteTempFile(_eventContext);
+            var terminationStore = (ITusTerminationStore)_eventContext.Store;
+            await terminationStore.DeleteFileAsync(_eventContext.FileId, _eventContext.CancellationToken);
 
-                await dbContext.RecordChanges(
-                    _eventContext.HttpContext.User.Identity.Name,
-                    ActionRecord.Operation_.UploadNasFile,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Path, metadata.Path },
-                        { CustomInfoKey.Filename, metadata.Name },
-                        { CustomInfoKey.Size, metadata.Length.ToString() },
-                        { CustomInfoKey.Error, "File creation failed" }
-                    }
-                );
-
-                return;
-            }
-
-            fileContent.Close();
-
-            string uploadLocation = Path.GetFullPath(DriveUtils.TmpRootPath + "/" + metadata.Path);
-            string fileFullname = Path.GetFullPath(DriveUtils.TmpRootPath + "/" + metadata.Path + "/" + metadata.Name);
-
-            FileInfo fi = new FileInfo(fileFullname);
-            if (!await ValidateFileContentLengthAsync(requestData, fi.Length, _eventContext.CancellationToken))
-            {
-                await DeleteTempFile(_eventContext);
-                return;
-            }
-
-            await DeleteTempFile(_eventContext);
-
-            P24IdentityUser user = await (from _user in dbContext.P24Users
-                                          where _user.UserName == _eventContext.HttpContext.User.Identity.Name
-                                          select _user)
-                                   .FirstOrDefaultAsync();
-
-            await dbContext.AddAsync(new UserUpload(user, AppModule.P24b_Nas, 1, metadata.Length));
             await dbContext.AddAsync(new NasCachedFile()
             {
                 AddedDate = DateTime.Now,
@@ -218,8 +174,19 @@ namespace Project24.App
                 LastModDate = metadata.LastModifiedDate
             });
 
+            P24IdentityUser user = null;
+            if (_eventContext.HttpContext.User.Identity.IsAuthenticated)
+            {
+                user = await (from _user in dbContext.P24Users
+                                              where _user.UserName == _eventContext.HttpContext.User.Identity.Name
+                                              select _user)
+                                       .FirstOrDefaultAsync();
+
+                await dbContext.AddAsync(new UserUpload(user, AppModule.P24b_Nas, 1, metadata.Length));
+            }
+
             await dbContext.RecordChanges(
-                _eventContext.HttpContext.User.Identity.Name,
+                user.UserName,
                 ActionRecord.Operation_.UploadNasFile,
                 ActionRecord.OperationStatus_.Success,
                 new Dictionary<string, string>()
@@ -229,75 +196,9 @@ namespace Project24.App
                     { CustomInfoKey.Size, metadata.Length.ToString() },
                 }
             );
+
+            return;
         }
-
-        private static async Task DeleteTempFile(FileCompleteContext _eventContext)
-        {
-            var terminationStore = (ITusTerminationStore)_eventContext.Store;
-            await terminationStore.DeleteFileAsync(_eventContext.FileId, _eventContext.CancellationToken);
-        }
-
-        private static async Task<bool> ValidateFileContentLengthAsync(RequestData _data, long _actualLength, CancellationToken _cancellationToken = default)
-        {
-            if (_actualLength == _data.Metadata.Length)
-                return true;
-
-            await _data.DbContext.RecordChanges(
-                _data.HttpContext.User.Identity.Name,
-                ActionRecord.Operation_.UploadNasFile,
-                ActionRecord.OperationStatus_.Failed,
-                new Dictionary<string, string>()
-                {
-                        { CustomInfoKey.Path, _data.Metadata.Path },
-                        { CustomInfoKey.Filename, _data.Metadata.Name },
-                        { CustomInfoKey.Size, _data.Metadata.Length.ToString() },
-                        { CustomInfoKey.Error, "Uploaded size: " + _actualLength.ToString() }
-                }
-            );
-            LogErrorFileSizeMismatch(_data, _actualLength);
-
-            return false;
-        }
-
-        private static async Task<bool> WriteFileAsync(RequestData _data, Stream _content, CancellationToken _cancellationToken = default)
-        {
-            try
-            {
-                string uploadLocation = Path.GetFullPath(DriveUtils.TmpRootPath + "/" + _data.Metadata.Path);
-
-                Directory.CreateDirectory(uploadLocation);
-
-                DateTime start = DateTime.Now;
-
-                FileStream fileStream = File.Create(uploadLocation + "/" + _data.Metadata.Name, c_WriteFileBufferSize, FileOptions.Asynchronous);
-                await _content.CopyToAsync(fileStream, c_WriteFileBufferSize, _cancellationToken);
-                fileStream.Close();
-
-                TimeSpan elapsed = DateTime.Now - start;
-            }
-            catch (Exception _e)
-            {
-                _data.Logger.LogError("Error during write file: " + _e);
-                return false;
-            }
-
-            return true;
-        }
-
-        private static void LogErrorFileSizeMismatch(RequestData _data, long _actualLength)
-        {
-            string fullname = (_data.Metadata.Path + "/" + _data.Metadata.Name).Trim('/');
-
-            string log = "File size mismatch on file " + fullname + ":\r\n";
-            log += "Expected size: " + _data.Metadata.Length + ", actual size: " + _actualLength;
-
-            _data.Logger.LogError(log);
-        }
-
-
-        private const int c_WriteFileBufferSize = 4 * 1024 * 1024;
-
-        //private static readonly string s_NasCacheAbsPath = Path.GetFullPath(AppUtils.AppRoot + "/" + AppConfig.TmpRoot);
     }
 
 }

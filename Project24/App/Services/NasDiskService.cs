@@ -1,5 +1,5 @@
 ﻿/*  NasDiskService.cshtml
- *  Version: 1.2 (2022.12.16)
+ *  Version: 1.3 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -179,16 +179,17 @@ namespace Project24.App.Services
             string src = _data.NasCacheAbsPath + "/" + _file.Path + "/" + _file.Name;
             string dst = _data.NasRootAbsPath + "/" + _file.Path + "/" + _file.Name;
 
+            lock (this)
+            {
+                m_TransferInProgress.Add(_file.Id);
+            }
+
             try
             {
                 File.Move(src, dst, true);
 
-                lock (this)
-                {
-                    m_TransferInProgress.Remove(_file.Id);
-                }
-                _data.DbContext.Remove(_file);
-                _data.DbContext.SaveChanges();
+                if (File.Exists(src))
+                    File.Delete(src);
             }
             catch (Exception _e)
             {
@@ -207,6 +208,13 @@ namespace Project24.App.Services
                 m_Logger.LogError(logStr);
                 return false;
             }
+
+            lock (this)
+            {
+                m_TransferInProgress.Remove(_file.Id);
+            }
+            _data.DbContext.Remove(_file);
+            _data.DbContext.SaveChanges();
 
             return true;
         }

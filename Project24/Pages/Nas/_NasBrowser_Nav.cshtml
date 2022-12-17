@@ -1,5 +1,5 @@
 ﻿@*  _NasBrowser > Nav.cshtml
-    *  Version: 1.0 (2022.12.14)
+    *  Version: 1.1 (2022.12.18)
     *
     *  Contributor
     *      Arime-chan
@@ -11,8 +11,7 @@
 @{
     string currentLocation = @Model.Path;
 
-    string pathArg = "/";
-    string href = "";
+    string pathArg = "";
 }
 
 
@@ -21,7 +20,7 @@
 <div class="d-flex flex-wrap text-left" style="font-size: x-large;">
     @if (Model.IsUploadMode)
     {
-        href = ("/Nas/" + currentLocation).TrimEnd('/');
+        string href = ("/Nas/" + currentLocation).TrimEnd('/');
 
         <a href="@href" class="btn btn-outline-primary mr-3">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
@@ -44,12 +43,17 @@
 
     @foreach (var layer in Model.PathLayers)
     {
-        pathArg += layer + "/";
-        href = pathArg.Replace("'", "\\'").Trim('/');
+        pathArg += (layer + "/");
 
         if (Model.IsUploadMode)
-            href = WebUtility.UrlEncode(href);
-
-        <span><a href="#" onclick="browseNas('@href')">@layer/</a></span>
+        {
+            string href = WebUtility.UrlEncode(pathArg);
+            <span><a href="#" onclick="browseNas('@href')">@layer/</a></span>
+        }
+        else
+        {
+            string href = "/Nas/" + pathArg.Replace("'", "\\'");
+            <span><a href="@href">@layer/</a></span>
+        }
     }
 </div>

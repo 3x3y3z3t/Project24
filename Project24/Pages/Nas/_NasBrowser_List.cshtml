@@ -1,5 +1,5 @@
 ﻿@*  _NasBrowser > List.cshtml
-    *  Version: 1.0 (2022.12.14)
+    *  Version: 1.1 (2022.12.18)
     *
     *  Contributor
     *      Arime-chan
@@ -50,11 +50,7 @@
 
         @foreach (var file in Model.Files)
         {
-            string path = (file.RelativePath + "/" + file.Name).Replace("'", "\\'").Trim('/');
-            string href = path;
-
-            if (Model.IsUploadMode)
-                href = WebUtility.UrlEncode(path);
+            string path = (file.RelativePath + "/" + file.Name).Trim('/');
 
             <tr>
                 <td class="text-left px-1">
@@ -69,13 +65,22 @@
                     }
                 </td>
 
-                @if (Model.IsUploadMode && file.FileType == NasUtils.FileType.File)
+                @if (Model.IsUploadMode)
                 {
-                    <td class="text-left text-break">@file.Name</td>
+                    if (file.FileType == NasUtils.FileType.File)
+                    {
+                        <td class="text-left text-break">@file.Name</td>
+                    }
+                    else
+                    {
+                        string href = WebUtility.UrlEncode(path);
+                        <td class="text-left text-break"><a href="#" onclick="browseNas('@href')">@file.Name</a></td>
+                    }
                 }
                 else
                 {
-                    <td class="text-left text-break"><a href="#" onclick="browseNas('@href')">@file.Name</a></td>
+                    string href = "/Nas/" + path;
+                    <td class="text-left text-break"><a href="@href">@file.Name</a></td>
                 }
 
                 <td class="text-right">@file.LastModified</td>
