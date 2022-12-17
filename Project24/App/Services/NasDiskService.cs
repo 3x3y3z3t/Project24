@@ -1,5 +1,5 @@
 ﻿/*  NasDiskService.cshtml
- *  Version: 1.3 (2022.12.18)
+ *  Version: 1.4 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -123,7 +123,7 @@ namespace Project24.App.Services
 
         private bool CheckIfFileNotExists(RequestData _data, NasCachedFile _file)
         {
-            string src = _data.NasCacheAbsPath + "/" + _file.Path + "/" + _file.Name;
+            string src = _data.NasCacheAbsPath + "/" + _file.Name;
 
             if (File.Exists(src))
                 return false;
@@ -151,27 +151,6 @@ namespace Project24.App.Services
             }
 
             return isTransfering;
-
-            //if (!isTransfering)
-            //    return false;
-
-            //string src = _data.NasCacheAbsPath + "/" + _file.Path + "/" + _file.Name;
-
-            //if (File.Exists(src))
-            //{
-            //    // src existing -> still transfering;
-            //    return true;
-            //}
-
-            //// src gone -> transfer done;
-            //lock (this)
-            //{
-            //    m_TransferInProgress.Remove(_file.Id);
-            //}
-
-            //_data.DbContext.Remove(_file);
-
-            //return false;
         }
 
         private bool MoveFile(RequestData _data, NasCachedFile _file)
