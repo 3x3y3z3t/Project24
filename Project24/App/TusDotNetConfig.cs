@@ -1,5 +1,5 @@
 ﻿/*  TusDotNetConfig.cs
- *  Version: 1.4 (2022.12.18)
+ *  Version: 1.5 (2022.12.24)
  *
  *  Contributor
  *      Arime-chan
@@ -103,7 +103,7 @@ namespace Project24.App
 
             try
             {
-                string uploadLocationAbsPath = Path.GetFullPath(DriveUtils.TmpRootPath + "/" + filePath.Remove(0, 5));
+                string uploadLocationAbsPath = Path.GetFullPath(DriveUtils.TmpRootPath + "/" + filePath);
                 if (!uploadLocationAbsPath.Contains("nasTmp"))
                 {
                     _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
@@ -112,6 +112,17 @@ namespace Project24.App
             catch (Exception)
             {
                 _eventContext.FailRequest("Invalid path '" + filePath + "'. ");
+            }
+
+            DateTime lastModDate = DateTime.Now;
+            if (_eventContext.Metadata.ContainsKey("fileDate"))
+            {
+                string datetimeString = _eventContext.Metadata["fileDate"].GetString(Encoding.UTF8);
+                if (long.TryParse(datetimeString, out long millis))
+                {
+                    DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                    lastModDate = epoch.AddMilliseconds(millis).ToLocalTime();
+                }
             }
 
             return Task.CompletedTask;
@@ -126,13 +137,17 @@ namespace Project24.App
         {
             string name = _tusMetadata["fileName"].GetString(Encoding.UTF8);
             long length = long.Parse(_tusMetadata["fileSize"].GetString(Encoding.UTF8));
-            string path = _tusMetadata["filePath"].GetString(Encoding.UTF8).Remove(0, 5);
+            string path = _tusMetadata["filePath"].GetString(Encoding.UTF8);
 
             DateTime lastModDate = DateTime.Now;
             if (_tusMetadata.ContainsKey("fileDate"))
             {
                 string datetimeString = _tusMetadata["fileDate"].GetString(Encoding.UTF8);
-                lastModDate = DateTime.Parse(datetimeString);
+                if (long.TryParse(datetimeString, out long millis))
+                {
+                    DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                    lastModDate = epoch.AddMilliseconds(millis).ToLocalTime();
+                }
             }
 
             return new UploadedFileMetadata()
@@ -146,6 +161,9 @@ namespace Project24.App
 
         private static async Task TusDotNet_OnFileCompleteAsync(FileCompleteContext _eventContext)
         {
+            //return;
+
+
             var logger = _eventContext.HttpContext.RequestServices.GetRequiredService<ILogger<TusDotNetConfig>>();
             ApplicationDbContext dbContext = _eventContext.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
 

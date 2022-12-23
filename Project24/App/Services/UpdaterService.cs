@@ -1,5 +1,5 @@
 ﻿/*  UpdaterService.cshtml
- *  Version: 1.1 (2022.12.13)
+ *  Version: 1.2 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -100,6 +100,22 @@ namespace Project24.App.Services
             }
         }
 
+        public void UpdateStaticFiles()
+        {
+            if (IsUpdateInProgress)
+                return;
+
+            string nextAbsPath = DriveUtils.AppNextRootPath;
+            string appAbsPath = DriveUtils.AppRootPath;
+            int processId = Process.GetCurrentProcess().Id;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                string command = $"'{nextAbsPath}/update.sh' -quick {processId} '{appAbsPath}/wwwroot/' '{nextAbsPath}/wwwroot/' >> '{appAbsPath}/../updater_q.log'";
+                PlatformUtils.ExecUnixCommand(command);
+            }
+        }
+
         private void PerformUpdate(object? _state)
         {
             m_Logger.LogWarning("Timeout. Commencing update..");
@@ -151,7 +167,7 @@ namespace Project24.App.Services
         private void InvokeUpdatereOnLinux()
         {
             m_Logger.LogInformation("Performing update on Linux..");
-            
+
             string nextAbsPath = DriveUtils.AppNextRootPath;
             string appAbsPath = DriveUtils.AppRootPath;
 

@@ -13,11 +13,21 @@ then
     # start updater (launcher)
     echo "$(date +'%Y/%m/%d %H:%M:%S'): Sending command to start updater service.."
     sudo systemctl start p24app-updater.service
-elif [[ $1 == "-launchApp" ]]
+elif [[ $1 == "-quick" ]]
 then
-    # start main app
-    echo "$(date +'%Y/%m/%d %H:%M:%S'): Sending command to start Project24 app.."
-    sudo systemctl start kestrel-p24app.service
+    # do quick update ()
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Quick update.."
+
+    rsync -rpvv "$4" "$3"
+    errCode=$?
+    if [[ $errCode == 0 ]]
+    then
+        echo $'    Files copied ('$errCode$').\n'
+    else
+        echo $'    Rsync error ('$errCode$').\n'
+    fi
+    
+    echo "$(date +'%Y/%m/%d %H:%M:%S'): Updating done!"
 elif [[ $1 == "-main" ]]
 then
     # do update here..

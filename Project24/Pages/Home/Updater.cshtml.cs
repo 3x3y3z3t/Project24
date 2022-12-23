@@ -1,5 +1,5 @@
 /*  Updater.cshtml.cs
- *  Version: 1.3 (2022.12.15)
+ *  Version: 1.4 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -127,8 +127,9 @@ namespace Project24.Pages.Home
                 }
             }
 
-            await m_DbContext.AddAsync(new UserUpload(currentUser, AppModule.Dashboard, successCount, successLength));
+            m_Logger.LogInformation("User " + currentUser.UserName + " uploaded " + successCount + " files (" + AppUtils.FormatDataSize(successLength) + ").");
 
+            await m_DbContext.AddAsync(new UserUpload(currentUser, AppModule.Dashboard, successCount, successLength));
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
                 ActionRecord.Operation_.Updater_UploadNextFiles,
@@ -147,36 +148,75 @@ namespace Project24.Pages.Home
             return Partial("_LocalFilePanel", this);
         }
 
-        public async Task<IActionResult> OnPostVersionUp()
+        public async Task<IActionResult> OnPostVersionUpAsync()
         {
             if (!await ValidateModelState(ActionRecord.Operation_.Updater_PurgeNextFiles))
                 return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
 
+            m_Logger.LogInformation("User " + User.Identity.Name + " initialized Version Up.");
             m_UpdaterService.Start();
+
+            await m_DbContext.RecordChanges (
+                User.Identity.Name,
+                ActionRecord.Operation_.Updater_InitVersionUp,
+                ActionRecord.OperationStatus_.Success
+            );
 
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
             StatusMessage = "Warning: Version Up initialized. T-minus " + m_UpdaterService.PreparationTime + " minutes";
             return Partial("_LocalFilePanel", this);
         }
 
-        public async Task<IActionResult> OnPostAbortVersionUp()
+        public async Task<IActionResult> OnPostAbortVersionUpAsync()
         {
             if (!await ValidateModelState(ActionRecord.Operation_.Updater_PurgeNextFiles))
                 return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
 
+            m_Logger.LogInformation("User " + User.Identity.Name + " aborted Version Up.");
             m_UpdaterService.Abort();
+
+            await m_DbContext.RecordChanges(
+                User.Identity.Name,
+                ActionRecord.Operation_.Updater_AbortVersionUp,
+                ActionRecord.OperationStatus_.Success
+            );
 
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
             StatusMessage = "Version Up aborted.";
             return Partial("_LocalFilePanel", this);
         }
 
-        public async Task<IActionResult> OnPostPurgeNext()
+        public async Task<IActionResult> OnPostUpdateStaticFilesAsync()
+        {
+            if (!await ValidateModelState(ActionRecord.Operation_.Updater_UpdateStaticFiles))
+                return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
+
+            if (m_UpdaterService.IsUpdateInProgress)
+            {
+                StatusMessage = "Update is in progress, no need to double-update.";
+            }
+            else
+            {
+                m_Logger.LogInformation("User " + User.Identity.Name + " started Update Static Files.");
+                m_UpdaterService.UpdateStaticFiles();
+
+                await m_DbContext.RecordChanges(
+                    User.Identity.Name,
+                    ActionRecord.Operation_.Updater_UpdateStaticFiles,
+                    ActionRecord.OperationStatus_.Success
+                );
+
+                LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
+                StatusMessage = "Static Files update request sent.";
+            }
+
+            return Partial("_LocalFilePanel", this);
+        }
+
+        public async Task<IActionResult> OnPostPurgeNextAsync()
         {
             if (!await ValidateModelState(ActionRecord.Operation_.Updater_PurgeNextFiles))
                 return Content(ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
-
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
             LocalFiles = NasUtils.GetAllFilesInDirectory("", NasUtils.NasLocation.AppNextRoot);
 
@@ -215,8 +255,10 @@ namespace Project24.Pages.Home
 
             if (!isEmpty)
             {
+                m_Logger.LogInformation("User " + User.Identity.Name + " purged Next Version Files.");
+
                 await m_DbContext.RecordChanges(
-                    currentUser.UserName,
+                    User.Identity.Name,
                     ActionRecord.Operation_.Updater_PurgeNextFiles,
                     ActionRecord.OperationStatus_.Success
                 );

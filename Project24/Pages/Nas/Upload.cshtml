@@ -1,5 +1,5 @@
 ﻿@*  Upload.cshtml
-    *  Version: 1.8 (2022.12.16)
+    *  Version: 1.9 (2022.12.23)
     *
     *  Contributor
     *      Arime-chan
@@ -34,47 +34,48 @@
 
             <div class="mb-2">
                 <span id="current-progress-info">Current: None</span>
-                <span id="current-progress-info-status" class="text-danger" style="display: inline;">(Paused)</span>
+                <span id="current-progress-info-status" class="text-danger" hidden>(Paused)</span>
 
                 <div id="current-progress-bar-wrapper" class="progress">
                     <div id="current-accepted-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
-                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
-                    <div id="current-sent-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="transition-duration: 0.1s;"
-                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                         role="progressbar"></div>
+                    <div id="current-uploaded-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="transition-duration: 0.1s;"
+                         role="progressbar"></div>
                 </div>
             </div>
 
             <div class="mb-2">
                 <span id="total-progress-info">Total: None</span>
-                <span id="total-progress-info-status" class="text-danger" style="display: inline;">(Paused)</span>
+                <span id="total-progress-info-status" class="text-danger" hidden>(Paused)</span>
 
                 <div id="total-progress-bar-wrapper" class="progress">
                     <div id="total-accepted-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="transition-duration: 0.1s;"
-                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
-                    <div id="total-sent-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="transition-duration: 0.1s;"
-                         role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                         role="progressbar"></div>
+                    <div id="total-uploaded-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="transition-duration: 0.1s;"
+                         role="progressbar"></div>
                 </div>
             </div>
 
             <div class="my-3">
-                <button type="button" id="button-pause" class="btn btn-danger">Pause</button>
-                <button type="button" id="button-resume" class="btn btn-info">Resume</button>
+                <button type="button" id="btn-pause" class="btn btn-danger" onclick="btn_pause(this)" disabled>Pause</button>
+                <button type="button" id="btn-resume" class="btn btn-info" onclick="btn_resume(this)" disabled>Resume</button>
             </div>
 
         </div>
         <hr />
 
-        <form id="upload-form">
-            <label>File(s):</label>
-            <input type="file" id="input-files" name="file" multiple />
+        <input type="checkbox" id="checkbox-folder-mode" name="checkbox-folder-mode" onclick="checkbox_folderMode_changed(this)" />
+        <label for="checkbox-folder-mode">Upload Folder</label>
+
+            <input type="file" id="input-files" class="form-control" onchange="input_files_changed(this)" multiple />
+            <input type="file" id="input-files-folder" class="form-control" onchange="input_files_changed(this)" webkitdirectory hidden />
             <br />
 
-            <button type="button" id="button-upload" class="btn btn-success">Upload</button>
-        </form>
+            <button type="button" id="btn-upload" class="btn btn-success" onclick="btn_upload(this)" disabled>Upload</button>
         <hr />
 
         <div id="upload-elapsed-time">Elapsed time: 00:00:00</div>
-        <div id="upload-avg-speed">Average speed: 0 B/s</div>
+        <div id="upload-remaining-time">Remaining time: 00:00:00 (0 B/s)</div>
         <hr />
 
         <p id="files-list-overview">Total: 0 file</p>
@@ -88,7 +89,10 @@
 <partial name="_Upload_Modal" />
 
 @section Scripts {
+<link rel="stylesheet" href="~/lib/jstree/dist/themes/default/style.min.css" />
+
 <script src="~/js/nas/nas-upload.js"></script>
+<script src="~/js/nas/nas-upload-uploader.js"></script>
 <script src="~/js/nas/nas-upload-tus-uploader.js"></script>
 <script src="~/js/nas/nas-utils.js"></script>
 <script src="~/lib/tus-js-client/tus.min.js"></script>

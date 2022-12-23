@@ -1,5 +1,5 @@
 ﻿/*  updater.js
- *  Version: 1.1 (2022.12.10)
+ *  Version: 1.2 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -33,6 +33,28 @@ $(document).ready(function () {
     //    updateStatistic();
     //}, 500);
 });
+
+function btn_UpdateStaticFiles() {
+    $("#btn-upload-static-files").attr("disabled", true);
+    $("#btn-purge").attr("disabled", true);
+
+    let token = $("input[name='__RequestVerificationToken']").val();
+
+    $.ajax({
+        type: 'POST',
+        url: 'Updater/UpdateStaticFiles',
+        headers: { "RequestVerificationToken": token },
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function (_content) {
+            $("#local-file-panel").html(_content);
+        },
+        error: function (_xhr, _status, _errorThrow) {
+            console.error("Update Static Files Request error (" + _status + ")\nServer msg: " + _xhr.responseText);
+        }
+    });
+}
 
 function uploadButton_onClick() {
     $("#button-upload").attr("disabled", true);

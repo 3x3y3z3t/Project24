@@ -1,5 +1,5 @@
 ﻿/*  nas-upload.js
- *  Version: 1.0 (2022.12.16)
+ *  Version: 1.1 (2022.12.23)
  *
  *  Contributor
  *      Arime-chan
@@ -272,7 +272,7 @@ function modalConfig_btnRenameSubmit() {
 
 
 
-
+//TODO: Copy, Move;
 
 
 
@@ -305,7 +305,6 @@ function modalConfig_btnDeleteSubmit() {
 // END: events
 // ==================================================
 
-
 // ==================================================
 // helper
 
@@ -313,8 +312,8 @@ function updateUploadLocation() {
     if (window.NasUploader.m_ActiveTusUpload != null)
         return;
 
-    let newLocation = "root/" + $("#current-location").html();
-    $("#upload-location").html(newLocation);
+    NasUploader.m_UploadLocation = $("#current-location").text();
+    $("#upload-location").html("root/" + NasUploader.m_UploadLocation);
     //window.alert(newLocation);
 }
 
@@ -325,3 +324,5 @@ function updateBrowserPanel() {
 
 }
 
+// END: helpers
+// ==================================================

@@ -1,5 +1,5 @@
 ﻿/*  ActionLog.cs
- *  Version: 1.12 (2022.12.15)
+ *  Version: 1.13 (2022.12.18)
  *
  *  Contributor
  *      Arime-chan
@@ -53,8 +53,10 @@ namespace Project24.Models
 
 
             public const string Updater_UploadNextFiles = "Upload Next version files";
+            public const string Updater_InitVersionUp = "Init Version Up";
+            public const string Updater_AbortVersionUp = "Abort Version Up";
+            public const string Updater_UpdateStaticFiles = "Update Static Files";
             public const string Updater_PurgeNextFiles = "Purge Next version files";
-            public const string Updater_VersionUp = "Version Up";
 
             public const string Nas_CreateFolder = "Nas Create Folder";
             public const string Nas_RenameFile = "Nas Rename File";

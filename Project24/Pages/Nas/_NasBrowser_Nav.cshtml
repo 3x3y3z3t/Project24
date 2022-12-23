@@ -1,5 +1,5 @@
 ﻿@*  _NasBrowser > Nav.cshtml
-    *  Version: 1.1 (2022.12.18)
+    *  Version: 1.2 (2022.12.23)
     *
     *  Contributor
     *      Arime-chan
@@ -43,7 +43,10 @@
 
     @foreach (var layer in Model.PathLayers)
     {
-        pathArg += (layer + "/");
+        if (pathArg != "")
+            pathArg += "/";
+
+        pathArg += layer;
 
         if (Model.IsUploadMode)
         {
@@ -52,7 +55,7 @@
         }
         else
         {
-            string href = "/Nas/" + pathArg.Replace("'", "\\'");
+            string href = "/Nas/" + pathArg;
             <span><a href="@href">@layer/</a></span>
         }
     }

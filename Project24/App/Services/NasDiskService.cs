@@ -1,5 +1,5 @@
 ﻿/*  NasDiskService.cshtml
- *  Version: 1.4 (2022.12.18)
+ *  Version: 1.6 (2022.12.19)
  *
  *  Contributor
  *      Arime-chan
@@ -136,8 +136,15 @@ namespace Project24.App.Services
             {
                 m_TransferInProgress.Remove(_file.Id);
             }
-            _data.DbContext.Remove(_file);
-            _data.DbContext.SaveChanges();
+            try
+            {
+                _data.DbContext.Remove(_file);
+                _data.DbContext.SaveChanges();
+            }
+            catch (Exception _e)
+            {
+                m_Logger.LogWarning("CheckIfFileNotExists: " + _e);
+            }
 
             return true;
         }
@@ -155,7 +162,7 @@ namespace Project24.App.Services
 
         private bool MoveFile(RequestData _data, NasCachedFile _file)
         {
-            string src = _data.NasCacheAbsPath + "/" + _file.Path + "/" + _file.Name;
+            string src = _data.NasCacheAbsPath + "/" + _file.Name;
             string dst = _data.NasRootAbsPath + "/" + _file.Path + "/" + _file.Name;
 
             lock (this)
@@ -192,8 +199,15 @@ namespace Project24.App.Services
             {
                 m_TransferInProgress.Remove(_file.Id);
             }
-            _data.DbContext.Remove(_file);
-            _data.DbContext.SaveChanges();
+            try
+            {
+                _data.DbContext.Remove(_file);
+                _data.DbContext.SaveChanges();
+            }
+            catch (Exception _e)
+            {
+                m_Logger.LogWarning("MoveFile: " + _e);
+            }
 
             return true;
         }
