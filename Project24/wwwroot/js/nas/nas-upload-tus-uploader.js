@@ -1,5 +1,5 @@
 ﻿/*  nas-upload-tus-uploader.js
- *  Version: 1.9 (2022.12.24)
+ *  Version: 1.10 (2022.12.24)
  *
  *  Contributor
  *      Arime-chan
@@ -121,6 +121,14 @@ NasUploader.TusUploader.tryStartUpload = function (_index) {
     }
 
     let file = NasUploader.m_Files[_index];
+    let path = NasUploader.m_UploadLocation;
+    if (path != "")
+        path += "/";
+
+    path += NasUploader.extractFilePath(file);
+    if (path.endsWith("/"))
+        path = path.substring(0, path.length - 1);
+
     let uploader = new tus.Upload(file, {
         endpoint: "/Nas/Upload0",                                   // Endpoint is the upload creation URL from your tus server
         retryDelays: [0, 500, 1000, 3000, 5000, 10000],             // Retry delays will enable tus-js-client to automatically retry on errors
@@ -129,7 +137,7 @@ NasUploader.TusUploader.tryStartUpload = function (_index) {
         metadata: {
             fileName: file.name,
             fileSize: file.size,
-            filePath: NasUploader.m_UploadLocation,
+            filePath: path,
             fileDate: file.lastModified,
             contentType: file.type,
         },                                                          // Attach additional meta data about the file for the server

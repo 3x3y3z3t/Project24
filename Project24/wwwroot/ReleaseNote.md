@@ -1,9 +1,11 @@
 ﻿
-#### v0.12.4 (2022.12.24)
+#### v0.12.6 (2022.12.24)
 - Added Quick Update feature (update static files only, no downtime).
 - Added NAS Upload Folder upload capability.
 - Fixed NAS nav bar.
 - Fixed NAS Upload not writing files from cache to disk (2).
+- Hotfix .5: Fixed NAS Upload not displaying file list correctly (visual only).
+- Hotfix .6: Fixed NAS Upload not saving file in correct location.
 
 #### v0.12.3 (2022.12.18)
 - Fixed some URL issues with NAS.

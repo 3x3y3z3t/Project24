@@ -1,5 +1,5 @@
 ﻿/*  nas-upload-uploader.js
- *  Version: 1.0 (2022.12.24)
+ *  Version: 1.2 (2022.12.24)
  *  
  *  This script define functions for functionality of the Upload portion of NAS Upload
  *  (right-side panel). Note that this script does not define functions for the uploader,
@@ -26,6 +26,7 @@ NasUploader.Backend.m_FilesState = [];
 NasUploader.Backend.m_DirectoryTree = null;
 NasUploader.Backend.m_StartTime = null;
 NasUploader.Backend.m_UploadInProgress = -1;
+NasUploader.Backend.m_IsFolderUploadMode = false;
 
 // ==================================================
 
@@ -60,7 +61,7 @@ $(document).ready(function () {
 
 function resetNasUploader() {
     NasUploader.m_IsTransfering = false;
-    NasUploader.m_UploadLocation = "";
+    NasUploader.m_UploadLocation = $("#current-location").text();
     NasUploader.m_Files = null;
 
     NasUploader.m_ActiveTusUpload = null;
@@ -69,7 +70,6 @@ function resetNasUploader() {
     NasUploader.Backend.m_DirectoryTree = null;
     NasUploader.Backend.m_StartTime = null;
     NasUploader.Backend.m_UploadInProgress = -1;
-    NasUploader.Backend.m_IsFolderUploadMode = false;
 
     NasUploader.Stats.m_CurrentBytesUploaded = 0;
     NasUploader.Stats.m_CurrentBytesUploadedPercent = 0;
@@ -102,7 +102,7 @@ function resetNasUploader() {
     $("#upload-elapsed-time").html("Elapsed time: 00:00:00");
     $("#upload-remaining-time").html("Remaining time: 00:00:00 (0 B/s)");
 
-    $("#files-list-overview").html("");
+    $("#files-list-overview").html("Total: 0 file");
     $("#files-list").html("");
 }
 
@@ -410,15 +410,17 @@ NasUploader.buildFileInfoFromTree = function (_html, _json) {
     }
 
     // folder upload mode;
+    let colorClass = NasUploader.getColorClassBasedOnState(_json.state);
+
     if (_json.isLeaf) {
         // leaf node;
-        NasUploader.buildSingleFileInfo(_html, _json);
+        _html = NasUploader.buildSingleFileInfo(_html, _json);
         return _html;
     }
 
     // not leaf node;
-    _html += "<div class=\"ml-3\">";
     _html += "<div class=\"" + colorClass + "\">" + _json.text + "</div>";
+    _html += "<div class=\"ml-3\">";
 
     for (let i = 0; i < _json.children.length; ++i) {
         _html += NasUploader.buildFileInfoFromTree("", _json.children[i]);
@@ -477,19 +479,34 @@ NasUploader.markFileAsInProgressByIndex = function (_index) {
 }
 
 NasUploader.buildSingleFileInfo = function (_html, _json) {
-    let colorClass = "";
-    if (_json.state == "transfering")
-        colorClass = "text-warning ";
-    else if (_json.state == "error")
-        colorClass = "text-danger ";
-    else if (_json.state == "success")
-        colorClass = "text-success ";
+    let colorClass = NasUploader.getColorClassBasedOnState(_json.state);
 
     _html += "<div class=\"d-flex\">";
-    _html += "<div class=\"text-break " + colorClass + "ml-3\">" + _json.text + "</div>";
+    _html += "<div class=\"text-break " + colorClass + "\">" + _json.text + "</div>";
     _html += "<div class=\"text-nowrap text-right ml-auto pl-2\">" + formatDataLength(_json.length) + "</div>";
     _html += "</div>";
     return _html;
+}
+
+NasUploader.getColorClassBasedOnState = function (_state) {
+    if (_state == "transfering")
+        return "text-warning ";
+
+    if (_state == "error")
+        return "text-danger ";
+
+    if (_state == "success")
+        return "text-success ";
+
+    return "";
+}
+
+NasUploader.extractFilePath = function (_file) {
+    let path = _file.webkitRelativePath.replace(_file.name, "");
+    if (path.endsWith("/"))
+        path = path.substring(0, path.length - 1);
+
+    return path;
 }
 
 // END: helpers

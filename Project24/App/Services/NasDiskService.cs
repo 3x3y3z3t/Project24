@@ -1,5 +1,5 @@
 ﻿/*  NasDiskService.cshtml
- *  Version: 1.6 (2022.12.19)
+ *  Version: 1.7 (2022.12.24)
  *
  *  Contributor
  *      Arime-chan
@@ -163,7 +163,8 @@ namespace Project24.App.Services
         private bool MoveFile(RequestData _data, NasCachedFile _file)
         {
             string src = _data.NasCacheAbsPath + "/" + _file.Name;
-            string dst = _data.NasRootAbsPath + "/" + _file.Path + "/" + _file.Name;
+            string dstDir = _data.NasRootAbsPath + "/" + _file.Path;
+            string dst = dstDir + "/" + _file.Name;
 
             lock (this)
             {
@@ -172,6 +173,8 @@ namespace Project24.App.Services
 
             try
             {
+                Directory.CreateDirectory(dstDir);
+
                 File.Move(src, dst, true);
 
                 if (File.Exists(src))
