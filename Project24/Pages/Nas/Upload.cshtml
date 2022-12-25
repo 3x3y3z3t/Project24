@@ -1,5 +1,5 @@
 ﻿@*  Upload.cshtml
-    *  Version: 1.9 (2022.12.23)
+    *  Version: 1.10 (2022.12.25)
     *
     *  Contributor
     *      Arime-chan
@@ -13,22 +13,24 @@
     ViewData["Title"] = "Upload";
     ViewData[CustomInfoKey.UseFullWidth] = "true";
 
-    Layout = "_Layout";
+    Layout = "_NoScrollLayout";
 }
 
-<div class="d-flex flex-wrap">
+<div class="d-flex flex-nowrap h-100">
 
-    <div id="nas-browser" class="col-12 col-lg-6 col-xl-6 px-3 border-left">
+    <div id="nas-browser" class="d-flex flex-column col-12 col-lg-6 col-xl-6 px-3 border-left mh-100">
         <partial name="_NasBrowser" model="@Model.Data" />
 
         @Html.AntiForgeryToken()
     </div>
 
-    <div class="col-12 col-lg-6 col-xl-6 px-3 border-left border-primary" style="border-left-width: thick;">
-        <h4>NAS Upload</h4>
-        <hr />
+    <div class="d-flex flex-column col-12 col-lg-6 col-xl-6 px-3 border-left border-primary mh-100" style="border-left-width: thick;">
+        <div>
+            <h4>NAS Upload</h4>
+            <hr />
+        </div>
 
-        <div class="mb-2">
+        <div class="">
             <div>Upload location: <span id="upload-location" class="font-italic" onmouseover="underlineMe(this)" onmouseout="normalizeMe(this)">root/</span></div>
             <p>Uploading: <span id="current-file-name" class="font-weight-bold">None</span></p>
 
@@ -60,28 +62,43 @@
                 <button type="button" id="btn-pause" class="btn btn-danger" onclick="btn_pause(this)" disabled>Pause</button>
                 <button type="button" id="btn-resume" class="btn btn-info" onclick="btn_resume(this)" disabled>Resume</button>
             </div>
-
-        </div>
-        <hr />
-
-        <input type="checkbox" id="checkbox-folder-mode" name="checkbox-folder-mode" onclick="checkbox_folderMode_changed(this)" />
-        <label for="checkbox-folder-mode">Upload Folder</label>
-
-            <input type="file" id="input-files" class="form-control" onchange="input_files_changed(this)" multiple />
-            <input type="file" id="input-files-folder" class="form-control" onchange="input_files_changed(this)" webkitdirectory hidden />
-            <br />
-
-            <button type="button" id="btn-upload" class="btn btn-success" onclick="btn_upload(this)" disabled>Upload</button>
-        <hr />
-
-        <div id="upload-elapsed-time">Elapsed time: 00:00:00</div>
-        <div id="upload-remaining-time">Remaining time: 00:00:00 (0 B/s)</div>
-        <hr />
-
-        <p id="files-list-overview">Total: 0 file</p>
-        <div id="files-list" class="ml-3">
+            <hr />
         </div>
 
+        <div>
+            <div id="upload-elapsed-time">Elapsed time: 00:00:00</div>
+            <div id="upload-remaining-time">Remaining time: 00:00:00 (0 B/s)</div>
+            <hr />
+        </div>
+
+        <div>
+            <div class="d-flex">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <button type="button" id="btn-upload-mode" class="btn btn-outline-secondary" onclick="btn_uploadMode()">
+                            Files
+                        </button>
+                    </div>
+
+                    <div id="div-input-files" class="flex-grow-1 position-relative">
+                        <label for="input-files" id="lbl-input-files" class="form-control position-absolute">Select or drop files here</label>
+
+                        <input type="file" id="input-files" name="input-files" class="form-control position-absolute" style="opacity:0" onchange="input_files_changed(this)" multiple />
+                        <input type="file" id="input-files-folder" class="form-control position-absolute" style="opacity:0" onchange="input_files_changed(this)" webkitdirectory hidden />
+                    </div>
+                </div>
+
+                <button type="button" id="btn-upload" class="btn btn-outline-success mx-2" onclick="btn_upload(this)" disabled>Upload</button>
+            </div>
+            <hr />
+        </div>
+
+        <div>
+            <p id="files-list-overview">Total: 0 file</p>
+        </div>
+
+        <div id="files-list" class="overflow-auto mh-100">
+        </div>
     </div>
 
 </div>
@@ -89,11 +106,11 @@
 <partial name="_Upload_Modal" />
 
 @section Scripts {
-<link rel="stylesheet" href="~/lib/jstree/dist/themes/default/style.min.css" />
+    <link rel="stylesheet" href="~/lib/jstree/dist/themes/default/style.min.css" />
 
-<script src="~/js/nas/nas-upload.js"></script>
-<script src="~/js/nas/nas-upload-uploader.js"></script>
-<script src="~/js/nas/nas-upload-tus-uploader.js"></script>
-<script src="~/js/nas/nas-utils.js"></script>
-<script src="~/lib/tus-js-client/tus.min.js"></script>
+    <script src="~/js/nas/nas-upload.js"></script>
+    <script src="~/js/nas/nas-upload-uploader.js"></script>
+    <script src="~/js/nas/nas-upload-tus-uploader.js"></script>
+    <script src="~/js/nas/nas-utils.js"></script>
+    <script src="~/lib/tus-js-client/tus.min.js"></script>
 }

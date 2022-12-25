@@ -1,5 +1,5 @@
 ﻿/*  nas-upload-uploader.js
- *  Version: 1.2 (2022.12.24)
+ *  Version: 1.3 (2022.12.25)
  *  
  *  This script define functions for functionality of the Upload portion of NAS Upload
  *  (right-side panel). Note that this script does not define functions for the uploader,
@@ -54,6 +54,11 @@ NasUploader.Stats.m_TotalBytesAcceptedPercent = 0;
 $(document).ready(function () {
     //$.jstree.defaults.core.data = true;
 
+    $("#div-input-files").on("dragenter", lblInputFiles_dragIn);
+    $("#div-input-files").on("dragend drop dragexit dragleave", lblInputFiles_dragOut);
+
+    NasUploader.updateUploadModeButton();
+
     window.setInterval(function () {
         NasUploader.updateStatistic();
     }, 200);
@@ -102,7 +107,6 @@ function resetNasUploader() {
     $("#upload-elapsed-time").html("Elapsed time: 00:00:00");
     $("#upload-remaining-time").html("Remaining time: 00:00:00 (0 B/s)");
 
-    $("#files-list-overview").html("Total: 0 file");
     $("#files-list").html("");
 }
 
@@ -127,26 +131,32 @@ NasUploader.tryStartNextUpload = function () {
 // ==================================================
 // events
 
-function checkbox_folderMode_changed(_element) {
-    if (_element == null)
-        return;
-
+function btn_uploadMode() {
     resetNasUploader();
     $("#input-files").val(null);
     $("#input-files-folder").val(null);
 
-    NasUploader.Backend.m_IsFolderUploadMode = _element.checked;
-    if (_element.checked) {
-        $("#input-files").attr("hidden", true);
-        $("#input-files-folder").removeAttr("hidden");
+    NasUploader.Backend.m_IsFolderUploadMode = ~NasUploader.Backend.m_IsFolderUploadMode;
 
-        //m_Input = $("#input-files-folder");
-    } else {
-        $("#input-files-folder").attr("hidden", true);
-        $("#input-files").removeAttr("hidden");
+    NasUploader.updateUploadModeButton();
+}
 
-        //m_Input = $("#input-files");
-    }
+function lblInputFiles_dragIn() {
+    let lbl = $("#lbl-input-files");
+
+    lbl.addClass("border");
+    lbl.addClass("border-success");
+
+    //lbl.attr("style", "border-width:2px!important");
+}
+
+function lblInputFiles_dragOut(_element) {
+    let lbl = $("#lbl-input-files");
+
+    lbl.removeClass("border");
+    lbl.removeClass("border-success");
+
+    //lbl.removeAttr("style");
 }
 
 function input_files_changed(_element) {
@@ -154,6 +164,7 @@ function input_files_changed(_element) {
         return;
 
     resetNasUploader();
+    NasUploader.updateLabelInputFiles(null);
 
     NasUploader.m_Files = _element.files;
 
@@ -173,7 +184,7 @@ function input_files_changed(_element) {
     if (NasUploader.m_Files.length > 1)
         htmlOverview += "s";
     htmlOverview += " (" + formatDataLength(NasUploader.Stats.m_TotalBytesToUpload) + ")";
-    $("#files-list-overview").html(htmlOverview);
+    NasUploader.updateLabelInputFiles(htmlOverview);
 
     $("#btn-upload").removeAttr("disabled");
 }
@@ -419,7 +430,7 @@ NasUploader.buildFileInfoFromTree = function (_html, _json) {
     }
 
     // not leaf node;
-    _html += "<div class=\"" + colorClass + "\">" + _json.text + "</div>";
+    _html += "<div class=\"text-truncate " + colorClass + "\"><b>" + _json.text + "</b></div>";
     _html += "<div class=\"ml-3\">";
 
     for (let i = 0; i < _json.children.length; ++i) {
@@ -507,6 +518,48 @@ NasUploader.extractFilePath = function (_file) {
         path = path.substring(0, path.length - 1);
 
     return path;
+}
+
+NasUploader.updateUploadModeButton = function () {
+    let svgPath = "";
+    let biClass = "";
+
+    if (NasUploader.Backend.m_IsFolderUploadMode) {
+        svgPath = "<path d=\"M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z\" />"
+        biClass = "folder";
+
+        $("#input-files").attr("hidden", true);
+        $("#input-files-folder").removeAttr("hidden");
+    } else {
+        svgPath = "<path d=\"M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z\" />"
+        biClass = "files";
+
+        $("#input-files-folder").attr("hidden", true);
+        $("#input-files").removeAttr("hidden");
+    }
+
+    let html = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-" + biClass + "\" viewBox=\"0 0 16 16\">"
+    html += svgPath;
+    html += "</svg>";
+    $("#btn-upload-mode").html(html);
+
+    NasUploader.updateLabelInputFiles(null);
+}
+
+NasUploader.updateLabelInputFiles = function (_text) {
+    if (_text != null && _text != "") {
+        $("#lbl-input-files").html(_text);
+        return;
+    }
+
+    if (NasUploader.Backend.m_IsFolderUploadMode) {
+        $("#lbl-input-files").attr("for", "input-files-folder");
+        $("#lbl-input-files").html("Select or drop folder here..");
+    }
+    else {
+        $("#lbl-input-files").attr("for", "input-files");
+        $("#lbl-input-files").html("Select or drop files here..");
+    }
 }
 
 // END: helpers

@@ -1,4 +1,7 @@
 ﻿
+#### v0.12.7 (2022.12.25)
+- Minor QoL update for NAS.
+
 #### v0.12.6 (2022.12.24)
 - Added Quick Update feature (update static files only, no downtime).
 - Added NAS Upload Folder upload capability.
