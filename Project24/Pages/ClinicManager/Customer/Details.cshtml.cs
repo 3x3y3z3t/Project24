@@ -1,5 +1,5 @@
-﻿/*  P24/Customer/Details.cshtml
- *  Version: 1.7 (2022.12.13)
+/*  P24/Customer/Details.cshtml
+ *  Version: 1.8 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -9,17 +9,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.ClinicManager;
 using Project24.Models.ClinicManager.DataModel;
-using Project24.Models.Identity;
 
 namespace Project24.Pages.ClinicManager.Customer
 {
@@ -31,11 +28,9 @@ namespace Project24.Pages.ClinicManager.Customer
         public P24ImageListingModel ListImageModel { get; private set; }
 
 
-        public DetailsModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<DetailsModel> _logger)
+        public DetailsModel(ApplicationDbContext _context)
         {
             m_DbContext = _context;
-            m_UserManager = _userManager;
-            m_Logger = _logger;
         }
 
 
@@ -44,22 +39,22 @@ namespace Project24.Pages.ClinicManager.Customer
             if (string.IsNullOrEmpty(_code))
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Customer, "null", "List"));
 
-            var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
+            var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.EditedUser)
                                   where _customer.Code == _code
                                   select new P24CustomerDetailsViewModelEx()
                                   {
                                       Code = _customer.Code,
                                       Fullname = _customer.FullName,
-                                      Gender = App.AppUtils.NormalizeGenderString(_customer.Gender),
+                                      Gender = AppUtils.NormalizeGenderString(_customer.Gender),
                                       DoB = _customer.DateOfBirth,
                                       PhoneNumber = _customer.PhoneNumber,
                                       Address = _customer.Address,
-                                      Notes = _customer.Notes,
+                                      Note = _customer.Note,
                                       AddedDate = _customer.AddedDate,
-                                      UpdatedDate = _customer.UpdatedDate,
+                                      UpdatedDate = _customer.EditedDate,
                                       DeletedDate = _customer.DeletedDate,
                                       AddedUserName = _customer.AddedUser.UserName,
-                                      UpdatedUserName = _customer.UpdatedUser.UserName
+                                      UpdatedUserName = _customer.EditedUser.UserName
                                   })
                             .FirstOrDefaultAsync();
 
@@ -68,13 +63,8 @@ namespace Project24.Pages.ClinicManager.Customer
 
             CustomerViewData = customer;
 
-            var id = await (from _customer in m_DbContext.CustomerProfiles
-                            where _customer.Code == _code
-                            select _customer.Id)
-                     .FirstOrDefaultAsync();
-
-            var images = await (from _image in m_DbContext.CustomerImages
-                                where _image.OwnerCustomerId == id && _image.DeletedDate == DateTime.MinValue
+            var images = await (from _image in m_DbContext.CustomerImages.Include(_i => _i.OwnerCustomer)
+                                where _image.OwnerCustomer.Code == _code && _image.DeletedDate == DateTime.MinValue
                                 select new P24ImageViewModel()
                                 {
                                     Id = _image.Id,
@@ -108,7 +98,7 @@ namespace Project24.Pages.ClinicManager.Customer
                 return new JsonResult(nextCustomerCode);
             }
 
-            var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
+            var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.EditedUser)
                                   where _customer.Code.Contains(_code) && _customer.PhoneNumber.Contains(_phone)
                                   select new P24CreateCustomerFormDataModel()
                                   {
@@ -118,7 +108,7 @@ namespace Project24.Pages.ClinicManager.Customer
                                       DateOfBirth = _customer.DateOfBirth,
                                       PhoneNumber = _customer.PhoneNumber,
                                       Address = _customer.Address,
-                                      Notes = _customer.Notes
+                                      Note = _customer.Note
                                   })
                             .FirstOrDefaultAsync();
 
@@ -127,8 +117,6 @@ namespace Project24.Pages.ClinicManager.Customer
 
 
         private readonly ApplicationDbContext m_DbContext;
-        private readonly UserManager<P24IdentityUser> m_UserManager;
-        private readonly ILogger<DetailsModel> m_Logger;
     }
 
 }

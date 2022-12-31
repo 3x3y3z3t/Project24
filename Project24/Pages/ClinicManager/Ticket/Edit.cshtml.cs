@@ -1,5 +1,5 @@
-﻿/*  P24/Customer/Edit.cshtml
- *  Version: 1.3 (2022.12.13)
+/*  P24/Customer/Edit.cshtml
+ *  Version: 1.4 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -8,14 +8,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App;
+using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.ClinicManager;
@@ -33,11 +34,10 @@ namespace Project24.Pages.ClinicManager.Ticket
         public P24CustomerDetailsViewModel Customer { get; set; }
 
 
-        public EditModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<EditModel> _logger)
+        public EditModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
-            m_Logger = _logger;
         }
 
 
@@ -52,9 +52,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                           .FirstOrDefaultAsync();
 
             if (!string.IsNullOrEmpty(deleted))
-            {
                 return RedirectToPage("Details", new { _code = _code });
-            }
 
             var ticket = await (from _ticket in m_DbContext.TicketProfiles
                                 where _ticket.Code == _code
@@ -63,7 +61,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                     Code = _ticket.Code,
                                     Diagnose = _ticket.Diagnose,
                                     Treatment = _ticket.ProposeTreatment,
-                                    Notes = _ticket.Notes
+                                    Note = _ticket.Note
                                 })
                          .FirstOrDefaultAsync();
 
@@ -80,7 +78,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                       DoB = _ticket.Customer.DateOfBirth,
                                       PhoneNumber = _ticket.Customer.PhoneNumber,
                                       Address = _ticket.Customer.Address,
-                                      Notes = _ticket.Customer.Notes
+                                      Note = _ticket.Customer.Note
                                   })
                            .FirstOrDefaultAsync();
 
@@ -96,23 +94,10 @@ namespace Project24.Pages.ClinicManager.Ticket
         public async Task<IActionResult> OnPostAsync()
         {
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-
-            if (!ModelState.IsValid)
-            {
-                await m_DbContext.RecordChanges(
-                    currentUser.UserName,
-                    ActionRecord.Operation_.UpdateTicket,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                    }
-                );
-
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.UpdateTicket))
                 return Page();
-            }
 
-            var ticket = await (from _ticket in m_DbContext.TicketProfiles
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.PreviousVersion)
                                 where _ticket.Code == FormData.Code
                                 select _ticket)
                            .FirstOrDefaultAsync();
@@ -136,15 +121,18 @@ namespace Project24.Pages.ClinicManager.Ticket
                 return RedirectToPage("Details", new { _code = FormData.Code });
             }
 
+            string jsonData = JsonSerializer.Serialize(ticket);
+            P24ObjectPreviousVersion previousVersion = new P24ObjectPreviousVersion(nameof(TicketProfile), ticket.Id.ToString(), jsonData, ticket.PreviousVersion);
+            await m_DbContext.AddAsync(previousVersion);
+
             ticket.Diagnose = FormData.Diagnose;
             ticket.ProposeTreatment = FormData.Treatment;
-            ticket.Notes = FormData.Notes;
-            ticket.UpdatedDate = DateTime.Now;
-            ticket.UpdatedUser = currentUser;
+            ticket.Note = FormData.Note;
+            ticket.PreviousVersion = previousVersion;
+            ticket.EditedDate = DateTime.Now;
+            ticket.EditedUser = currentUser;
 
             m_DbContext.Update(ticket);
-
-            await m_DbContext.RecordUpdateTicketProfile(currentUser, ticket);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -162,7 +150,6 @@ namespace Project24.Pages.ClinicManager.Ticket
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
-        private readonly ILogger<EditModel> m_Logger;
     }
 
 }

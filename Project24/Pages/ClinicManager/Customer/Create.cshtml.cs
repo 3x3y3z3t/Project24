@@ -1,5 +1,5 @@
-﻿/*  P24/Customer/Create.cshtml
- *  Version: 1.6 (2022.12.13)
+/*  P24/Customer/Create.cshtml
+ *  Version: 1.7 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Project24.App.Extension;
 using Project24.App.Services.P24ImageManager;
 using Project24.Data;
 using Project24.Models;
@@ -36,12 +37,11 @@ namespace Project24.Pages.ClinicManager.Customer
         //public string StatusMessage { get; set; }
 
 
-        public CreateModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc, ILogger<CreateModel> _logger)
+        public CreateModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
             m_ImageManagerSvc = _imageManagerSvc;
-            m_Logger = _logger;
         }
 
 
@@ -54,10 +54,9 @@ namespace Project24.Pages.ClinicManager.Customer
 
         public async Task<IActionResult> OnPostAsync([Bind] P24CreateCustomerFormDataModelEx FormData)
         {
-            if (!await ValidateModelState(ActionRecord.Operation_.CreateCustomer))
-                return Page();
-
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.CreateCustomer))
+                return Page();
 
             DailyIndexes dind = m_DbContext.DailyIndexes;
 
@@ -70,7 +69,7 @@ namespace Project24.Pages.ClinicManager.Customer
                 DateOfBirth = FormData.DateOfBirth,
                 PhoneNumber = FormData.PhoneNumber,
                 Address = FormData.Address,
-                Notes = FormData.Notes
+                Note = FormData.Note
             };
             await m_DbContext.AddAsync(customer);
             ++dind.CustomerIndex;
@@ -93,8 +92,6 @@ namespace Project24.Pages.ClinicManager.Customer
                     customInfo.Add(CustomInfoKey.Error, resposeData.ErrorFileMessages.Count.ToString());
                 }
             }
-
-            await m_DbContext.RecordCreateCustomerProfile(currentUser, customer);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -150,8 +147,6 @@ namespace Project24.Pages.ClinicManager.Customer
                 }
             }
 
-            await m_DbContext.RecordUpdateCustomerProfile(currentUser, customer);
-
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
                 ActionRecord.Operation_.CreateCustomer_CreateImage,
@@ -162,30 +157,10 @@ namespace Project24.Pages.ClinicManager.Customer
             return RedirectToPage("Details", new { _code = customer.Code });
         }
 
-        private async Task<bool> ValidateModelState(string _operation)
-        {
-            if (ModelState.IsValid)
-                return true;
-
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-            await m_DbContext.RecordChanges(
-                currentUser.UserName,
-                _operation,
-                ActionRecord.OperationStatus_.Failed,
-                new Dictionary<string, string>()
-                {
-                    { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                }
-            );
-
-            return false;
-        }
-
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
         private readonly P24ImageManagerService m_ImageManagerSvc;
-        private readonly ILogger<CreateModel> m_Logger;
     }
 
 }

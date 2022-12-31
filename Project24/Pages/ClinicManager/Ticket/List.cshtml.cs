@@ -1,5 +1,5 @@
-/*  List.cshtml.cs
- *  Version: 1.2 (2022.12.13)
+/*  P24/Ticket/List.cshtml.cs
+ *  Version: 1.3 (2022.12.31)
  *
  *  Contributor
  *      Arime-chan
@@ -13,14 +13,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App.Utils;
 using Project24.Data;
 
 namespace Project24.Pages.ClinicManager
 {
     [Authorize(Roles = P24RoleName.Manager)]
-    public class ListTicketsModel : PageModel
+    public class ListModel : PageModel
     {
         public class TicketViewModel
         {
@@ -29,6 +28,8 @@ namespace Project24.Pages.ClinicManager
             public string Diagnose { get; set; }
 
             public string Treatment { get; set; }
+
+            public int? DrugExportBatchId { get; set; }
 
             [DataType(DataType.MultilineText)]
             public string Notes { get; set; }
@@ -66,23 +67,23 @@ namespace Project24.Pages.ClinicManager
 
 
 
-        public ListTicketsModel(ApplicationDbContext _context, ILogger<ListTicketsModel> _logger)
+        public ListModel(ApplicationDbContext _context)
         {
             m_DbContext = _context;
-            m_Logger = _logger;
         }
 
 
         public async Task OnGetAsync()
         {
-            var tickets = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
+            var tickets = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer).Include(_t => _t.DrugExportBatch)
                                  where _ticket.DeletedDate == DateTime.MinValue
                                  select new TicketViewModel()
                                  {
                                      Code = _ticket.Code,
                                      Diagnose = _ticket.Diagnose,
                                      Treatment = _ticket.ProposeTreatment,
-                                     Notes = _ticket.Notes,
+                                     DrugExportBatchId = _ticket.DrugExportBatchId,
+                                     Notes = _ticket.Note,
                                      CustomerCode = _ticket.Customer.Code,
                                      CustomerFullName = _ticket.Customer.FullName,
                                      CustomerDoB = _ticket.Customer.DateOfBirth,
@@ -105,23 +106,24 @@ namespace Project24.Pages.ClinicManager
             if (_name != "")
                 _name = StringUtils.ToTitleCase(_name);
 
-            var tickets = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
-                                   where _ticket.Customer.DeletedDate == DateTime.MinValue
-                                       && (_date == DateTime.MinValue || _ticket.AddedDate.Date == _date.Date)
-                                       && (_name == "" || _ticket.Customer.LastName == _name)
-                                       && _ticket.Customer.PhoneNumber.EndsWith(_phone)
-                                       && _ticket.Customer.Address.Contains(_addr)
-                                   select new TicketViewModel()
-                                   {
-                                       Code = _ticket.Code,
-                                       Diagnose = _ticket.Diagnose,
-                                       Treatment = _ticket.ProposeTreatment,
-                                       Notes = _ticket.Notes,
-                                       CustomerCode = _ticket.Customer.Code,
-                                       CustomerFullName = _ticket.Customer.FullName,
-                                       CustomerDoB = _ticket.Customer.DateOfBirth,
-                                   })
-                            .ToListAsync();
+            var tickets = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer).Include(_t => _t.DrugExportBatch)
+                                 where _ticket.Customer.DeletedDate == DateTime.MinValue
+                                     && (_date == DateTime.MinValue || _ticket.AddedDate.Date == _date.Date)
+                                     && (_name == "" || _ticket.Customer.LastName == _name)
+                                     && _ticket.Customer.PhoneNumber.EndsWith(_phone)
+                                     && _ticket.Customer.Address.Contains(_addr)
+                                 select new TicketViewModel()
+                                 {
+                                     Code = _ticket.Code,
+                                     Diagnose = _ticket.Diagnose,
+                                     Treatment = _ticket.ProposeTreatment,
+                                     DrugExportBatchId = _ticket.DrugExportBatchId,
+                                     Notes = _ticket.Note,
+                                     CustomerCode = _ticket.Customer.Code,
+                                     CustomerFullName = _ticket.Customer.FullName,
+                                     CustomerDoB = _ticket.Customer.DateOfBirth,
+                                 })
+                          .ToListAsync();
 
             Tickets = tickets;
 
@@ -138,7 +140,6 @@ namespace Project24.Pages.ClinicManager
 
 
         private readonly ApplicationDbContext m_DbContext;
-        private readonly ILogger<ListTicketsModel> m_Logger;
     }
 
 }

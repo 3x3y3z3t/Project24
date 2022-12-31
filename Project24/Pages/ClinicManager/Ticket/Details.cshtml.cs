@@ -1,5 +1,5 @@
 /*  P24/Ticket/Details.cshtml.cs
- *  Version: 1.1 (2022.12.13)
+ *  Version: 1.2 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -30,11 +30,9 @@ namespace Project24.Pages.ClinicManager.Ticket
         public P24ImageListingModel ListImageModel { get; private set; }
 
 
-        public DetailsModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _usermanager, ILogger<DetailsModel> _logger)
+        public DetailsModel(ApplicationDbContext _context)
         {
             m_DbContext = _context;
-            m_UserManager = _usermanager;
-            m_Logger = _logger;
         }
 
         //https://eamonkeane.dev/how-to-view-sql-generated-by-entity-framework-core-using-logging/
@@ -51,12 +49,12 @@ namespace Project24.Pages.ClinicManager.Ticket
                                     Code = _ticket.Code,
                                     Diagnose = _ticket.Diagnose,
                                     Treatment = _ticket.ProposeTreatment,
-                                    Notes = _ticket.Notes,
+                                    Notes = _ticket.Note,
                                     AddedDate = _ticket.AddedDate,
-                                    UpdatedDate = _ticket.UpdatedDate,
+                                    UpdatedDate = _ticket.EditedDate,
                                     DeletedDate = _ticket.DeletedDate,
                                     AddedUserName = _ticket.AddedUser.UserName,
-                                    UpdatedUserName = _ticket.UpdatedUser.UserName,
+                                    UpdatedUserName = _ticket.EditedUser.UserName,
                                     Customer = new P24CustomerDetailsViewModel()
                                     {
                                         Code = _ticket.Customer.Code,
@@ -65,7 +63,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                         DoB = _ticket.Customer.DateOfBirth,
                                         PhoneNumber = _ticket.Customer.PhoneNumber,
                                         Address = _ticket.Customer.Address,
-                                        Notes = _ticket.Customer.Notes
+                                        Note = _ticket.Customer.Note
                                     }
                                 })
                          .FirstOrDefaultAsync();
@@ -75,13 +73,8 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             TicketViewData = ticket;
 
-            var id = await (from _ticket in m_DbContext.TicketProfiles
-                            where _ticket.Code == _code
-                            select _ticket.Id)
-                     .FirstOrDefaultAsync();
-
-            var images = await (from _image in m_DbContext.TicketImages
-                                where _image.OwnerTicketId == id && _image.DeletedDate == DateTime.MinValue
+            var images = await (from _image in m_DbContext.TicketImages.Include(_i => _i.OwnerTicket)
+                                where _image.OwnerTicket.Code == _code && _image.DeletedDate == DateTime.MinValue
                                 select new P24ImageViewModel()
                                 {
                                     Id = _image.Id,
@@ -100,37 +93,8 @@ namespace Project24.Pages.ClinicManager.Ticket
             return Page();
         }
 
-        //        // Ajax call only;
-        //        public async Task<JsonResult> OnGetFetchAsync(string _code)
-        //        {
-        //            if (string.IsNullOrEmpty(_code))
-        //            {
-        //                DailyIndexes dind = m_DbContext.DailyIndexes;
-        //                string nextCustomerCode = string.Format(AppConfig.CustomerCodeFormatString, DateTime.Today, dind.CustomerIndex + 1);
-        //                return new JsonResult(nextCustomerCode);
-        //            }
-
-        //            var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
-        //                                  where _customer.Code == _code
-        //                                  select new P24CreateCustomerFormDataModel()
-        //                                  {
-        //                                      Code = _customer.Code,
-        //                                      FullName = _customer.FullName,
-        //                                      Gender = _customer.Gender,
-        //                                      DateOfBirth = _customer.DateOfBirth,
-        //                                      PhoneNumber = _customer.PhoneNumber,
-        //                                      Address = _customer.Address,
-        //                                      Notes = _customer.Notes
-        //                                  })
-        //                            .FirstOrDefaultAsync();
-
-        //            return new JsonResult(customer);
-        //        }
-
 
         private readonly ApplicationDbContext m_DbContext;
-        private readonly UserManager<P24IdentityUser> m_UserManager;
-        private readonly ILogger<DetailsModel> m_Logger;
     }
 
 }

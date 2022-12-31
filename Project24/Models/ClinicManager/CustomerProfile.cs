@@ -1,5 +1,5 @@
-﻿/*  CustomerProfile.cs
- *  Version: 1.4 (2022.12.13)
+/*  CustomerProfile.cs
+ *  Version: 1.5 (2022.12.28)
  *
  *  Contributor
  *      Arime-chan
@@ -15,6 +15,9 @@ namespace Project24.Models.ClinicManager
 {
     public class CustomerProfile : P24ModelBase
     {
+        [Required(AllowEmptyStrings = false)]
+        public string Code { get; protected set; }
+
         public string FirstMidName { get; set; }
 
         [Required(AllowEmptyStrings = false)]
@@ -35,17 +38,16 @@ namespace Project24.Models.ClinicManager
         [DataType(DataType.MultilineText)]
         public string Address { get; set; }
 
-        [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
 
         public virtual ICollection<CustomerImage> CustomerImages { get; protected set; }
         public virtual ICollection<TicketProfile> VisitingTickets { get; protected set; }
-        public virtual ICollection<CustomerProfileChangelog> Changelog { get; protected set; }
+
 
         public string FullName { get { if (string.IsNullOrEmpty(FirstMidName)) return LastName; return FirstMidName + " " + LastName; } }
 
 
         public CustomerProfile()
+            : base()
         { }
 
         public CustomerProfile(P24IdentityUser _addedUser, int _dailyIndex)

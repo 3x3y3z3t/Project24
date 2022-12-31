@@ -1,4 +1,4 @@
-﻿@*  P24/Ticket/Create.cshtml
+@*  P24/Ticket/Create.cshtml
     *  Version: 1.3 (2022.12.13)
     *
     *  Contributor
@@ -42,9 +42,9 @@
                     <span asp-validation-for="TicketFormData.Treatment" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="TicketFormData.Notes" class="control-label">Ghi chú</label>
-                    <textarea asp-for="TicketFormData.Notes" text-wrap="normal" rows="4" class="form-control" disabled></textarea>
-                    <span asp-validation-for="TicketFormData.Notes" class="text-danger"></span>
+                    <label asp-for="TicketFormData.Note" class="control-label">Ghi chú</label>
+                    <textarea asp-for="TicketFormData.Note" text-wrap="normal" rows="4" class="form-control" disabled></textarea>
+                    <span asp-validation-for="TicketFormData.Note" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="TicketFormData.UploadedFiles" class="control-label">Ảnh (nhiều file, tối đa 32 MB)</label>
@@ -105,9 +105,9 @@
                     <span asp-validation-for="TicketFormData.CustomerFormData.Address" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="TicketFormData.CustomerFormData.Notes" class="control-label">Ghi chú</label>
-                    <textarea asp-for="TicketFormData.CustomerFormData.Notes" text-wrap="normal" rows="3" class="form-control" disabled></textarea>
-                    <span asp-validation-for="TicketFormData.CustomerFormData.Notes" class="text-danger"></span>
+                    <label asp-for="TicketFormData.CustomerFormData.Note" class="control-label">Ghi chú</label>
+                    <textarea asp-for="TicketFormData.CustomerFormData.Note" text-wrap="normal" rows="3" class="form-control" disabled></textarea>
+                    <span asp-validation-for="TicketFormData.CustomerFormData.Note" class="text-danger"></span>
                 </div>
                 <hr />
             </div>

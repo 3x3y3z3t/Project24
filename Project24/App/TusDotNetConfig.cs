@@ -1,4 +1,4 @@
-﻿/*  TusDotNetConfig.cs
+/*  TusDotNetConfig.cs
  *  Version: 1.5 (2022.12.24)
  *
  *  Contributor
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.Identity;

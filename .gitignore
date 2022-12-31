@@ -7,6 +7,6 @@
 *.log
 *.csproj.user
 
-Utils_Internal.cs
+Internals.cs
 Versioning.cs
 appsettings.*.json

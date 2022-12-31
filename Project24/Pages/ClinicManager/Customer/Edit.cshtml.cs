@@ -1,5 +1,5 @@
 /*  P24/Customer/Edit.cshtml
- *  Version: 1.4 (2022.12.13)
+ *  Version: 1.5 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.ClinicManager;
@@ -51,9 +53,7 @@ namespace Project24.Pages.ClinicManager.Customer
                            .FirstOrDefaultAsync();
 
             if (!string.IsNullOrEmpty(deleted))
-            {
                 return RedirectToPage("Details", new { _code = _code });
-            }
 
             var customer = from _customer in m_DbContext.CustomerProfiles
                             where _customer.Code == _code
@@ -65,7 +65,7 @@ namespace Project24.Pages.ClinicManager.Customer
                                 DoB = _customer.DateOfBirth,
                                 PhoneNumber = _customer.PhoneNumber,
                                 Address = _customer.Address,
-                                Notes = _customer.Notes
+                                Note = _customer.Note
                             };
 
             FormData = await customer.FirstOrDefaultAsync();
@@ -79,22 +79,10 @@ namespace Project24.Pages.ClinicManager.Customer
         {
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
-            if (!ModelState.IsValid)
-            {
-                await m_DbContext.RecordChanges(
-                    currentUser.UserName,
-                    ActionRecord.Operation_.UpdateCustomer,
-                    ActionRecord.OperationStatus_.Failed,
-                    new Dictionary<string, string>()
-                    {
-                        { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                    }
-                );
-
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.UpdateCustomer))
                 return Page();
-            }
 
-            var customer = await (from _customer in m_DbContext.CustomerProfiles
+            var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.PreviousVersion)
                                   where _customer.Code == FormData.Code
                                   select _customer)
                            .FirstOrDefaultAsync();
@@ -117,6 +105,10 @@ namespace Project24.Pages.ClinicManager.Customer
 
                 return RedirectToPage("Details", new { _code = FormData.Code });
             }
+
+            string jsonData = JsonSerializer.Serialize(customer);
+            P24ObjectPreviousVersion previousVersion = new P24ObjectPreviousVersion(nameof(CustomerProfile), customer.Id.ToString(), jsonData, customer.PreviousVersion);
+            await m_DbContext.AddAsync(previousVersion);
             
             var tokens = P24Utils.SplitFirstLastName(FormData.Fullname);
             customer.FirstMidName = tokens.Item1;
@@ -125,13 +117,12 @@ namespace Project24.Pages.ClinicManager.Customer
             customer.DateOfBirth = FormData.DoB;
             customer.PhoneNumber = FormData.PhoneNumber;
             customer.Address = FormData.Address;
-            customer.Notes = FormData.Notes;
-            customer.UpdatedDate = DateTime.Now;
-            customer.UpdatedUser = currentUser;
+            customer.Note = FormData.Note;
+            customer.PreviousVersion = previousVersion;
+            customer.EditedDate = DateTime.Now;
+            customer.EditedUser = currentUser;
 
             m_DbContext.Update(customer);
-
-            await m_DbContext.RecordUpdateCustomerProfile(currentUser, customer);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,

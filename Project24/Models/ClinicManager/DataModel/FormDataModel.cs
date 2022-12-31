@@ -1,4 +1,4 @@
-﻿/*  FormDataModel.cs
+/*  FormDataModel.cs
  *  Version: 1.3 (2022.12.13)
  *
  *  Contributor
@@ -33,7 +33,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public string Address { get; set; }
 
         [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
+        public string Note { get; set; }
 
         public P24CreateCustomerFormDataModel()
         { }
@@ -75,7 +75,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public string Address { get; set; }
 
         [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
+        public string Note { get; set; }
 
         public P24EditCustomerFormDataModel()
         { }
@@ -95,7 +95,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public string Treatment { get; set; }
 
         [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
+        public string Note { get; set; }
 
         [DataType(DataType.Upload)]
         public IFormFile[] UploadedFiles { get; set; }
@@ -119,7 +119,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public string Treatment { get; set; }
 
         [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
+        public string Note { get; set; }
 
         public P24EditTicketFormDataModel()
         { }

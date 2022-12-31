@@ -1,0 +1,106 @@
+@*  P24/Inventory/Export/Create.cshtml
+    *  Version: 1.0 (2022.12.31)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+@model Project24.Pages.ClinicManager.Inventory.Export.CreateModel
+@{
+    ViewData["Title"] = "Xuất kho";
+    Layout = "_Layout";
+
+    string colClasses = "col-12 col-lg-7 col-xl-6";
+    string colClassesInv = "col-12 col-lg-4 col-xl-5";
+}
+
+<h1>@ViewData["Title"] (tiêu hao)</h1>
+<a href="@Model.ReturnUrl">Trở lại trang trước</a>
+<!--partial name="_StatusMessage" model="Model.StatusMessage" /-->
+<hr />
+
+<div class="d-flex flex-wrap">
+    <div class="@colClasses">
+        <div>
+            <div class="row">
+
+                <div class="form-group col-8 mb-1">
+                    <label for="input-name" class="control-label">Tên thuốc</label>
+                    <input id="input-name" name="input-name" class="form-control" list="datalist-all-names" placeholder="Nhập tên thuốc để tìm kiếm.." oninput="inputName_onInput()" />
+                </div>
+
+                <div class="form-group col-4 mb-1">
+                    <label for="input-amount" class="control-label">Số lượng</label>
+                    <div class="input-group">
+                        <input id="input-amount" class="form-control" type="number" min="0" />
+                        <input id="input-unit" class="form-control" list="datalist-all-units" style="width:7ch" />
+                    </div>
+                </div>
+            </div>
+            <div id="div-stock-info" class="my-1"></div>
+            <div id="div-validation-msg" class="text-danger ml-3 mb-1">
+                <ul id="ul-validation-msg"></ul>
+            </div>
+
+            <button id="btn-add" type="button" class="btn btn-primary mt-2" onclick="btnAdd()" disabled>Thêm vào danh sách</button>
+            <hr />
+
+            <datalist id="datalist-all-names">
+            </datalist>
+
+            <datalist id="datalist-all-units">
+            </datalist>
+        </div>
+
+        <table class="table table-sm" style="table-layout:fixed">
+            <thead>
+                <tr>
+                    <th style="width:10ch">STT</th>
+                    <th>Tên thuốc</th>
+                    <th style="width:10ch">Số lượng</th>
+                    <th style="width:10ch">Đơn vị</th>
+                    <th style="width:4ch"></th>
+                </tr>
+            </thead>
+
+            <tbody id="tbody-added-list">
+            </tbody>
+        </table>
+
+        <div class="mb-3">
+            <br />
+
+            @Html.AntiForgeryToken()
+            <button id="btn-finish" class="btn btn-primary" type="button" onclick="btnFinish()" disabled>Hoàn tất</button>
+            <hr />
+        </div>
+    </div>
+
+    <div class="@colClassesInv border-left border-primary ml-3" style="border-left-width:thick">
+
+        <h3>Thông tin phiếu khám</h3>
+        <div class="text-muted">Vật tư được xuất kèm phiếu khám <a id="a-ticket-code" asp-page="../../Ticket/Details" asp-route-_code="@Model.Ticket.TicketCode">@Model.Ticket.TicketCode</a></div>
+        <hr />
+
+        <div class="mb-2">
+            <div><b>Bệnh nhân:</b></div>
+            <div class="ml-3">@Model.Ticket.CustomerInfo</div>
+        </div>
+
+        <div class="mb-2">
+            <div><b>Chẩn đoán - Xử trí:</b></div>
+            <div class="ml-3">@Model.Ticket.TicketInfo</div>
+        </div>
+
+    </div>
+
+</div>
+
+<partial name="_Modals/_CommonInfoModal" />
+
+@section Scripts {
+    <script src="~/js/site.js"></script>
+    <script src="~/js/clinic-manager/inventory-export-create.js"></script>
+    <script src="~/js/modal/modal.js"></script>
+}

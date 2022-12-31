@@ -1,4 +1,4 @@
-﻿/*  Identity/Account/Manage/ChangePassword.cshtml.cs
+/*  Identity/Account/Manage/ChangePassword.cshtml.cs
  *  Version: 1.0 (2022.12.12)
  *
  *  Contributor
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.Identity;

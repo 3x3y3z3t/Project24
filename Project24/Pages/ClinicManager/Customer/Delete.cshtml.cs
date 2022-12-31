@@ -1,5 +1,5 @@
 /*  P24/Customer/Delete.cshtml
- *  Version: 1.3 (2022.12.13)
+ *  Version: 1.4 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -14,8 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App;
+using Project24.App.Extension;
 using Project24.App.Services.P24ImageManager;
 using Project24.Data;
 using Project24.Models;
@@ -35,12 +35,11 @@ namespace Project24.Pages.ClinicManager.Customer
         public P24ImageListingModel ListImageModel { get; private set; }
 
 
-        public DeleteModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc, ILogger<DeleteModel> _logger)
+        public DeleteModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
             m_ImageManagerSvc = _imageManagerSvc;
-            m_Logger = _logger;
         }
 
 
@@ -49,7 +48,7 @@ namespace Project24.Pages.ClinicManager.Customer
             if (string.IsNullOrEmpty(_code))
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Customer, "null", "List"));
 
-            var customers = from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.UpdatedUser)
+            var customers = from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.AddedUser).Include(_c => _c.EditedUser)
                             where _customer.Code == _code
                             select new P24CustomerDetailsViewModelEx()
                             {
@@ -59,12 +58,12 @@ namespace Project24.Pages.ClinicManager.Customer
                                 DoB = _customer.DateOfBirth,
                                 PhoneNumber = _customer.PhoneNumber,
                                 Address = _customer.Address,
-                                Notes = _customer.Notes,
+                                Note = _customer.Note,
                                 AddedDate = _customer.AddedDate,
-                                UpdatedDate = _customer.UpdatedDate,
+                                UpdatedDate = _customer.EditedDate,
                                 DeletedDate = _customer.DeletedDate,
                                 AddedUserName = _customer.AddedUser.UserName,
-                                UpdatedUserName = _customer.UpdatedUser.UserName
+                                UpdatedUserName = _customer.EditedUser.UserName
                             };
 
             CustomerViewData = await customers.FirstOrDefaultAsync();
@@ -84,10 +83,9 @@ namespace Project24.Pages.ClinicManager.Customer
 
         public async Task<IActionResult> OnPostAsync([Bind] string CustomerCode)
         {
-            if (!await ValidateModelState(ActionRecord.Operation_.DeleteCustomer))
-                return Page();
-
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.DeleteCustomer))
+                return Page();
 
             var customer = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.CustomerImages)
                                   where _customer.Code == CustomerCode
@@ -98,7 +96,7 @@ namespace Project24.Pages.ClinicManager.Customer
                 return BadRequest();
 
             customer.DeletedDate = DateTime.Now;
-            customer.UpdatedUser = currentUser;
+            customer.EditedUser = currentUser;
             m_DbContext.Update(customer);
 
             Dictionary<string, string> customInfo = new Dictionary<string, string>()
@@ -113,8 +111,6 @@ namespace Project24.Pages.ClinicManager.Customer
                 customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
             }
 
-            await m_DbContext.RecordDeleteCustomerProfile(currentUser, customer);
-
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
                 ActionRecord.Operation_.DeleteCustomer,
@@ -128,13 +124,13 @@ namespace Project24.Pages.ClinicManager.Customer
         // Ajax call only;
         public async Task<IActionResult> OnPostDeleteImageAsync([FromBody] string _imageId)
         {
-            if (!await ValidateModelState(ActionRecord.Operation_.DeleteCustomer_DeleteImage))
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.DeleteCustomer))
                 return BadRequest();
 
             if (!int.TryParse(_imageId, out int imgId))
                 return BadRequest();
 
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
             var image = await (from _image in m_DbContext.CustomerImages.Include(_img => _img.OwnerCustomer)
                                where _image.Id == imgId && _image.DeletedDate == DateTime.MinValue
@@ -155,8 +151,6 @@ namespace Project24.Pages.ClinicManager.Customer
                 customInfo.Add(CustomInfoKey.DeletedList, responseData.DeletedFileNames.Count.ToString());
                 customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
             }
-
-            await m_DbContext.RecordUpdateCustomerProfile(currentUser, image.OwnerCustomer);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -188,30 +182,10 @@ namespace Project24.Pages.ClinicManager.Customer
             return await images.ToListAsync();
         }
 
-        private async Task<bool> ValidateModelState(string _operation)
-        {
-            if (ModelState.IsValid)
-                return true;
-
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-            await m_DbContext.RecordChanges(
-                currentUser.UserName,
-                _operation,
-                ActionRecord.OperationStatus_.Failed,
-                new Dictionary<string, string>()
-                {
-                    { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                }
-            );
-
-            return false;
-        }
-
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
         private readonly P24ImageManagerService m_ImageManagerSvc;
-        private readonly ILogger<DeleteModel> m_Logger;
     }
 
 }

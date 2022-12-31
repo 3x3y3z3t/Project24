@@ -1,5 +1,5 @@
-﻿/*  Constants.cs
- *  Version: 1.8 (2022.12.12)
+/*  Constants.cs
+ *  Version: 1.9 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -26,6 +26,12 @@ namespace Project24
      *      |---nasData                 <- NasRoot              (contains nas data)
      *
      */
+
+    public static class Constants
+    {
+        public const string DefaultPassword = "123@123a";
+    }
+
     public static class AppConfig
     {
 

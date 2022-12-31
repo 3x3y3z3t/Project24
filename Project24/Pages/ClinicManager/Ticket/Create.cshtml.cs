@@ -1,5 +1,5 @@
-﻿/*  P24/Ticket/Create.cshtml
- *  Version: 1.2 (2022.12.13)
+/*  P24/Ticket/Create.cshtml
+ *  Version: 1.3 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Project24.App.Extension;
 using Project24.App.Services.P24ImageManager;
 using Project24.Data;
 using Project24.Models;
@@ -124,8 +125,6 @@ namespace Project24.Pages.ClinicManager.Ticket
                 }
             }
 
-            await m_DbContext.RecordUpdateTicketProfile(currentUser, ticket);
-
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
                 ActionRecord.Operation_.CreateTicket_CreateImage,
@@ -142,7 +141,7 @@ namespace Project24.Pages.ClinicManager.Ticket
             {
                 Diagnose = TicketFormData.Diagnose,
                 ProposeTreatment = TicketFormData.Treatment,
-                Notes = TicketFormData.Notes
+                Note = TicketFormData.Note
             };
             await m_DbContext.AddAsync(ticket);
             ++m_DailyIndexes.VisitingIndex;
@@ -168,8 +167,6 @@ namespace Project24.Pages.ClinicManager.Ticket
                 }
             }
 
-            await m_DbContext.RecordCreateTicketProfile(_currentUser, ticket);
-
             await m_DbContext.RecordChanges(
                 _currentUser.UserName,
                 ActionRecord.Operation_.CreateTicket,
@@ -191,7 +188,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                 DateOfBirth = _formData.DateOfBirth,
                 PhoneNumber = _formData.PhoneNumber,
                 Address = _formData.Address,
-                Notes = _formData.Notes
+                Note = _formData.Note
             };
             await m_DbContext.AddAsync(customer);
 

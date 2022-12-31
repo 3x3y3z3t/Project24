@@ -303,13 +303,19 @@ namespace Project24.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<int>("DateOfBirth")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DeletedDate")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EditedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EditedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("FirstMidName")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -323,52 +329,27 @@ namespace Project24.Migrations
                         .HasColumnType("varchar(10) CHARACTER SET utf8mb4")
                         .HasMaxLength(10);
 
-                    b.Property<string>("Notes")
+                    b.Property<string>("Note")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UpdatedUserId")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+                    b.Property<int?>("PreviousVersionId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AddedUserId");
 
-                    b.HasIndex("UpdatedUserId");
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("EditedUserId");
+
+                    b.HasIndex("PreviousVersionId");
 
                     b.ToTable("CustomerProfiles");
-                });
-
-            modelBuilder.Entity("Project24.Models.ClinicManager.CustomerProfileChangelog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ChangedDateTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("Operation")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UpdatedUserId")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileId");
-
-                    b.HasIndex("UpdatedUserId");
-
-                    b.ToTable("CustomerProfileChangelogs");
                 });
 
             modelBuilder.Entity("Project24.Models.ClinicManager.TicketImage", b =>
@@ -439,23 +420,32 @@ namespace Project24.Migrations
                     b.Property<string>("Diagnose")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
+                    b.Property<int?>("DrugExportBatchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EditedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EditedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
                     b.Property<bool>("IsTicketOpen")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Notes")
+                    b.Property<string>("Note")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int?>("PreviousVersionId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ProposeTreatment")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("TicketStatus")
+                    b.Property<string>("Symptom")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UpdatedUserId")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+                    b.Property<string>("TicketStatus")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -466,36 +456,13 @@ namespace Project24.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("UpdatedUserId");
+                    b.HasIndex("DrugExportBatchId");
+
+                    b.HasIndex("EditedUserId");
+
+                    b.HasIndex("PreviousVersionId");
 
                     b.ToTable("TicketProfiles");
-                });
-
-            modelBuilder.Entity("Project24.Models.ClinicManager.TicketProfileChangelog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ChangedDateTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("Operation")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UpdatedUserId")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileId");
-
-                    b.HasIndex("UpdatedUserId");
-
-                    b.ToTable("TicketProfileChangelogs");
                 });
 
             modelBuilder.Entity("Project24.Models.DailyIndexes", b =>
@@ -516,6 +483,167 @@ namespace Project24.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DailyIndexesInternal");
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.Drug", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Drugs");
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugExportBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("AddedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EditedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EditedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ExportType")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int?>("PreviousVersionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TicketId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddedUserId");
+
+                    b.HasIndex("EditedUserId");
+
+                    b.HasIndex("PreviousVersionId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("DrugExportBatches");
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugExportation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DrugId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExportBatchId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DrugId");
+
+                    b.HasIndex("ExportBatchId");
+
+                    b.ToTable("DrugExportations");
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugImportBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("AddedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EditedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EditedUserId")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int?>("PreviousVersionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddedUserId");
+
+                    b.HasIndex("EditedUserId");
+
+                    b.HasIndex("PreviousVersionId");
+
+                    b.ToTable("DrugImportBatches");
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugImportation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DrugId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImportBatchId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DrugId");
+
+                    b.HasIndex("ImportBatchId");
+
+                    b.ToTable("DrugImportations");
                 });
 
             modelBuilder.Entity("Project24.Models.Nas.NasCachedFile", b =>
@@ -545,6 +673,39 @@ namespace Project24.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NasCachedFiles");
+                });
+
+            modelBuilder.Entity("Project24.Models.P24ObjectPreviousVersion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ObjectId")
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("ObjectType")
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<int?>("PreviousVersionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObjectType");
+
+                    b.HasIndex("PreviousVersionId");
+
+                    b.ToTable("Changelogs");
                 });
 
             modelBuilder.Entity("Project24.Models.UserUpload", b =>
@@ -667,22 +828,13 @@ namespace Project24.Migrations
                         .WithMany()
                         .HasForeignKey("AddedUserId");
 
-                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "EditedUser")
                         .WithMany()
-                        .HasForeignKey("UpdatedUserId");
-                });
+                        .HasForeignKey("EditedUserId");
 
-            modelBuilder.Entity("Project24.Models.ClinicManager.CustomerProfileChangelog", b =>
-                {
-                    b.HasOne("Project24.Models.ClinicManager.CustomerProfile", "Profile")
-                        .WithMany("Changelog")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.P24ObjectPreviousVersion", "PreviousVersion")
                         .WithMany()
-                        .HasForeignKey("UpdatedUserId");
+                        .HasForeignKey("PreviousVersionId");
                 });
 
             modelBuilder.Entity("Project24.Models.ClinicManager.TicketImage", b =>
@@ -714,22 +866,90 @@ namespace Project24.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.Internal.ClinicManager.DrugExportBatch", "DrugExportBatch")
                         .WithMany()
-                        .HasForeignKey("UpdatedUserId");
+                        .HasForeignKey("DrugExportBatchId");
+
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "EditedUser")
+                        .WithMany()
+                        .HasForeignKey("EditedUserId");
+
+                    b.HasOne("Project24.Models.P24ObjectPreviousVersion", "PreviousVersion")
+                        .WithMany()
+                        .HasForeignKey("PreviousVersionId");
                 });
 
-            modelBuilder.Entity("Project24.Models.ClinicManager.TicketProfileChangelog", b =>
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugExportBatch", b =>
                 {
-                    b.HasOne("Project24.Models.ClinicManager.TicketProfile", "Profile")
-                        .WithMany("Changelog")
-                        .HasForeignKey("ProfileId")
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "AddedUser")
+                        .WithMany()
+                        .HasForeignKey("AddedUserId");
+
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "EditedUser")
+                        .WithMany()
+                        .HasForeignKey("EditedUserId");
+
+                    b.HasOne("Project24.Models.P24ObjectPreviousVersion", "PreviousVersion")
+                        .WithMany()
+                        .HasForeignKey("PreviousVersionId");
+
+                    b.HasOne("Project24.Models.ClinicManager.TicketProfile", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugExportation", b =>
+                {
+                    b.HasOne("Project24.Models.Internal.ClinicManager.Drug", "Drug")
+                        .WithMany()
+                        .HasForeignKey("DrugId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "UpdatedUser")
+                    b.HasOne("Project24.Models.Internal.ClinicManager.DrugExportBatch", "ExportBatch")
+                        .WithMany("DrugExportation")
+                        .HasForeignKey("ExportBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugImportBatch", b =>
+                {
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "AddedUser")
                         .WithMany()
-                        .HasForeignKey("UpdatedUserId");
+                        .HasForeignKey("AddedUserId");
+
+                    b.HasOne("Project24.Models.Identity.P24IdentityUser", "EditedUser")
+                        .WithMany()
+                        .HasForeignKey("EditedUserId");
+
+                    b.HasOne("Project24.Models.P24ObjectPreviousVersion", "PreviousVersion")
+                        .WithMany()
+                        .HasForeignKey("PreviousVersionId");
+                });
+
+            modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugImportation", b =>
+                {
+                    b.HasOne("Project24.Models.Internal.ClinicManager.Drug", "Drug")
+                        .WithMany()
+                        .HasForeignKey("DrugId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Project24.Models.Internal.ClinicManager.DrugImportBatch", "ImportBatch")
+                        .WithMany("DrugImportation")
+                        .HasForeignKey("ImportBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Project24.Models.P24ObjectPreviousVersion", b =>
+                {
+                    b.HasOne("Project24.Models.P24ObjectPreviousVersion", "PreviousVersion")
+                        .WithMany()
+                        .HasForeignKey("PreviousVersionId");
                 });
 
             modelBuilder.Entity("Project24.Models.UserUpload", b =>

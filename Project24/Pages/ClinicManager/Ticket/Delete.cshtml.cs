@@ -1,5 +1,5 @@
-﻿/*  P24/Ticket/Delete.cshtml
- *  Version: 1.1 (2022.12.13)
+/*  P24/Ticket/Delete.cshtml
+ *  Version: 1.2 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -14,8 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App;
+using Project24.App.Extension;
 using Project24.App.Services.P24ImageManager;
 using Project24.Data;
 using Project24.Models;
@@ -35,12 +35,11 @@ namespace Project24.Pages.ClinicManager.Ticket
         public P24ImageListingModel ListImageModel { get; private set; }
 
 
-        public DeleteModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc, ILogger<DeleteModel> _logger)
+        public DeleteModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, P24ImageManagerService _imageManagerSvc)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
             m_ImageManagerSvc = _imageManagerSvc;
-            m_Logger = _logger;
         }
 
 
@@ -49,19 +48,19 @@ namespace Project24.Pages.ClinicManager.Ticket
             if (string.IsNullOrEmpty(_code))
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Ticket, "null", "List"));
 
-            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.AddedUser).Include(_t => _t.UpdatedUser).Include(_t => _t.Customer)
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.AddedUser).Include(_t => _t.EditedUser).Include(_t => _t.Customer)
                                 where _ticket.Code == _code
                                 select new P24TicketDetailsViewModelEx()
                                 {
                                     Code = _code,
                                     Diagnose = _ticket.Diagnose,
                                     Treatment = _ticket.ProposeTreatment,
-                                    Notes = _ticket.Notes,
+                                    Notes = _ticket.Note,
                                     AddedDate = _ticket.AddedDate,
-                                    UpdatedDate = _ticket.UpdatedDate,
+                                    UpdatedDate = _ticket.EditedDate,
                                     DeletedDate = _ticket.DeletedDate,
                                     AddedUserName = _ticket.AddedUser.UserName,
-                                    UpdatedUserName = _ticket.UpdatedUser.UserName,
+                                    UpdatedUserName = _ticket.EditedUser.UserName,
                                     Customer = new P24CustomerDetailsViewModel()
                                     {
                                         Code = _ticket.Customer.Code,
@@ -70,7 +69,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                         DoB = _ticket.Customer.DateOfBirth,
                                         PhoneNumber = _ticket.Customer.PhoneNumber,
                                         Address = _ticket.Customer.Address,
-                                        Notes = _ticket.Customer.Notes
+                                        Note = _ticket.Customer.Note
                                     }
                                 })
                          .FirstOrDefaultAsync();
@@ -98,27 +97,22 @@ namespace Project24.Pages.ClinicManager.Ticket
 
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
-            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.TicketImages)
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer).Include(_t => _t.TicketImages)
                                 where _ticket.Code == TicketCode
                                 select _ticket)
                            .FirstOrDefaultAsync();
-
-            var customerCode = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
-                                      where _ticket.Code == TicketCode
-                                      select _ticket.Customer.Code)
-                               .FirstOrDefaultAsync();
 
             if (ticket == null)
                 return BadRequest();
 
             ticket.DeletedDate = DateTime.Now;
-            ticket.UpdatedUser = currentUser;
+            ticket.EditedUser = currentUser;
             m_DbContext.Update(ticket);
 
             Dictionary<string, string> customInfo = new Dictionary<string, string>()
             {
                 { CustomInfoKey.TicketCode, ticket.Code },
-                { CustomInfoKey.CustomerCode, customerCode },
+                { CustomInfoKey.CustomerCode, ticket.Customer.Code },
             };
 
             var responseData = m_ImageManagerSvc.Delete(currentUser, ticket.TicketImages);
@@ -127,8 +121,6 @@ namespace Project24.Pages.ClinicManager.Ticket
                 customInfo.Add(CustomInfoKey.DeletedList, responseData.DeletedFileNames.Count.ToString());
                 customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
             }
-
-            await m_DbContext.RecordDeleteTicketProfile(currentUser, ticket);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -170,8 +162,6 @@ namespace Project24.Pages.ClinicManager.Ticket
                 customInfo.Add(CustomInfoKey.DeletedList, responseData.DeletedFileNames.Count.ToString());
                 customInfo.Add(CustomInfoKey.Error, responseData.ErrorFileMessages.Count.ToString());
             }
-
-            await m_DbContext.RecordUpdateTicketProfile(currentUser, image.OwnerTicket);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
@@ -226,7 +216,6 @@ namespace Project24.Pages.ClinicManager.Ticket
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
         private readonly P24ImageManagerService m_ImageManagerSvc;
-        private readonly ILogger<DeleteModel> m_Logger;
     }
 
 }

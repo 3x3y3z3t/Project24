@@ -1,5 +1,5 @@
 /*  P24/Customer/List.cshtml
- *  Version: 1.2 (2022.12.13)
+ *  Version: 1.3 (2022.12.29)
  *
  *  Contributor
  *      Arime-chan
@@ -13,14 +13,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App.Utils;
 using Project24.Data;
 
-namespace Project24.Pages.ClinicManager
+namespace Project24.Pages.ClinicManager.Customer
 {
     [Authorize(Roles = P24RoleName.Manager)]
-    public class ListCustomerModel : PageModel
+    public class ListModel : PageModel
     {
         public class CustomerViewModel
         {
@@ -37,7 +36,7 @@ namespace Project24.Pages.ClinicManager
             public string Address { get; set; }
 
             [DataType(DataType.MultilineText)]
-            public string Notes { get; set; }
+            public string Note { get; set; }
 
             public int TicketCount { get; set; }
 
@@ -67,16 +66,15 @@ namespace Project24.Pages.ClinicManager
         public bool IsSearchMode { get; private set; } = false;
 
 
-        public ListCustomerModel(ApplicationDbContext _context, ILogger<ListCustomerModel> _logger)
+        public ListModel(ApplicationDbContext _context)
         {
             m_DbContext = _context;
-            m_Logger = _logger;
         }
 
 
         public async Task OnGetAsync()
         {
-            var customers = await (from _customer in m_DbContext.CustomerProfiles
+            var customers = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.VisitingTickets)
                                    where _customer.DeletedDate == DateTime.MinValue
                                    select new CustomerViewModel()
                                    {
@@ -85,10 +83,8 @@ namespace Project24.Pages.ClinicManager
                                        DoB = _customer.DateOfBirth,
                                        PhoneNumber = _customer.PhoneNumber,
                                        Address = _customer.Address,
-                                       Notes = _customer.Notes,
-                                       TicketCount = (from _ticket in m_DbContext.TicketProfiles
-                                                      where _ticket.CustomerId == _customer.Id && _ticket.DeletedDate == DateTime.MinValue
-                                                      select _ticket.Id).Count()
+                                       Note = _customer.Note,
+                                       TicketCount = _customer.VisitingTickets.Count()
                                    })
                             .ToListAsync();
 
@@ -122,7 +118,7 @@ namespace Project24.Pages.ClinicManager
                                        DoB = _ticket.Customer.DateOfBirth,
                                        PhoneNumber = _ticket.Customer.PhoneNumber,
                                        Address = _ticket.Customer.Address,
-                                       Notes = _ticket.Customer.Notes,
+                                       Note = _ticket.Customer.Note,
                                        TicketCount = (from _tk in m_DbContext.TicketProfiles
                                                       where _tk.CustomerId == _ticket.Customer.Id && _ticket.DeletedDate == DateTime.MinValue
                                                       select _tk.Id).Count()
@@ -144,7 +140,6 @@ namespace Project24.Pages.ClinicManager
 
 
         private readonly ApplicationDbContext m_DbContext;
-        private readonly ILogger<ListCustomerModel> m_Logger;
     }
 
 }

@@ -1,4 +1,4 @@
-﻿@*  P24/Customer/Create.cshtml
+@*  P24/Customer/Create.cshtml
     *  Version: 1.5 (2022.12.13)
     *
     *  Contributor
@@ -63,9 +63,9 @@
                 <span asp-validation-for="FormData.Address" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="FormData.Notes" class="control-label">Ghi chú</label>
-                <textarea asp-for="FormData.Notes" text-wrap="normal" rows="4" class="form-control"></textarea>
-                <span asp-validation-for="FormData.Notes" class="text-danger"></span>
+                <label asp-for="FormData.Note" class="control-label">Ghi chú</label>
+                <textarea asp-for="FormData.Note" text-wrap="normal" rows="4" class="form-control"></textarea>
+                <span asp-validation-for="FormData.Note" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="FormData.UploadedFiles" class="control-label">Ảnh (nhiều file, tối đa 32 MB)</label>

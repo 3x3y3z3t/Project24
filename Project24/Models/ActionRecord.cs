@@ -1,5 +1,5 @@
-﻿/*  ActionLog.cs
- *  Version: 1.13 (2022.12.18)
+/*  ActionLog.cs
+ *  Version: 1.14 (2022.12.31)
  *
  *  Contributor
  *      Arime-chan
@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Project24.Models
 {
-    public class ActionRecord
+    public sealed class ActionRecord
     {
         public static class Operation_
         {
@@ -23,19 +23,12 @@ namespace Project24.Models
             public const string UpdateUser = "Update User";
             public const string DetailUser = "Detail User";
 
-            //public const string CreateService = "Create Service";
-            //public const string DeleteService = "Delete Service";
-            //public const string UpdateService = "Update Service";
-            //public const string DetailService = "Detail Service";
-
             public const string CreateCustomer = "Create Customer";
             public const string CreateCustomer_CreateImage = "Create Customer Image";
             public const string DeleteCustomer = "Delete Customer";
             public const string DeleteCustomer_DeleteImage = "Delete Customer Image";
             public const string UpdateCustomer = "Update Customer";
             public const string DetailCustomer = "Detail Customer";
-            //public const string DetailCustomer_AddImage = "Detail Customer: Add Image";
-            //public const string DetailCustomer_DelImage = "Detail Customer: Delete Image";
 
             public const string CreateTicket = "Create Visiting Ticket";
             public const string CreateTicket_CreateImage = "Create Ticket Image";
@@ -43,6 +36,10 @@ namespace Project24.Models
             public const string DeleteTicket_DeleteImage = "Delete Ticket Image";
             public const string UpdateTicket = "Update Visiting Ticket";
             public const string DetailTicket = "Detail Visiting Ticket";
+
+            public const string ValidateDrugStorage = "Verify Drug Storage";
+            public const string InventoryImportCreate = "Inventory Import Create";
+            public const string InventoryExportCreate = "Inventory Export Create";
 
             public const string CreateNasFolder = "Create NAS Folder";
             public const string DeleteNasFile = "Delete NAS File";
@@ -76,11 +73,10 @@ namespace Project24.Models
             public const string HasMalfunction = "Has Malfunction";
         }
 
-        
-        [Key]
-        public int Id { get; set; }
 
-        [Required(AllowEmptyStrings = false)]
+        [Key]
+        public int Id { get; private set; }
+
         [DataType(DataType.DateTime)]
         public DateTime Timestamp { get; set; }
 
@@ -88,11 +84,12 @@ namespace Project24.Models
 
         [Required(AllowEmptyStrings = false)]
         public string Operation { get; set; }
-        
+
         [Required(AllowEmptyStrings = false)]
         public string OperationStatus { get; set; }
-        
+
         public string CustomInfo { get; set; }
+
 
         public ActionRecord()
         { }

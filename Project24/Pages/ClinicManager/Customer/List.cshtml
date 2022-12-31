@@ -1,14 +1,14 @@
-﻿@*  P24/Customer/List.cshtml
-    *  Version: 1.2 (2022.12.13)
+@*  P24/Customer/List.cshtml
+    *  Version: 1.3 (2022.12.29)
     *
     *  Contributor
     *      Arime-chan
 *@
 
-@page "{handler?}"
+@page
 
 @using System.Globalization
-@model Project24.Pages.ClinicManager.ListCustomerModel
+@model Project24.Pages.ClinicManager.Customer.ListModel
 @{
     ViewData[CustomInfoKey.Language] = CustomInfoKey.Lang_Vi_VN;
     ViewData["Title"] = "Danh sách bệnh nhân";
@@ -85,7 +85,7 @@
                 <td>@customer.Fullname (@age)</td>
                 <td>@customer.PhoneNumber</td>
                 <td>@customer.Address</td>
-                <td>@customer.Notes</td>
+                <td>@customer.Note</td>
                 <td>@customer.TicketCount (<a href="#">Xem</a>)</td>
 
                 <td>

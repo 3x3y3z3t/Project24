@@ -1,4 +1,4 @@
-﻿/*  Identity/Account/Login.cshtml.cs
+/*  Identity/Account/Login.cshtml.cs
  *  Version: 1.1 (2022.12.11)
  *
  *  Contributor
@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.Identity;
+using Project24.App.Extension;
 
 namespace Project24.Areas.Identity.Pages.Account
 {

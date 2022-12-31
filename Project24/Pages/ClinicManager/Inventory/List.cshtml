@@ -1,0 +1,95 @@
+@*  P24/Inventory/List.cshtml
+    *  Version: 1.0 (2022.12.31)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page "{handler?}"
+
+@model Project24.Pages.ClinicManager.Inventory.ListModel
+@{
+    ViewData["Title"] = "Kho";
+    Layout = "_Layout";
+}
+
+<h1>Kho Thuốc - Vật tư</h1>
+
+<div>
+    <a asp-page="Import/Create" class="btn btn-primary">Nhập kho</a>
+    <a href="#" class="btn btn-secondary ml-3" onclick="" disabled>Kiểm kho toàn bộ</a>
+</div>
+<hr />
+
+<h4><a data-toggle="collapse" data-target="#search-form-collapse" style="color: inherit;">Tìm kiếm (click để mở rộng)</a></h4>
+<div id="search-form-collapse" class="collapse">
+    <form method="get" asp-page-handler="Search" enctype="application/x-www-form-urlencoded" class="col-md-8 col-lg-6 col-xl-5">
+        <div class="form-group">
+            <label class="control-label">Tên thuốc</label>
+            <input name="_name" class="form-control" value="@Model.SearchFormData.Name" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        <a asp-page="List" class="btn btn-secondary">Hủy bỏ</a>
+    </form>
+</div>
+<hr />
+<br />
+
+<div class="" style="font-size: x-large">
+    @if (Model.IsSearchMode)
+    {
+        <span>Tìm thấy <span class="font-weight-bold">@Model.DrugListings.Count</span> danh mục thuốc</span> }
+    else
+    {
+        <span>Tổng danh mục thuốc: <span class="font-weight-bold">@Model.DrugListings.Count</span></span>}
+</div>
+
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th style="width: 15ch;">Mã</th>
+            <th style="width: 30ch;">Tên thuốc</th>
+            <th style="">Ghi chú</th>
+            <th style="width: 15ch;">Số lượng</th>
+            <th style="width: 10ch;">Đơn vị</th>
+            <th style="width: 20ch;"></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var listing in Model.DrugListings)
+        {
+            <tr>
+                <td>@listing.Drug.Id</td>
+                <td>@listing.Drug.Name</td>
+                <td>@listing.Drug.Note</td>
+                <td>@listing.Drug.Amount</td>
+                <td>@listing.Drug.Unit</td>
+
+                <td>
+                    <div class="text-center" hidden>
+                        <div>
+                            <a asp-page="Details" asp-route-_code="@listing">Chi tiết</a> |
+                            <a asp-page="Edit" asp-route-_code="@listing">Sửa thông tin</a>
+                        </div>
+                        <div>
+                            <a asp-page="Delete" asp-route-_code="@listing" class="text-danger font-weight-bold">Xóa</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.IsSearchMode)
+{
+    @section Scripts {
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $(".collapse").collapse("show");
+            })
+        </script>
+    }}
+

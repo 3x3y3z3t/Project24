@@ -1,4 +1,8 @@
-﻿
+
+#### v0.13.0-alpha (2022.12.31)
+- Added Inventory tracking for Clinic Manager.
+- Added object version tracker (for future data restoration function).
+
 #### v0.12.7 (2022.12.25)
 - Minor QoL update for NAS.
 
