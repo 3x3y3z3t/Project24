@@ -1,5 +1,5 @@
 /*  ApplicationDbContext.cs
- *  Version: 1.14 (2022.12.29)
+ *  Version: 1.15 (2023.01.01)
  *
  *  Contributor
  *      Arime-chan
@@ -125,6 +125,10 @@ namespace Project24.Data
 
             _builder.Entity<CustomerProfile>()
                 .HasIndex(_customer => _customer.Code)
+                .IsUnique();
+
+            _builder.Entity<CustomerProfile>()
+                .HasIndex(_customer => _customer.PhoneNumber)
                 .IsUnique();
 
             _builder.Entity<TicketProfile>()

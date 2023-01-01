@@ -1,17 +1,20 @@
 /*  FormDataModel.cs
- *  Version: 1.3 (2022.12.13)
+ *  Version: 1.4 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
  */
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Project24.Data;
 
 namespace Project24.Models.ClinicManager.DataModel
 {
     #region Customer
-    public class P24CreateCustomerFormDataModel
+    public class P24CreateCustomerFormDataModel : IValidatableObject
     {
         [Required]
         public string Code { get; set; }
@@ -26,6 +29,7 @@ namespace Project24.Models.ClinicManager.DataModel
         [Range(1900, AppConfig.ThisYear, ErrorMessage = P24Message.DoBMustBeInRange)]
         public int DateOfBirth { get; set; }
 
+        [Required(ErrorMessage = P24Message.PhoneNumberCannotBeEmpty)]
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 
@@ -37,6 +41,26 @@ namespace Project24.Models.ClinicManager.DataModel
 
         public P24CreateCustomerFormDataModel()
         { }
+
+        IEnumerable<ValidationResult> IValidatableObject.Validate(ValidationContext _validationContext)
+        {
+            var dbContext = (ApplicationDbContext)_validationContext.GetService(typeof(ApplicationDbContext));
+            List<ValidationResult> results = new List<ValidationResult>();
+
+            var customerCode = (from _customer in dbContext.CustomerProfiles
+                                where _customer.PhoneNumber == PhoneNumber
+                                select _customer.Code)
+                           .FirstOrDefault();
+
+            if (customerCode != null && customerCode != Code)
+            {
+                string message = string.Format(P24Message.PhoneNumberExisted, customerCode);
+                ValidationResult result = new ValidationResult(message, new[] { nameof(PhoneNumber) });
+                results.Add(result);
+            }
+
+            return results;
+        }
     }
 
     public class P24CreateCustomerFormDataModelEx : P24CreateCustomerFormDataModel
@@ -85,13 +109,15 @@ namespace Project24.Models.ClinicManager.DataModel
     #region Ticket
     public class P24CreateTicketFormDataModel
     {
-        [Required]
+        [Required(AllowEmptyStrings = false)]
         public string Code { get; set; }
 
-        [Required]
+        public string Symptom { get; set; }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = P24Message.DiagnoseCannotBeEmpty)]
         public string Diagnose { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings = false, ErrorMessage = P24Message.TreatmentCannotBeEmpty)]
         public string Treatment { get; set; }
 
         [DataType(DataType.MultilineText)]
@@ -112,10 +138,12 @@ namespace Project24.Models.ClinicManager.DataModel
         [Required]
         public string Code { get; set; }
 
-        [Required]
+        public string Symptom { get; set; }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = P24Message.DiagnoseCannotBeEmpty)]
         public string Diagnose { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings = false, ErrorMessage = P24Message.DiagnoseCannotBeEmpty)]
         public string Treatment { get; set; }
 
         [DataType(DataType.MultilineText)]

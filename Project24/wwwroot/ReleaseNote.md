@@ -1,5 +1,9 @@
 
-#### v0.13.0-alpha (2022.12.31)
+#### v0.13.1 (2023.01.02)
+- Added Symptom in Ticket Profile (Clinic Manager side).
+- Various (minor) fixed for Clinic Manager.
+
+#### v0.13.0 (2022.12.31)
 - Added Inventory tracking for Clinic Manager.
 - Added object version tracker (for future data restoration function).
 

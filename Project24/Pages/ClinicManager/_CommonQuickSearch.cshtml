@@ -1,0 +1,53 @@
+@*  P24/_CommonQuickSearch.cshtml
+    *  Version: 1.0 (2023.01.02)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@model Project24.Models.ClinicManager.DataModel.QuickSearchFormDataModel
+@{ 
+    string today = DateTime.Now.ToString("yyyy-MM-dd");
+
+    string startDate = "";
+    string endDate = "";
+
+    if (Model.StartDate != DateTime.MinValue && Model.StartDate != P24Constants.MinDate)
+        startDate = Model.StartDate.ToString("yyyy-MM-dd");
+
+    if (Model.StartDate != DateTime.MinValue && Model.EndDate != DateTime.Today)
+        endDate = Model.EndDate.ToString("yyyy-MM-dd");
+
+string formGroupClasses = "form-group row align-items-baseline ml-0 mb-1";
+    string labelClasses = "control-label col-3 px-0";
+    string controlClasses = "form-control col-9";
+}
+
+<h4><a href="#" data-toggle="collapse" data-target="#search-form-collapse">Tìm kiếm (click để mở rộng)</a></h4>
+<div id="search-form-collapse" class="collapse">
+    <form method="get" asp-page-handler="Search" enctype="application/x-www-form-urlencoded" class="col-md-8 col-lg-6 col-xl-5">
+        <div class="@formGroupClasses">
+            <label class="@labelClasses">Từ ngày..</label>
+            <input class="@controlClasses" name="_startDate" type="date" value="@startDate" min="2000-01-01" max="@today" />
+        </div>
+        <div class="@formGroupClasses">
+            <label class="@labelClasses">.. đến ngày</label>
+            <input class="@controlClasses" name="_endDate" type="date" value="@endDate" min="2000-01-01" max="@today" />
+        </div>
+        <div class="@formGroupClasses">
+            <label class="@labelClasses">Tên</label>
+            <input class="@controlClasses" name="_name" placeholder="Chỉ cần nhập Tên" value="@Model.Name" />
+        </div>
+        <div class="@formGroupClasses">
+            <label class="@labelClasses">SĐT</label>
+            <input class="@controlClasses" name="_phone" placeholder="Có thể nhập một phần SĐT" value="@Model.PhoneNumber" />
+        </div>
+        <div class="@formGroupClasses">
+            <label class="@labelClasses">Địa chỉ</label>
+            <input class="@controlClasses" name="_address" placeholder="Có thể nhập một phần địa chỉ" value="@Model.Address" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        <a asp-page="List" class="btn btn-secondary">Hủy bỏ</a>
+    </form>
+</div>

@@ -9,8 +9,8 @@ using Project24.Data;
 namespace Project24.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20221231025624_FixDrugExportBatchIdIssue")]
-    partial class FixDrugExportBatchIdIssue
+    [Migration("20230101165401_UpdateModels1")]
+    partial class UpdateModels1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -335,7 +335,9 @@ namespace Project24.Migrations
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .IsRequired()
+                        .HasColumnType("varchar(15) CHARACTER SET utf8mb4")
+                        .HasMaxLength(15);
 
                     b.Property<int?>("PreviousVersionId")
                         .HasColumnType("int");
@@ -348,6 +350,9 @@ namespace Project24.Migrations
                         .IsUnique();
 
                     b.HasIndex("EditedUserId");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
 
                     b.HasIndex("PreviousVersionId");
 
@@ -420,6 +425,7 @@ namespace Project24.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Diagnose")
+                        .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<int?>("DrugExportBatchId")
@@ -431,9 +437,6 @@ namespace Project24.Migrations
                     b.Property<string>("EditedUserId")
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
-                    b.Property<bool>("IsTicketOpen")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<string>("Note")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
@@ -441,12 +444,10 @@ namespace Project24.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ProposeTreatment")
+                        .IsRequired()
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Symptom")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("TicketStatus")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
@@ -458,7 +459,8 @@ namespace Project24.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("DrugExportBatchId");
+                    b.HasIndex("DrugExportBatchId")
+                        .IsUnique();
 
                     b.HasIndex("EditedUserId");
 
@@ -546,9 +548,6 @@ namespace Project24.Migrations
                     b.Property<int?>("PreviousVersionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TicketId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AddedUserId");
@@ -556,8 +555,6 @@ namespace Project24.Migrations
                     b.HasIndex("EditedUserId");
 
                     b.HasIndex("PreviousVersionId");
-
-                    b.HasIndex("TicketId");
 
                     b.ToTable("DrugExportBatches");
                 });
@@ -869,8 +866,8 @@ namespace Project24.Migrations
                         .IsRequired();
 
                     b.HasOne("Project24.Models.Internal.ClinicManager.DrugExportBatch", "DrugExportBatch")
-                        .WithMany()
-                        .HasForeignKey("DrugExportBatchId");
+                        .WithOne("Ticket")
+                        .HasForeignKey("Project24.Models.ClinicManager.TicketProfile", "DrugExportBatchId");
 
                     b.HasOne("Project24.Models.Identity.P24IdentityUser", "EditedUser")
                         .WithMany()
@@ -894,12 +891,6 @@ namespace Project24.Migrations
                     b.HasOne("Project24.Models.P24ObjectPreviousVersion", "PreviousVersion")
                         .WithMany()
                         .HasForeignKey("PreviousVersionId");
-
-                    b.HasOne("Project24.Models.ClinicManager.TicketProfile", "Ticket")
-                        .WithMany()
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Project24.Models.Internal.ClinicManager.DrugExportation", b =>

@@ -1,5 +1,5 @@
 /*  P24/Customer/Edit.cshtml
- *  Version: 1.4 (2022.12.29)
+ *  Version: 1.5 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
@@ -59,6 +59,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                 select new P24EditTicketFormDataModel()
                                 {
                                     Code = _ticket.Code,
+                                    Symptom = _ticket.Symptom,
                                     Diagnose = _ticket.Diagnose,
                                     Treatment = _ticket.ProposeTreatment,
                                     Note = _ticket.Note
@@ -125,6 +126,7 @@ namespace Project24.Pages.ClinicManager.Ticket
             P24ObjectPreviousVersion previousVersion = new P24ObjectPreviousVersion(nameof(TicketProfile), ticket.Id.ToString(), jsonData, ticket.PreviousVersion);
             await m_DbContext.AddAsync(previousVersion);
 
+            ticket.Symptom = FormData.Symptom;
             ticket.Diagnose = FormData.Diagnose;
             ticket.ProposeTreatment = FormData.Treatment;
             ticket.Note = FormData.Note;

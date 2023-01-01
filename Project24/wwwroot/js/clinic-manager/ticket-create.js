@@ -1,5 +1,5 @@
-﻿/*  ticket-create.js
- *  Version: 1.2 (2022.12.12)
+/*  ticket-create.js
+ *  Version: 1.2 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
@@ -11,6 +11,7 @@ TicketCreateForm.m_Form = null;
 TicketCreateForm.m_CustomerCodeStatus = null;
 
 //TicketCreateForm.m_TicketCodeInput = null;
+TicketCreateForm.m_TicketSymptomInput = null;
 TicketCreateForm.m_TicketDiagnoseInput = null;
 TicketCreateForm.m_TicketTreatmentInput = null;
 TicketCreateForm.m_TicketNotesInput = null;
@@ -31,9 +32,10 @@ $(document).ready(function () {
     TicketCreateForm.m_CustomerCodeStatus = $("#customer-code-status");
 
     //TicketCreateForm.m_TicketCodeInput = $("#TicketFormData_Code");
+    TicketCreateForm.m_TicketSymptomInput= $("#TicketFormData_Symptom");
     TicketCreateForm.m_TicketDiagnoseInput = $("#TicketFormData_Diagnose");
     TicketCreateForm.m_TicketTreatmentInput = $("#TicketFormData_Treatment");
-    TicketCreateForm.m_TicketNotesInput = $("#TicketFormData_Notes");
+    TicketCreateForm.m_TicketNotesInput = $("#TicketFormData_Note");
     TicketCreateForm.m_TicketFilesInput = $("#TicketFormData_UploadedFiles");
 
     TicketCreateForm.m_CustomerCodeInput = $("#TicketFormData_CustomerFormData_Code");
@@ -43,7 +45,7 @@ $(document).ready(function () {
     TicketCreateForm.m_CustomerDobInput = $("#TicketFormData_CustomerFormData_DateOfBirth");
     TicketCreateForm.m_CustomerPhoneInput = $("#TicketFormData_CustomerFormData_PhoneNumber");
     TicketCreateForm.m_CustomerAddrInput = $("#TicketFormData_CustomerFormData_Address");
-    TicketCreateForm.m_CustomerNotesInput = $("#TicketFormData_CustomerFormData_Notes");
+    TicketCreateForm.m_CustomerNotesInput = $("#TicketFormData_CustomerFormData_Note");
 
     let customerCode = TicketCreateForm.m_CustomerCodeInput.val();
     if (customerCode != null && customerCode != "")
@@ -122,6 +124,7 @@ function ticket_create_applyExistedCustomerInfo(_json) {
 function ticket_create_resetCustomerInfo() {
     TicketCreateForm.m_CustomerCodeStatus.html("");
 
+    TicketCreateForm.m_TicketSymptomInput.attr("disabled", true);
     TicketCreateForm.m_TicketDiagnoseInput.attr("disabled", true);
     TicketCreateForm.m_TicketTreatmentInput.attr("disabled", true);
     TicketCreateForm.m_TicketNotesInput.attr("disabled", true);
@@ -145,7 +148,6 @@ function ticket_create_resetCustomerInfo() {
     TicketCreateForm.m_CustomerDobInput.attr("disabled", true);
 
     TicketCreateForm.m_CustomerPhoneInput.val(null);
-    //TicketCreateForm.m_CustomerPhoneInput.attr("disabled", true);
 
     TicketCreateForm.m_CustomerAddrInput.val(null);
     TicketCreateForm.m_CustomerAddrInput.attr("disabled", true);
@@ -157,6 +159,7 @@ function ticket_create_resetCustomerInfo() {
 }
 
 function ticket_create_removeDisabledAttribs() {
+    TicketCreateForm.m_TicketSymptomInput.removeAttr("disabled");
     TicketCreateForm.m_TicketDiagnoseInput.removeAttr("disabled");
     TicketCreateForm.m_TicketTreatmentInput.removeAttr("disabled");
     TicketCreateForm.m_TicketNotesInput.removeAttr("disabled");

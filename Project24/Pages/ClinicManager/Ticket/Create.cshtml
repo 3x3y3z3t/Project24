@@ -1,5 +1,5 @@
 @*  P24/Ticket/Create.cshtml
-    *  Version: 1.3 (2022.12.13)
+    *  Version: 1.4 (2023.01.02)
     *
     *  Contributor
     *      Arime-chan
@@ -32,6 +32,11 @@
                     <span asp-validation-for="TicketFormData.Code" class="text-danger"></span>
                 </div>
                 <div class="form-group">
+                    <label asp-for="TicketFormData.Symptom" class="control-label">Triệu chứng</label>
+                    <textarea asp-for="TicketFormData.Symptom" class="form-control" text-wrap="normal" rows="2" disabled></textarea>
+                    <span asp-validation-for="TicketFormData.Symptom" class="text-danger"></span>
+                </div>
+                <div class="form-group">
                     <label asp-for="TicketFormData.Diagnose" class="control-label">Chẩn đoán</label>
                     <input asp-for="TicketFormData.Diagnose" class="form-control" disabled />
                     <span asp-validation-for="TicketFormData.Diagnose" class="text-danger"></span>
@@ -43,7 +48,7 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="TicketFormData.Note" class="control-label">Ghi chú</label>
-                    <textarea asp-for="TicketFormData.Note" text-wrap="normal" rows="4" class="form-control" disabled></textarea>
+                    <textarea asp-for="TicketFormData.Note" class="form-control" text-wrap="normal" rows="3" disabled></textarea>
                     <span asp-validation-for="TicketFormData.Note" class="text-danger"></span>
                 </div>
                 <div class="form-group">

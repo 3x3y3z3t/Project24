@@ -1,5 +1,5 @@
 /*  P24/Ticket/Details.cshtml.cs
- *  Version: 1.2 (2022.12.29)
+ *  Version: 1.3 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
@@ -9,16 +9,13 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.Data;
 using Project24.Models.ClinicManager;
 using Project24.Models.ClinicManager.DataModel;
-using Project24.Models.Identity;
 
 namespace Project24.Pages.ClinicManager.Ticket
 {
@@ -47,6 +44,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                 select new P24TicketDetailsViewModelEx()
                                 {
                                     Code = _ticket.Code,
+                                    Symptom = _ticket.Symptom,
                                     Diagnose = _ticket.Diagnose,
                                     Treatment = _ticket.ProposeTreatment,
                                     Notes = _ticket.Note,

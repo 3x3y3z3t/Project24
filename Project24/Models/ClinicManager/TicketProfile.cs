@@ -1,5 +1,5 @@
 /*  VisitingProfile.cs
- *  Version: 1.2 (2022.12.31)
+ *  Version: 1.3 (2023.01.01)
  *
  *  Contributor
  *      Arime-chan
@@ -15,24 +15,22 @@ namespace Project24.Models.ClinicManager
 {
     public class TicketProfile : P24ModelBase
     {
-        [ForeignKey("Customer")]
+        [ForeignKey(nameof(Customer))]
         public int CustomerId { get; protected set; }
 
-        [ForeignKey("DrugExportBatch")]
+        [ForeignKey(nameof(DrugExportBatch))]
         public int? DrugExportBatchId { get; protected set; }
 
 
         [Required(AllowEmptyStrings = false)]
         public string Code { get; protected set; }
 
-        public bool IsTicketOpen { get; set; }
-
-        public string TicketStatus { get; set; }
-
         public string Symptom { get; set; }
 
+        [Required(AllowEmptyStrings = false)]
         public string Diagnose { get; set; }
 
+        [Required(AllowEmptyStrings = false)]
         public string ProposeTreatment { get; set; }
 
 
@@ -45,15 +43,12 @@ namespace Project24.Models.ClinicManager
             : base()
         { }
 
-        public TicketProfile(P24IdentityUser _addedUser, CustomerProfile _customer, int _dailyIndex, DrugExportBatch _drugExportBatch = null)
+        public TicketProfile(P24IdentityUser _addedUser, CustomerProfile _customer, int _dailyIndex)
             : base(_addedUser)
         {
             Code = string.Format(AppConfig.TicketCodeFormatString, AddedDate, _dailyIndex);
             Customer = _customer;
-
-            DrugExportBatch = _drugExportBatch;
         }
-
     }
 
 }

@@ -69,6 +69,29 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Changelogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    PreviousVersionId = table.Column<int>(nullable: true),
+                    ObjectType = table.Column<string>(nullable: false),
+                    ObjectId = table.Column<string>(nullable: false),
+                    Data = table.Column<string>(nullable: false),
+                    AddedDate = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Changelogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Changelogs_Changelogs_PreviousVersionId",
+                        column: x => x.PreviousVersionId,
+                        principalTable: "Changelogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DailyIndexesInternal",
                 columns: table => new
                 {
@@ -84,14 +107,34 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Drugs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: false),
+                    Unit = table.Column<string>(nullable: false),
+                    Note = table.Column<string>(nullable: true),
+                    Amount = table.Column<int>(nullable: true),
+                    DeletedDate = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Drugs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "NasCachedFiles",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AddedDate = table.Column<DateTime>(nullable: false),
+                    FailCount = table.Column<int>(nullable: false),
                     Path = table.Column<string>(nullable: true),
                     Name = table.Column<string>(nullable: true),
-                    AddedDate = table.Column<DateTime>(nullable: false)
+                    Length = table.Column<long>(nullable: false),
+                    LastModDate = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -205,15 +248,40 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserUploads",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(nullable: true),
+                    UploadedDateTime = table.Column<DateTime>(nullable: false),
+                    Module = table.Column<byte>(nullable: false),
+                    FilesCount = table.Column<int>(nullable: false),
+                    BytesCount = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserUploads", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserUploads_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CustomerProfiles",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     AddedUserId = table.Column<string>(nullable: true),
-                    UpdatedUserId = table.Column<string>(nullable: true),
+                    EditedUserId = table.Column<string>(nullable: true),
+                    PreviousVersionId = table.Column<int>(nullable: true),
+                    Note = table.Column<string>(nullable: true),
                     AddedDate = table.Column<DateTime>(nullable: false),
-                    UpdatedDate = table.Column<DateTime>(nullable: false),
+                    EditedDate = table.Column<DateTime>(nullable: false),
                     DeletedDate = table.Column<DateTime>(nullable: false),
                     Code = table.Column<string>(nullable: false),
                     FirstMidName = table.Column<string>(nullable: true),
@@ -221,8 +289,7 @@ namespace Project24.Migrations
                     Gender = table.Column<string>(type: "CHAR(1)", nullable: false),
                     DateOfBirth = table.Column<int>(nullable: false),
                     PhoneNumber = table.Column<string>(nullable: true),
-                    Address = table.Column<string>(nullable: true),
-                    Notes = table.Column<string>(nullable: true)
+                    Address = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -234,9 +301,52 @@ namespace Project24.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CustomerProfiles_AspNetUsers_UpdatedUserId",
-                        column: x => x.UpdatedUserId,
+                        name: "FK_CustomerProfiles_AspNetUsers_EditedUserId",
+                        column: x => x.EditedUserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CustomerProfiles_Changelogs_PreviousVersionId",
+                        column: x => x.PreviousVersionId,
+                        principalTable: "Changelogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DrugImportBatches",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AddedUserId = table.Column<string>(nullable: true),
+                    EditedUserId = table.Column<string>(nullable: true),
+                    PreviousVersionId = table.Column<int>(nullable: true),
+                    Note = table.Column<string>(nullable: true),
+                    AddedDate = table.Column<DateTime>(nullable: false),
+                    EditedDate = table.Column<DateTime>(nullable: false),
+                    DeletedDate = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DrugImportBatches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DrugImportBatches_AspNetUsers_AddedUserId",
+                        column: x => x.AddedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DrugImportBatches_AspNetUsers_EditedUserId",
+                        column: x => x.EditedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DrugImportBatches_Changelogs_PreviousVersionId",
+                        column: x => x.PreviousVersionId,
+                        principalTable: "Changelogs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -280,45 +390,125 @@ namespace Project24.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "VisitingProfiles",
+                name: "TicketProfiles",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     AddedUserId = table.Column<string>(nullable: true),
-                    UpdatedUserId = table.Column<string>(nullable: true),
+                    EditedUserId = table.Column<string>(nullable: true),
+                    PreviousVersionId = table.Column<int>(nullable: true),
+                    Note = table.Column<string>(nullable: true),
                     AddedDate = table.Column<DateTime>(nullable: false),
-                    UpdatedDate = table.Column<DateTime>(nullable: false),
+                    EditedDate = table.Column<DateTime>(nullable: false),
                     DeletedDate = table.Column<DateTime>(nullable: false),
-                    Code = table.Column<string>(nullable: false),
                     CustomerId = table.Column<int>(nullable: false),
+                    Code = table.Column<string>(nullable: false),
                     IsTicketOpen = table.Column<bool>(nullable: false),
                     TicketStatus = table.Column<string>(nullable: true),
+                    Symptom = table.Column<string>(nullable: true),
                     Diagnose = table.Column<string>(nullable: true),
-                    ProposeTreatment = table.Column<string>(nullable: true),
-                    Notes = table.Column<string>(nullable: true)
+                    ProposeTreatment = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_VisitingProfiles", x => x.Id);
+                    table.PrimaryKey("PK_TicketProfiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_VisitingProfiles_AspNetUsers_AddedUserId",
+                        name: "FK_TicketProfiles_AspNetUsers_AddedUserId",
                         column: x => x.AddedUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_VisitingProfiles_CustomerProfiles_CustomerId",
+                        name: "FK_TicketProfiles_CustomerProfiles_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "CustomerProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_VisitingProfiles_AspNetUsers_UpdatedUserId",
-                        column: x => x.UpdatedUserId,
+                        name: "FK_TicketProfiles_AspNetUsers_EditedUserId",
+                        column: x => x.EditedUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TicketProfiles_Changelogs_PreviousVersionId",
+                        column: x => x.PreviousVersionId,
+                        principalTable: "Changelogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DrugImportations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    DrugId = table.Column<int>(nullable: false),
+                    ImportBatchId = table.Column<int>(nullable: false),
+                    Amount = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DrugImportations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DrugImportations_Drugs_DrugId",
+                        column: x => x.DrugId,
+                        principalTable: "Drugs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DrugImportations_DrugImportBatches_ImportBatchId",
+                        column: x => x.ImportBatchId,
+                        principalTable: "DrugImportBatches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DrugExportBatches",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AddedUserId = table.Column<string>(nullable: true),
+                    EditedUserId = table.Column<string>(nullable: true),
+                    PreviousVersionId = table.Column<int>(nullable: true),
+                    Note = table.Column<string>(nullable: true),
+                    AddedDate = table.Column<DateTime>(nullable: false),
+                    EditedDate = table.Column<DateTime>(nullable: false),
+                    DeletedDate = table.Column<DateTime>(nullable: false),
+                    TicketId = table.Column<int>(nullable: false),
+                    ExportType = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DrugExportBatches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DrugExportBatches_AspNetUsers_AddedUserId",
+                        column: x => x.AddedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DrugExportBatches_AspNetUsers_EditedUserId",
+                        column: x => x.EditedUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DrugExportBatches_Changelogs_PreviousVersionId",
+                        column: x => x.PreviousVersionId,
+                        principalTable: "Changelogs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DrugExportBatches_TicketProfiles_TicketId",
+                        column: x => x.TicketId,
+                        principalTable: "TicketProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -346,9 +536,9 @@ namespace Project24.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_TicketImages_VisitingProfiles_OwnerTicketId",
+                        name: "FK_TicketImages_TicketProfiles_OwnerTicketId",
                         column: x => x.OwnerTicketId,
-                        principalTable: "VisitingProfiles",
+                        principalTable: "TicketProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -357,6 +547,33 @@ namespace Project24.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DrugExportations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    DrugId = table.Column<int>(nullable: false),
+                    ExportBatchId = table.Column<int>(nullable: false),
+                    Amount = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DrugExportations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DrugExportations_Drugs_DrugId",
+                        column: x => x.DrugId,
+                        principalTable: "Drugs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DrugExportations_DrugExportBatches_ExportBatchId",
+                        column: x => x.ExportBatchId,
+                        principalTable: "DrugExportBatches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -397,6 +614,16 @@ namespace Project24.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Changelogs_ObjectType",
+                table: "Changelogs",
+                column: "ObjectType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Changelogs_PreviousVersionId",
+                table: "Changelogs",
+                column: "PreviousVersionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CustomerImages_AddedUserId",
                 table: "CustomerImages",
                 column: "AddedUserId");
@@ -417,9 +644,82 @@ namespace Project24.Migrations
                 column: "AddedUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerProfiles_UpdatedUserId",
+                name: "IX_CustomerProfiles_Code",
                 table: "CustomerProfiles",
-                column: "UpdatedUserId");
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerProfiles_EditedUserId",
+                table: "CustomerProfiles",
+                column: "EditedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerProfiles_PhoneNumber",
+                table: "CustomerProfiles",
+                column: "PhoneNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerProfiles_PreviousVersionId",
+                table: "CustomerProfiles",
+                column: "PreviousVersionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugExportations_DrugId",
+                table: "DrugExportations",
+                column: "DrugId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugExportations_ExportBatchId",
+                table: "DrugExportations",
+                column: "ExportBatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugExportBatches_AddedUserId",
+                table: "DrugExportBatches",
+                column: "AddedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugExportBatches_EditedUserId",
+                table: "DrugExportBatches",
+                column: "EditedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugExportBatches_PreviousVersionId",
+                table: "DrugExportBatches",
+                column: "PreviousVersionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugExportBatches_TicketId",
+                table: "DrugExportBatches",
+                column: "TicketId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugImportations_DrugId",
+                table: "DrugImportations",
+                column: "DrugId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugImportations_ImportBatchId",
+                table: "DrugImportations",
+                column: "ImportBatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugImportBatches_AddedUserId",
+                table: "DrugImportBatches",
+                column: "AddedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugImportBatches_EditedUserId",
+                table: "DrugImportBatches",
+                column: "EditedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DrugImportBatches_PreviousVersionId",
+                table: "DrugImportBatches",
+                column: "PreviousVersionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TicketImages_AddedUserId",
@@ -437,25 +737,35 @@ namespace Project24.Migrations
                 column: "UpdatedUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VisitingProfiles_AddedUserId",
-                table: "VisitingProfiles",
+                name: "IX_TicketProfiles_AddedUserId",
+                table: "TicketProfiles",
                 column: "AddedUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VisitingProfiles_Code",
-                table: "VisitingProfiles",
+                name: "IX_TicketProfiles_Code",
+                table: "TicketProfiles",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_VisitingProfiles_CustomerId",
-                table: "VisitingProfiles",
+                name: "IX_TicketProfiles_CustomerId",
+                table: "TicketProfiles",
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VisitingProfiles_UpdatedUserId",
-                table: "VisitingProfiles",
-                column: "UpdatedUserId");
+                name: "IX_TicketProfiles_EditedUserId",
+                table: "TicketProfiles",
+                column: "EditedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TicketProfiles_PreviousVersionId",
+                table: "TicketProfiles",
+                column: "PreviousVersionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserUploads_UserId",
+                table: "UserUploads",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -485,22 +795,43 @@ namespace Project24.Migrations
                 name: "DailyIndexesInternal");
 
             migrationBuilder.DropTable(
+                name: "DrugExportations");
+
+            migrationBuilder.DropTable(
+                name: "DrugImportations");
+
+            migrationBuilder.DropTable(
                 name: "NasCachedFiles");
 
             migrationBuilder.DropTable(
                 name: "TicketImages");
 
             migrationBuilder.DropTable(
+                name: "UserUploads");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "VisitingProfiles");
+                name: "DrugExportBatches");
+
+            migrationBuilder.DropTable(
+                name: "Drugs");
+
+            migrationBuilder.DropTable(
+                name: "DrugImportBatches");
+
+            migrationBuilder.DropTable(
+                name: "TicketProfiles");
 
             migrationBuilder.DropTable(
                 name: "CustomerProfiles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Changelogs");
         }
     }
 }

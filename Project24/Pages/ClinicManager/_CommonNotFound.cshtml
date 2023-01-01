@@ -1,5 +1,5 @@
-﻿@*  P24/Customer > _CommonNotFound.cshtml
-    *  Version: 1.0 (2022.11.20)
+@*  P24/_CommonNotFound.cshtml
+    *  Version: 1.1 (2023.01.01)
     *
     *  Contributor
     *      Arime-chan
@@ -14,4 +14,4 @@
 <div class="text-danger font-weight-bold" style="font-size: x-large;">Không tìm thấy @Model.EntityType có mã <code>@Model.Code.</code></div>
 <br />
 
-<a href="@Model.ReturnUrl">Trở về</a>
+<a asp-page="@Model.ReturnPage">Trở về</a>

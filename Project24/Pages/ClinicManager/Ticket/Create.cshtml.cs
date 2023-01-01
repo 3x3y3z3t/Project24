@@ -1,5 +1,5 @@
 /*  P24/Ticket/Create.cshtml
- *  Version: 1.3 (2022.12.29)
+ *  Version: 1.4 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
@@ -139,6 +139,7 @@ namespace Project24.Pages.ClinicManager.Ticket
         {
             TicketProfile ticket = new TicketProfile(_currentUser, _customer, m_DailyIndexes.VisitingIndex + 1)
             {
+                Symptom = TicketFormData.Symptom,
                 Diagnose = TicketFormData.Diagnose,
                 ProposeTreatment = TicketFormData.Treatment,
                 Note = TicketFormData.Note

@@ -1,9 +1,11 @@
 /*  Constants.cs
- *  Version: 1.9 (2022.12.29)
+ *  Version: 1.10 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
  */
+
+using System;
 
 namespace Project24
 {
@@ -30,6 +32,7 @@ namespace Project24
     public static class Constants
     {
         public const string DefaultPassword = "123@123a";
+
     }
 
     public static class AppConfig
@@ -69,12 +72,17 @@ namespace Project24
     /// <summary> This class define error message constants for Clinic Manager module, or Project24 (P24) side.</summary>
     public static class P24Message
     {
-
         public const string DoBMustBeInRange = "Năm sinh phải nằm trong phạm vi {1} - {2}.";
         public const string DoBCannotBeEmpty = "Năm sinh không được để trống.";
 
         public const string NameCannotBeEmpty = "Họ Tên không được để trống.";
         public const string GenderCannotBeEmpty = "Giới tính không được để trống.";
+
+        public const string PhoneNumberCannotBeEmpty = "Số điện thoại không được để trống.";
+        public const string PhoneNumberExisted = "Số điện thoại đã được đăng ký cho bệnh nhân khác ({0}).";
+
+        public const string DiagnoseCannotBeEmpty = "Thông tin chẩn đoán không được để trống.";
+        public const string TreatmentCannotBeEmpty = "Thông tin xử trí không được để trống.";
 
         public const string PasswordCannotBeEmpty = "Mật khẩu không được để trống.";
 
@@ -91,6 +99,8 @@ namespace Project24
         public const string No = "Không";
         public const string Yes = "Có";
         public const string Restricted = "Giới hạn";
+
+        public static DateTime MinDate = new DateTime(2000, 01, 01);
     }
 
     public static class ServerAnnouncementMessage

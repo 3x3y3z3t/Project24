@@ -1,5 +1,5 @@
-﻿/*  CommonNotFoundModel.cs
- *  Version: 1.0 (2022.11.20)
+/*  CommonNotFoundModel.cs
+ *  Version: 1.1 (2023.01.01)
  *
  *  Contributor
  *      Arime-chan
@@ -12,13 +12,14 @@ namespace Project24.Models.ClinicManager
         public string EntityType;
         public string Code;
 
-        public string ReturnUrl;
+        public string ReturnPage;
 
-        public CommonNotFoundModel(string _entityType, string _code, string _returnUrl = "")
+
+        public CommonNotFoundModel(string _entityType, string _code, string _returnPage = "")
         {
             EntityType = _entityType;
             Code = _code;
-            ReturnUrl = _returnUrl;
+            ReturnPage = _returnPage;
         }
     }
 

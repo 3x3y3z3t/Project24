@@ -1,5 +1,5 @@
 /*  DrugExportBatch.cs
- *  Version: 1.0 (2022.12.29)
+ *  Version: 1.1 (2023.01.01)
  *
  *  Contributor
  *      Arime-chan
@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Project24.Models.ClinicManager;
 using Project24.Models.Identity;
 
@@ -15,10 +14,6 @@ namespace Project24.Models.Internal.ClinicManager
 {
     public class DrugExportBatch : P24MutableObject
     {
-        [ForeignKey("Ticket")]
-        public int TicketId { get; private set; }
-
-
         [Required(AllowEmptyStrings = false)]
         public string ExportType { get; set; }
 

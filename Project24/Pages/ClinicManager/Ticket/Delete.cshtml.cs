@@ -1,5 +1,5 @@
 /*  P24/Ticket/Delete.cshtml
- *  Version: 1.2 (2022.12.29)
+ *  Version: 1.3 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
@@ -53,6 +53,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                 select new P24TicketDetailsViewModelEx()
                                 {
                                     Code = _code,
+                                    Symptom = _ticket.Symptom,
                                     Diagnose = _ticket.Diagnose,
                                     Treatment = _ticket.ProposeTreatment,
                                     Notes = _ticket.Note,
@@ -92,10 +93,9 @@ namespace Project24.Pages.ClinicManager.Ticket
 
         public async Task<IActionResult> OnPostAsync([Bind] string TicketCode)
         {
-            if (!await ValidateModelState(ActionRecord.Operation_.DeleteTicket))
-                return Page();
-
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.DeleteTicket))
+                return Page();
 
             var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer).Include(_t => _t.TicketImages)
                                 where _ticket.Code == TicketCode
@@ -135,13 +135,12 @@ namespace Project24.Pages.ClinicManager.Ticket
         // Ajax call only;
         public async Task<IActionResult> OnPostDeleteImageAsync([FromBody] string _imageId)
         {
-            if (!await ValidateModelState(ActionRecord.Operation_.DeleteTicket_DeleteImage))
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.DeleteTicket_DeleteImage))
                 return BadRequest();
 
             if (!int.TryParse(_imageId, out int imgId))
                 return BadRequest();
-
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
 
             var image = await (from _image in m_DbContext.TicketImages.Include(_img => _img.OwnerTicket)
                                where _image.Id == imgId && _image.DeletedDate == DateTime.MinValue
@@ -191,25 +190,6 @@ namespace Project24.Pages.ClinicManager.Ticket
                              Name = _image.Name
                          };
             return await images.ToListAsync();
-        }
-
-        private async Task<bool> ValidateModelState(string _operation)
-        {
-            if (ModelState.IsValid)
-                return true;
-
-            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-            await m_DbContext.RecordChanges(
-                currentUser.UserName,
-                _operation,
-                ActionRecord.OperationStatus_.Failed,
-                new Dictionary<string, string>()
-                {
-                    { CustomInfoKey.Error, ErrorMessage.InvalidModelState }
-                }
-            );
-
-            return false;
         }
 
 

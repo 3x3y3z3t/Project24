@@ -1,5 +1,5 @@
 /*  P24/Customer/List.cshtml
- *  Version: 1.3 (2022.12.29)
+ *  Version: 1.4 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Project24.App.Utils;
 using Project24.Data;
+using Project24.Models.ClinicManager.DataModel;
 
 namespace Project24.Pages.ClinicManager.Customer
 {
@@ -44,20 +45,6 @@ namespace Project24.Pages.ClinicManager.Customer
             { }
         }
 
-        public class QuickSearchFormDataModel
-        {
-            public string Name { get; set; }
-
-            public string PhoneNumber { get; set; }
-
-            public string Address { get; set; }
-
-            [DataType(DataType.Date)]
-            public DateTime Date { get; set; }
-
-            public QuickSearchFormDataModel()
-            { }
-        }
 
         public List<CustomerViewModel> Customers { get; private set; }
 
@@ -93,7 +80,7 @@ namespace Project24.Pages.ClinicManager.Customer
             SearchFormData = new QuickSearchFormDataModel();
         }
 
-        public async Task OnGetSearchAsync(string _name, string _phone, string _addr, DateTime _date)
+        public async Task OnGetSearchAsync(string _name, string _phone, string _addr, DateTime _startDate, DateTime _endDate)
         {
             if (_name == null)
                 _name = "";
@@ -101,16 +88,19 @@ namespace Project24.Pages.ClinicManager.Customer
                 _phone = "";
             if (_addr == null)
                 _addr = "";
+            if (_endDate == P24Constants.MinDate)
+                _endDate = DateTime.Today;
 
             if (_name != "")
                 _name = StringUtils.ToTitleCase(_name);
 
             var customers = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                    where _ticket.Customer.DeletedDate == DateTime.MinValue
-                                       && (_date == DateTime.MinValue || _ticket.AddedDate.Date == _date.Date)
-                                       && (_name == "" || _ticket.Customer.LastName == _name)
-                                       && _ticket.Customer.PhoneNumber.EndsWith(_phone)
-                                       && _ticket.Customer.Address.Contains(_addr)
+                                      && _ticket.AddedDate.Date > _startDate
+                                      && _ticket.AddedDate.Date < _endDate
+                                      && (_name == "" || _ticket.Customer.LastName == _name)
+                                      && _ticket.Customer.PhoneNumber.EndsWith(_phone)
+                                      && _ticket.Customer.Address.Contains(_addr)
                                    select new CustomerViewModel()
                                    {
                                        Code = _ticket.Customer.Code,
@@ -132,7 +122,8 @@ namespace Project24.Pages.ClinicManager.Customer
                 Name = _name,
                 PhoneNumber = _phone,
                 Address = _addr,
-                Date = _date
+                StartDate = _startDate,
+                EndDate = _endDate
             };
 
             IsSearchMode = true;

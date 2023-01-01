@@ -9,8 +9,8 @@ using Project24.Data;
 namespace Project24.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20221229001648_UpdateDrug4")]
-    partial class UpdateDrug4
+    [Migration("20230101160713_Initial Migration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -335,7 +335,7 @@ namespace Project24.Migrations
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<int?>("PreviousVersionId")
                         .HasColumnType("int");
@@ -348,6 +348,9 @@ namespace Project24.Migrations
                         .IsUnique();
 
                     b.HasIndex("EditedUserId");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
 
                     b.HasIndex("PreviousVersionId");
 
@@ -421,9 +424,6 @@ namespace Project24.Migrations
 
                     b.Property<string>("Diagnose")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<int?>("DrugExportBatchId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("EditedDate")
                         .HasColumnType("datetime(6)");

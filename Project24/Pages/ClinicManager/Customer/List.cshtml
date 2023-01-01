@@ -1,5 +1,5 @@
 @*  P24/Customer/List.cshtml
-    *  Version: 1.3 (2022.12.29)
+    *  Version: 1.4 (2023.01.02)
     *
     *  Contributor
     *      Arime-chan
@@ -13,8 +13,6 @@
     ViewData[CustomInfoKey.Language] = CustomInfoKey.Lang_Vi_VN;
     ViewData["Title"] = "Danh sách bệnh nhân";
     Layout = "_Layout";
-
-    string today = DateTime.Now.ToString("yyyy-MM-dd");
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -25,30 +23,7 @@
 </div>
 <hr />
 
-<h4><a data-toggle="collapse" data-target="#search-form-collapse" style="color: inherit;">Tìm kiếm (click để mở rộng)</a></h4>
-<div id="search-form-collapse" class="collapse">
-    <form method="get" asp-page-handler="Search" enctype="application/x-www-form-urlencoded">
-        <div class="form-group">
-            <label class="control-label">Ngày tháng</label>
-            <input name="_date" type="date" class="form-control" value="" min="2000-01-01" max="@today" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Tên</label>
-            <input name="_name" class="form-control" value="@Model.SearchFormData.Name" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">SĐT</label>
-            <input name="_phone" class="form-control" value="@Model.SearchFormData.PhoneNumber" />
-        </div>
-        <div class="form-group">
-            <label class="control-label">Địa chỉ</label>
-            <input name="_address" class="form-control" value="@Model.SearchFormData.Address" />
-        </div>
-
-        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-        <a asp-page="List" class="btn btn-secondary">Hủy bỏ</a>
-    </form>
-</div>
+<partial name="ClinicManager/_CommonQuickSearch" model="Model.SearchFormData" />
 <hr />
 <br />
 
@@ -63,15 +38,15 @@
     }
 </div>
 
-<table class="table table-sm">
+<table class="table table-sm table-hover">
     <thead>
         <tr>
-            <th style="width: 15ch;">Mã</th>
-            <th style="width: 25ch;">Họ và Tên</th>
-            <th style="width: 15ch;">Số điện thoại</th>
+            <th style="width:12ch">Mã</th>
+            <th style="width:25ch">Họ và Tên</th>
+            <th style="width:12ch">SĐT</th>
             <th style="">Địa chỉ</th>
             <th style="">Ghi chú</th>
-            <th style="width: 15ch;">Phiếu khám</th>
+            <th style="width: 12ch;">Phiếu khám</th>
             <th style="width: 20ch;"></th>
         </tr>
     </thead>
@@ -86,7 +61,24 @@
                 <td>@customer.PhoneNumber</td>
                 <td>@customer.Address</td>
                 <td>@customer.Note</td>
-                <td>@customer.TicketCount (<a href="#">Xem</a>)</td>
+
+                <td class="text-center">
+                    @if (customer.TicketCount <= 0)
+                    {
+                        <div class="text-danger">
+                            <div>0</div>
+                            <div><a asp-page="/ClinicManager/Ticket/Create" asp-route-_customerCode="@customer.Code">Thêm</a></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>@customer.TicketCount</div>
+                        <div>
+                            <a asp-page="/ClinicManager/Ticket/List" asp-page-handler="Search" asp-route-_code="@customer.Code">Xem</a> |
+                            <a asp-page="/ClinicManager/Ticket/Create" asp-route-_customerCode="@customer.Code">Thêm</a>
+                        </div>
+                    }
+                </td>
 
                 <td>
                     <div class="text-center">
@@ -107,10 +99,10 @@
 @if (Model.IsSearchMode)
 {
     @section Scripts {
-<script type="text/javascript">
-    $(document).ready(function () {
-        $(".collapse").collapse("show");
-    })
-</script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $(".collapse").collapse("show");
+            })
+        </script>
     }
 }

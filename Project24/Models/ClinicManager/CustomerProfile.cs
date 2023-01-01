@@ -1,5 +1,5 @@
 /*  CustomerProfile.cs
- *  Version: 1.5 (2022.12.28)
+ *  Version: 1.6 (2023.01.01)
  *
  *  Contributor
  *      Arime-chan
@@ -32,6 +32,8 @@ namespace Project24.Models.ClinicManager
         [Range(1900, AppConfig.ThisYear)]
         public int DateOfBirth { get; set; }
 
+        [Required]
+        [StringLength(15)]
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 

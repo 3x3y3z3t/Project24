@@ -1,5 +1,5 @@
-﻿/*  ViewModel.cs
- *  Version: 1.2 (2022.12.13)
+/*  ViewModel.cs
+ *  Version: 1.3 (2023.01.02)
  *
  *  Contributor
  *      Arime-chan
@@ -57,6 +57,8 @@ namespace Project24.Models.ClinicManager.DataModel
     public class P24TicketDetailsViewModel
     {
         public string Code { get; set; }
+
+        public string Symptom { get; set; }
 
         public string Diagnose { get; set; }
 

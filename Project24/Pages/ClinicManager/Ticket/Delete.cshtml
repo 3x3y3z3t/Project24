@@ -1,5 +1,5 @@
 @*  P24/Ticket/Delete.cshtml
-    *  Version: 1.1 (2022.12.13)
+    *  Version: 1.2 (2023.01.02)
     *
     *  Contributor
     *      Arime-chan
@@ -36,6 +36,9 @@
         <dl class="row">
             <dt class="col-sm-4">Mã phiếu khám:</dt>
             <dd class="col-sm-8">@Model.TicketViewData.Code</dd>
+
+            <dt class="col-sm-4">Triệu chứng:</dt>
+            <dd class="col-sm-8">@Model.TicketViewData.Symptom</dd>
 
             <dt class="col-sm-4">Chẩn đoán:</dt>
             <dd class="col-sm-8">@Model.TicketViewData.Diagnose</dd>

@@ -1,5 +1,5 @@
 @*  P24/Ticket/Edit.cshtml
-    *  Version: 1.1 (2022.12.13)
+    *  Version: 1.2 (2023.01.02)
     *
     *  Contributor
     *      Arime-chan
@@ -31,6 +31,11 @@
                 <label asp-for="FormData.Code" class="control-label">Mã phiếu khám (tự động điền)</label>
                 <input asp-for="FormData.Code" class="form-control" readonly />
                 <span asp-validation-for="FormData.Code" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FormData.Symptom" class="control-label">Triệu chứng</label>
+                <textarea asp-for="FormData.Symptom" class="form-control" text-wrap="normal" rows="2"></textarea>
+                <span asp-validation-for="FormData.Symptom" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="FormData.Diagnose" class="control-label">Chẩn đoán</label>
@@ -88,10 +93,10 @@
         <div class="row">
             <a asp-page="../Customer/Edit" asp-route-_code="@Model.Customer.Code" target="_blank">Sửa thông tin bệnh nhân</a>
         </div>
-        </>
-
     </div>
 
-    @section Scripts {
+</div>
+
+@section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    }
+}
