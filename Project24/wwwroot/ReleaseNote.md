@@ -1,4 +1,8 @@
 
+#### v0.13.2 (2023.01.03)
+- Added Inventory Drug Import note listing (Clinic Manager side).
+- Fool-proof'd Inventory Drug Import note creation (Clinic Manager side).
+
 #### v0.13.1 (2023.01.02)
 - Added Symptom in Ticket Profile (Clinic Manager side).
 - Various (minor) fixed for Clinic Manager.

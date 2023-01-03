@@ -1,5 +1,5 @@
 /*  ExtensionMethods.cs
- *  Version: 1.0 (2022.12.31)
+ *  Version: 1.1 (2023.01.03)
  *
  *  Contributor
  *      Arime-chan
@@ -7,11 +7,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mime;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Project24.Data;
 using Project24.Models;
+using Project24.Models.ClinicManager.DataModel;
 using Project24.Models.Identity;
 
 namespace Project24.App.Extension
@@ -44,7 +51,10 @@ namespace Project24.App.Extension
         {
             string json = null;
             if (_customInfo != null)
-                json = JsonSerializer.Serialize(_customInfo);
+            {
+                var jsonEncoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+                json = JsonSerializer.Serialize(_customInfo, new JsonSerializerOptions() { Encoder = jsonEncoder });
+            }
 
             await _dbContext.RecordChanges(_username, _operation, _status, json);
         }
@@ -67,6 +77,70 @@ namespace Project24.App.Extension
             await _dbContext.SaveChangesAsync();
         }
 
+
+
+        public static async Task<ImportExportBatchViewModel> DrugImport_GetBatchDetailsAsync(this PageModel _page, ApplicationDbContext _dbContext, int _batchId)
+        {
+            var batch = await (from _batch in _dbContext.DrugImportBatches.Include(_b => _b.AddedUser)
+                               where _batch.Id == _batchId
+                               select new ImportExportBatchViewModel()
+                               {
+                                   Id = _batch.Id,
+                                   AddedUserName = _batch.AddedUser.UserName,
+                                   AddedDate = _batch.AddedDate
+                               })
+                          .FirstOrDefaultAsync();
+
+            if (batch == null)
+                return null;
+
+            var importations = await (from _importation in _dbContext.DrugImportations.Include(_im => _im.Drug)
+                                      where _importation.ImportBatchId == _batchId
+                                      select new ImportExportQuickViewModel()
+                                      {
+                                          Id = _importation.Id,
+                                          Name = _importation.Drug.Name,
+                                          Amount = _importation.Amount,
+                                          Unit = _importation.Drug.Unit
+                                      })
+                               .ToListAsync();
+
+            batch.List = importations;
+
+            return batch;
+        }
+
+        public static async Task<IActionResult> DrugImport_GetBatchDetailsAsync_ReturnContent(this PageModel _page, ApplicationDbContext _dbContext, int _batchId)
+        {
+            var batch = await (from _batch in _dbContext.DrugImportBatches.Include(_b => _b.AddedUser)
+                               where _batch.Id == _batchId
+                               select new ImportExportBatchViewModel()
+                               {
+                                   Id = _batch.Id,
+                                   AddedUserName = _batch.AddedUser.UserName,
+                                   AddedDate = _batch.AddedDate
+                               })
+                          .FirstOrDefaultAsync();
+
+            var importations = await (from _importation in _dbContext.DrugImportations.Include(_im => _im.Drug)
+                                      where _importation.ImportBatchId == _batchId
+                                      select new ImportExportQuickViewModel()
+                                      {
+                                          Id = _importation.Id,
+                                          Name = _importation.Drug.Name,
+                                          Amount = _importation.Amount,
+                                          Unit = _importation.Drug.Unit
+                                      })
+                               .ToListAsync();
+
+            batch.List = importations;
+
+            var jsonEncoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+            string json = JsonSerializer.Serialize(batch, new JsonSerializerOptions() { Encoder = jsonEncoder });
+
+            return _page.Content(CustomInfoTag.Success + json, MediaTypeNames.Text.Plain);
+
+        }
 
     }
 

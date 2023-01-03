@@ -1,5 +1,5 @@
 /*  P24/Inventory/List.cshtml.cs
- *  Version: 1.0 (2022.12.29)
+ *  Version: 1.1 (2023.01.03)
  *
  *  Contributor
  *      Arime-chan
@@ -157,45 +157,57 @@ namespace Project24.Pages.ClinicManager.Inventory
 
             var drugs = await (from _drug in m_DbContext.Drugs
                                where _drug.DeletedDate == DateTime.MinValue
-                               select new StorageDrugViewModel()
-                               {
-                                   Drug = _drug
-                               })
+                               select _drug)
                         .ToListAsync();
 
+            List<StorageDrugViewModel> list = new List<StorageDrugViewModel>();
+            List<Drug> updateList = new List<Drug>();
             foreach (var drug in drugs)
             {
-                bool hasImport = importations.ContainsKey(drug.Drug.Id);
-                bool hasExport = importations.ContainsKey(drug.Drug.Id);
+                StorageDrugViewModel drugView = new StorageDrugViewModel()
+                {
+                    Drug = drug
+                };
+
+                drug.Amount = 0;
+
+                bool hasImport = importations.ContainsKey(drug.Id);
+                bool hasExport = exportations.ContainsKey(drug.Id);
                 if (!hasImport)
                 {
                     if (!hasExport)
                     {
-                        drug.NoData = true;
-                        continue;
+                        drugView.NoData = true;
                     }
 
                     // export > import???;
-                    drug.NoData = true;
+                    drugView.NoData = true;
                 }
 
                 if (hasImport)
                 {
-                    drug.Drug.Amount += importations[drug.Drug.Id];
+                    drug.Amount += importations[drug.Id];
                 }
 
                 if (hasExport)
                 {
-                    drug.Drug.Amount -= exportations[drug.Drug.Id];
+                    drug.Amount -= exportations[drug.Id];
                 }
+
+                updateList.Add(drug);
+                list.Add(drugView);
             }
 
-            drugs.Sort((StorageDrugViewModel _m1, StorageDrugViewModel _m2) =>
-            {
-                return _m1.Drug.Name.CompareTo(_m2.Drug.Name);
-            });
+            m_DbContext.UpdateRange(updateList);
+            await m_DbContext.SaveChangesAsync();
 
-            DrugListings = drugs;
+            //drugs.Sort((StorageDrugViewModel _m1, StorageDrugViewModel _m2) =>
+            //{
+            //    return _m1.Drug.Name.CompareTo(_m2.Drug.Name);
+            //});
+
+            DrugListings = list;
+            SearchFormData = new QuickSearchFormDataModel();
 
             return Page();
         }

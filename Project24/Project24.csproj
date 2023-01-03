@@ -71,7 +71,7 @@
     </None>
   </ItemGroup>
 
-  <!--<Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v16.0\TextTemplating\Microsoft.TextTemplating.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $(IsPublish) != 'true'" />-->
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v16.0\TextTemplating\Microsoft.TextTemplating.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $(IsPublish) != 'true'" />
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="$(SolutionDir)VersioningHelper/bin/$(ConfigurationName)/netcoreapp3.1/VersioningHelper.exe $(TargetDir) $(TargetFileName)" />

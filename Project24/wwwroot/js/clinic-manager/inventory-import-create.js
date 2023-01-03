@@ -1,62 +1,61 @@
 /*  inventory-import-create.js
- *  Version: 1.0 (2022.12.31)
+ *  Version: 1.1 (2023.01.03)
  *
  *  Contributor
  *      Arime-chan
  */
 
-window.ExportCreatePage = {};
+window.ImportCreatePage = {};
 
-ExportCreatePage.Backend = {};
-ExportCreatePage.Backend.m_AddedList = {};
-ExportCreatePage.Backend.m_AddIndex = 0;
+ImportCreatePage.Backend = {};
+ImportCreatePage.Backend.m_AddedList = {};
+ImportCreatePage.Backend.m_AddIndex = 0;
 
-ExportCreatePage.Backend.m_AvailableDrugsInfo = {};
-ExportCreatePage.Backend.m_AddedNames = [];
+ImportCreatePage.Backend.m_AvailableDrugsInfo = {};
+ImportCreatePage.Backend.m_AddedNames = [];
 
-ExportCreatePage.Backend.m_Timer = null;
+ImportCreatePage.Backend.m_Timer = null;
 
-window.ExportCreatePageElements = {};
+ImportCreatePage.Elements = {};
+ImportCreatePage.Elements.m_InputName = null;
+ImportCreatePage.Elements.m_InputAmount = null;
+ImportCreatePage.Elements.m_InputUnit = null;
+ImportCreatePage.Elements.m_UlValidationMsg = null;
+ImportCreatePage.Elements.m_TbodyAddedList = null;
 
-ExportCreatePageElements.m_InputName = null;
-ExportCreatePageElements.m_InputAmount = null;
-ExportCreatePageElements.m_InputUnit = null;
-ExportCreatePageElements.m_UlValidationMsg = null;
-ExportCreatePageElements.m_TbodyAddedList = null;
-
-ExportCreatePageElements.m_BtnAdd = null;
-ExportCreatePageElements.m_BtnFinish = null;
+ImportCreatePage.Elements.m_BtnAdd = null;
+ImportCreatePage.Elements.m_BtnFinish = null;
 
 
 $(document).ready(function () {
 
-    ExportCreatePageElements.m_InputName = $("#input-name");
-    ExportCreatePageElements.m_InputAmount = $("#input-amount");
-    ExportCreatePageElements.m_InputUnit = $("#input-unit");
-    ExportCreatePageElements.m_UlValidationMsg = $("#ul-validation-msg");
-    ExportCreatePageElements.m_TbodyAddedList = $("#tbody-added-list");
+    ImportCreatePage.Elements.m_InputName = $("#input-name");
+    ImportCreatePage.Elements.m_InputAmount = $("#input-amount");
+    ImportCreatePage.Elements.m_InputUnit = $("#input-unit");
+    ImportCreatePage.Elements.m_UlValidationMsg = $("#ul-validation-msg");
+    ImportCreatePage.Elements.m_TbodyAddedList = $("#tbody-added-list");
 
-    ExportCreatePageElements.m_BtnAdd = $("#btn-add");
-    ExportCreatePageElements.m_BtnFinish = $("#btn-finish");
+    ImportCreatePage.Elements.m_BtnAdd = $("#btn-add");
+    ImportCreatePage.Elements.m_BtnFinish = $("#btn-finish");
 
 
-    ExportCreatePage.ajax_fetchAvailDrugsInfo();
+    ImportCreatePage.ajax_fetchAvailDrugsInfo();
 
 });
 
 // ==================================================
 // ajax request sender
 
-ExportCreatePage.ajax_fetchAvailDrugsInfo = function () {
+ImportCreatePage.ajax_fetchAvailDrugsInfo = function () {
     $.ajax({
         type: "GET",
         url: "/ClinicManager/Inventory/List?handler=FetchAvailDrugsInfo",
-        success: ExportCreatePage.fetchAvailDrugsInfo_success,
-        error: ExportCreatePage.submit_error
+        success: ImportCreatePage.fetchAvailDrugsInfo_success,
+        error: ImportCreatePage.submit_error
     });
 }
 
-ExportCreatePage.ajax_Submit = function (_data) {
+ImportCreatePage.ajax_Submit = function (_data) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
     let formData = JSON.stringify(_data);
@@ -67,8 +66,8 @@ ExportCreatePage.ajax_Submit = function (_data) {
         headers: { "RequestVerificationToken": token },
         data: formData,
         contentType: "application/json; charset=utf-8",
-        success: ExportCreatePage.submit_success,
-        error: ExportCreatePage.submit_error
+        success: ImportCreatePage.submit_success,
+        error: ImportCreatePage.submit_error
     });
 }
 
@@ -79,31 +78,31 @@ ExportCreatePage.ajax_Submit = function (_data) {
 // event
 
 function inputName_onInput() {
-    clearTimeout(ExportCreatePage.Backend.m_Timer);
-    ExportCreatePage.Backend.m_Timer = setTimeout(ExportCreatePage.displayDrugInfo, 500);
+    clearTimeout(ImportCreatePage.Backend.m_Timer);
+    ImportCreatePage.Backend.m_Timer = setTimeout(ImportCreatePage.displayDrugInfo, 500);
 }
 
 function btnAdd() {
-    ExportCreatePageElements.m_UlValidationMsg.html("");
-    if (!ExportCreatePage.validateName() || !ExportCreatePage.validateAmount() || !ExportCreatePage.validateUnit())
+    ImportCreatePage.Elements.m_UlValidationMsg.html("");
+    if (!ImportCreatePage.validateName() || !ImportCreatePage.validateAmount() || !ImportCreatePage.validateUnit())
         return;
 
-    let name = ExportCreatePageElements.m_InputName.val();
-    let itemIndex = ExportCreatePage.Backend.m_AddedNames.indexOf(name);
+    let name = ImportCreatePage.Elements.m_InputName.val();
+    let itemIndex = ImportCreatePage.Backend.m_AddedNames.indexOf(name);
     if (itemIndex > -1) {
-        ExportCreatePage.openDuplicateAdditionModal(name);
+        ImportCreatePage.openDuplicateAdditionModal(name);
         return;
     }
 
-    let index = ExportCreatePage.Backend.m_AddIndex;
-    let amount = ExportCreatePageElements.m_InputAmount.val();
-    let unit = ExportCreatePageElements.m_InputUnit.val();
+    let index = ImportCreatePage.Backend.m_AddIndex;
+    let amount = ImportCreatePage.Elements.m_InputAmount.val();
+    let unit = ImportCreatePage.Elements.m_InputUnit.val();
 
-    ExportCreatePage.Backend.m_AddedList[index] = { name, amount, unit };
-    ++ExportCreatePage.Backend.m_AddIndex;
+    ImportCreatePage.Backend.m_AddedList[index] = { name, amount, unit };
+    ++ImportCreatePage.Backend.m_AddIndex;
 
-    if (ExportCreatePage.Backend.m_AvailableDrugsInfo[name] != null)
-        ExportCreatePage.Backend.m_AddedNames.push(name);
+    if (ImportCreatePage.Backend.m_AvailableDrugsInfo[name] != null)
+        ImportCreatePage.Backend.m_AddedNames.push(name);
 
     let html = "<tr id=\"row-" + index + "\">"; // open tag;
     html += "<td>" + (index + 1) + "</td>" // index column;
@@ -113,52 +112,52 @@ function btnAdd() {
     html += "<td><button class=\"btn btn-sm btn-outline-danger py-0 px-1\" onclick=\"btnRowRemove('" + index + "')\">&times;</button></td>" // close button column;
     html += "</tr>" // close tag;
 
-    ExportCreatePageElements.m_TbodyAddedList.append(html);
+    ImportCreatePage.Elements.m_TbodyAddedList.append(html);
 
-    ExportCreatePageElements.m_InputName.val("");
-    ExportCreatePageElements.m_InputAmount.val("");
-    ExportCreatePageElements.m_InputUnit.val("");
-    ExportCreatePageElements.m_InputUnit.removeAttr("readonly");
+    ImportCreatePage.Elements.m_InputName.val("");
+    ImportCreatePage.Elements.m_InputAmount.val("");
+    ImportCreatePage.Elements.m_InputUnit.val("");
+    ImportCreatePage.Elements.m_InputUnit.removeAttr("readonly");
 
-    ExportCreatePage.updateFinishButton();
-    ExportCreatePage.updateDataLists();
+    ImportCreatePage.updateFinishButton();
+    ImportCreatePage.updateDataLists();
 }
 
 function btnRowRemove(_index) {
-    if (ExportCreatePage.Backend.m_AddedList[_index] == null)
+    if (ImportCreatePage.Backend.m_AddedList[_index] == null)
         return;
 
-    ExportCreatePage.untrackItemWithName(ExportCreatePage.Backend.m_AddedList[_index].name);
+    ImportCreatePage.untrackItemWithName(ImportCreatePage.Backend.m_AddedList[_index].name);
 
-    delete ExportCreatePage.Backend.m_AddedList[_index];
+    delete ImportCreatePage.Backend.m_AddedList[_index];
     $("#row-" + _index).remove();
 
-    ExportCreatePage.updateFinishButton();
-    ExportCreatePage.updateDataLists();
+    ImportCreatePage.updateFinishButton();
+    ImportCreatePage.updateDataLists();
 }
 
 function btnFinish() {
-    if (ExportCreatePage.getAddedCount() <= 0)
+    if (ImportCreatePage.getAddedCount() <= 0)
         return;
 
     let dataList = [];
 
-    for (let i = 0; i < ExportCreatePage.Backend.m_AddIndex; ++i) {
-        let item = ExportCreatePage.Backend.m_AddedList[i];
+    for (let i = 0; i < ImportCreatePage.Backend.m_AddIndex; ++i) {
+        let item = ImportCreatePage.Backend.m_AddedList[i];
         if (item == null)
             continue;
 
         dataList.push({ "Name": item.name, "Amount": item.amount, "Unit": item.unit });
     }
 
-    ExportCreatePage.ajax_Submit(dataList);
+    ImportCreatePage.ajax_Submit(dataList);
 }
 
 function btnUpdate_modal() {
 
 }
 
-ExportCreatePage.fetchAvailDrugsInfo_success = function (_content, _textStatus, _xhr) {
+ImportCreatePage.fetchAvailDrugsInfo_success = function (_content, _textStatus, _xhr) {
     if (_content.startsWith("<fail>")) {
         let body = "<div>" + _content.substring(6) + "</div>";
         Modals.CommonInfoModal.openErrorModal("Có lỗi xảy ra", body, null);
@@ -171,17 +170,17 @@ ExportCreatePage.fetchAvailDrugsInfo_success = function (_content, _textStatus, 
         let obj = JSON.parse(_content);
         for (let i = 0; i < obj.length; ++i) {
             let drug = obj[i];
-            ExportCreatePage.Backend.m_AvailableDrugsInfo[drug.Name] = drug.Unit;
+            ImportCreatePage.Backend.m_AvailableDrugsInfo[drug.Name] = drug.Unit;
         }
 
-        ExportCreatePage.populateDatalists();
+        ImportCreatePage.populateDatalists();
 
-        ExportCreatePageElements.m_BtnAdd.removeAttr("disabled");
+        ImportCreatePage.Elements.m_BtnAdd.removeAttr("disabled");
         return;
     }
 }
 
-ExportCreatePage.submit_success = function (_content, _textStatus, _xhr) {
+ImportCreatePage.submit_success = function (_content, _textStatus, _xhr) {
     if (_content.startsWith("<fail>")) {
         let body = "<div>" + _content.substring(6) + "</div>";
         Modals.CommonInfoModal.openErrorModal("Có lỗi xảy ra", body, null);
@@ -194,11 +193,19 @@ ExportCreatePage.submit_success = function (_content, _textStatus, _xhr) {
         body += "</div>";
 
         Modals.CommonInfoModal.openSuccessModal("Thành công", body, null);
+
+        ImportCreatePage.Backend.m_AddedList = {};
+        ImportCreatePage.Backend.m_AddIndex = 0;
+        ImportCreatePage.Backend.m_AddedNames = [];
+
+        ImportCreatePage.Elements.m_TbodyAddedList.html("");
+        ImportCreatePage.updateFinishButton();
+
         return;
     }
 }
 
-ExportCreatePage.submit_error = function (_xhr, _textStatus, _errorThrown) {
+ImportCreatePage.submit_error = function (_xhr, _textStatus, _errorThrown) {
     let body = "<div>Status Code: <code>" + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "</code></div><div>jq Status: <code>" + _textStatus + "</code></div>";
         Modals.CommonInfoModal.openErrorModal("Có lỗi xảy ra", body, null);
 }
@@ -209,111 +216,111 @@ ExportCreatePage.submit_error = function (_xhr, _textStatus, _errorThrown) {
 // ==================================================
 // helper
 
-ExportCreatePage.validateName = function () {
-    let html = ExportCreatePageElements.m_UlValidationMsg.html();
+ImportCreatePage.validateName = function () {
+    let html = ImportCreatePage.Elements.m_UlValidationMsg.html();
 
-    if (ExportCreatePageElements.m_InputName.val() == "") {
+    if (ImportCreatePage.Elements.m_InputName.val() == "") {
         html += "<li>Tên thuốc không được để trống</li>";
-        ExportCreatePageElements.m_UlValidationMsg.html(html);
+        ImportCreatePage.Elements.m_UlValidationMsg.html(html);
         return false;
     }
 
     return true;
 }
 
-ExportCreatePage.validateAmount = function () {
-    let html = ExportCreatePageElements.m_UlValidationMsg.html();
+ImportCreatePage.validateAmount = function () {
+    let html = ImportCreatePage.Elements.m_UlValidationMsg.html();
 
-    if (ExportCreatePageElements.m_InputAmount.val() == "") {
+    if (ImportCreatePage.Elements.m_InputAmount.val() == "") {
         html += "<li>Số lượng không được để trống</li>";
-        ExportCreatePageElements.m_UlValidationMsg.html(html);
+        ImportCreatePage.Elements.m_UlValidationMsg.html(html);
         return false;
     }
 
-    if (ExportCreatePageElements.m_InputAmount.val() <= 0) {
+    if (ImportCreatePage.Elements.m_InputAmount.val() <= 0) {
         html += "<li>Số lượng phải lớn hơn 0</li>";
-        ExportCreatePageElements.m_UlValidationMsg.html(html);
+        ImportCreatePage.Elements.m_UlValidationMsg.html(html);
     }
 
     return true;
 }
 
-ExportCreatePage.validateUnit = function () {
-    let html = ExportCreatePageElements.m_UlValidationMsg.html();
+ImportCreatePage.validateUnit = function () {
+    let html = ImportCreatePage.Elements.m_UlValidationMsg.html();
 
-    if (ExportCreatePageElements.m_InputUnit.val() == "") {
+    if (ImportCreatePage.Elements.m_InputUnit.val() == "") {
         html += "<li>Đơn vị không được để trống</li>";
-        ExportCreatePageElements.m_UlValidationMsg.html(html);
+        ImportCreatePage.Elements.m_UlValidationMsg.html(html);
         return false;
     }
 
     return true;
 }
 
-ExportCreatePage.displayDrugInfo = function () {
-    let name = ExportCreatePageElements.m_InputName.val();
+ImportCreatePage.displayDrugInfo = function () {
+    let name = ImportCreatePage.Elements.m_InputName.val();
 
-    let unit = ExportCreatePage.Backend.m_AvailableDrugsInfo[name];
+    let unit = ImportCreatePage.Backend.m_AvailableDrugsInfo[name];
     if (unit != null) {
-        ExportCreatePageElements.m_InputUnit.val(unit);
-        ExportCreatePageElements.m_InputUnit.attr("readonly", true);
+        ImportCreatePage.Elements.m_InputUnit.val(unit);
+        ImportCreatePage.Elements.m_InputUnit.attr("readonly", true);
     } else {
-        ExportCreatePageElements.m_InputUnit.val("");
-        ExportCreatePageElements.m_InputUnit.removeAttr("readonly");
+        ImportCreatePage.Elements.m_InputUnit.val("");
+        ImportCreatePage.Elements.m_InputUnit.removeAttr("readonly");
     }
 }
 
-ExportCreatePage.updateFinishButton = function () {
-    if (ExportCreatePage.getAddedCount() <= 0)
-        ExportCreatePageElements.m_BtnFinish.attr("disabled", true);
+ImportCreatePage.updateFinishButton = function () {
+    if (ImportCreatePage.getAddedCount() <= 0)
+        ImportCreatePage.Elements.m_BtnFinish.attr("disabled", true);
     else
-        ExportCreatePageElements.m_BtnFinish.removeAttr("disabled");
+        ImportCreatePage.Elements.m_BtnFinish.removeAttr("disabled");
 }
 
-ExportCreatePage.getAddedCount = function () {
-    return Object.keys(ExportCreatePage.Backend.m_AddedList).length;
+ImportCreatePage.getAddedCount = function () {
+    return Object.keys(ImportCreatePage.Backend.m_AddedList).length;
 }
 
 // END: helper
 // ==================================================
 
-ExportCreatePage.populateDatalists = function () {
-    let length = Object.keys(ExportCreatePage.Backend.m_AvailableDrugsInfo).length;
+ImportCreatePage.populateDatalists = function () {
+    let length = Object.keys(ImportCreatePage.Backend.m_AvailableDrugsInfo).length;
 
     let datalistName = $("#datalist-all-names");
     let datalistUnit = $("#datalist-all-units");
 
-    for (const [name, unit] of Object.entries(ExportCreatePage.Backend.m_AvailableDrugsInfo)) {
+    for (const [name, unit] of Object.entries(ImportCreatePage.Backend.m_AvailableDrugsInfo)) {
         datalistName.append("<option value=\"" + name + "\">");
         datalistUnit.append("<option value=\"" + unit + "\">");
     }
 }
 
-ExportCreatePage.updateDataLists = function () {
+ImportCreatePage.updateDataLists = function () {
     let datalistName = $("#datalist-all-names");
     datalistName.html("");
 
-    for (const [name, unit] of Object.entries(ExportCreatePage.Backend.m_AvailableDrugsInfo)) {
-        let index = ExportCreatePage.Backend.m_AddedNames.indexOf(name);
+    for (const [name, unit] of Object.entries(ImportCreatePage.Backend.m_AvailableDrugsInfo)) {
+        let index = ImportCreatePage.Backend.m_AddedNames.indexOf(name);
         if (index < 0) {
             datalistName.append("<option value=\"" + name + "\">");
         }
     }
 }
 
-ExportCreatePage.untrackItemWithName = function (_name) {
-    let index = ExportCreatePage.Backend.m_AddedNames.indexOf(_name);
+ImportCreatePage.untrackItemWithName = function (_name) {
+    let index = ImportCreatePage.Backend.m_AddedNames.indexOf(_name);
     if (index < 0)
         return;
 
-    ExportCreatePage.Backend.m_AddedNames.splice(index, 1);
+    ImportCreatePage.Backend.m_AddedNames.splice(index, 1);
 }
 
-ExportCreatePage.openDuplicateAdditionModal = function (_name) {
+ImportCreatePage.openDuplicateAdditionModal = function (_name) {
     let index = -1;
     let item = null;
-    for (let i = 0; i < ExportCreatePage.Backend.m_AddIndex; ++i) {
-        item = ExportCreatePage.Backend.m_AddedList[i];
+    for (let i = 0; i < ImportCreatePage.Backend.m_AddIndex; ++i) {
+        item = ImportCreatePage.Backend.m_AddedList[i];
         if (item == null)
             continue;
 

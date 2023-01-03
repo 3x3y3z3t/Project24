@@ -86,6 +86,10 @@ namespace Project24
 
         public const string PasswordCannotBeEmpty = "Mật khẩu không được để trống.";
 
+        public const string ImportNotFound = "Không tìm thấy bản ghi có mã {0}.";
+        public const string ImportDeleted = "Đã xóa bản ghi {0}.";
+        public const string BatchNotFound = "Không tìm thấy phiếu có mã {0}.";
+        public const string BatchDeleted = "Đã xóa phiếu {0}.";
     }
 
     public static class P24Constants

@@ -19,7 +19,7 @@ namespace Project24.Models.Internal.ClinicManager
 
 
         public virtual TicketProfile Ticket { get; protected set; }
-        public virtual ICollection<DrugExportation> DrugExportation { get; protected set; }
+        public virtual ICollection<DrugExportation> DrugExportations { get; protected set; }
 
 
         public P24IdentityUser ExportedUser { get { return AddedUser; } }

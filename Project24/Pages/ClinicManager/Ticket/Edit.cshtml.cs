@@ -1,5 +1,5 @@
-/*  P24/Customer/Edit.cshtml
- *  Version: 1.5 (2023.01.02)
+/*  P24/Ticket/Edit.cshtml
+ *  Version: 1.6 (2023.01.03)
  *
  *  Contributor
  *      Arime-chan
@@ -8,7 +8,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -122,7 +124,8 @@ namespace Project24.Pages.ClinicManager.Ticket
                 return RedirectToPage("Details", new { _code = FormData.Code });
             }
 
-            string jsonData = JsonSerializer.Serialize(ticket);
+            var jsonEncoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+            string jsonData = JsonSerializer.Serialize(ticket, new JsonSerializerOptions() { Encoder = jsonEncoder });
             P24ObjectPreviousVersion previousVersion = new P24ObjectPreviousVersion(nameof(TicketProfile), ticket.Id.ToString(), jsonData, ticket.PreviousVersion);
             await m_DbContext.AddAsync(previousVersion);
 

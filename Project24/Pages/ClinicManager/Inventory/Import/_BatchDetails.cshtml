@@ -1,0 +1,50 @@
+@*  P24/Inventory/Import/Details > BatchDetails.cshtml
+    *  Version: 1.0 (2023.01.03)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@model Project24.Models.ClinicManager.DataModel.ImportExportBatchViewModel
+@{
+}
+
+<div class="text-break mb-2">
+    Phiếu nhập kho
+    <span class="font-weight-bold">@Model.Id</span>
+    (<span>@Model.AddedUserName</span>)
+    (<span>@Model.AddedDate</span>)
+</div>
+@if (User.IsInRole(P24RoleName.Admin))
+{
+    <div class="mb-3"><a id="a-delete-batch" href="#" class="font-weight-bold text-danger" onclick="a_batchDelete('@Model.Id')">Xóa phiếu này</a></div>
+}
+
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th style="width:6ch">Mã</th>
+            <th>Tên thuốc</th>
+            <th style="width:9ch">Số lượng</th>
+            <th style="width:8ch">Đơn vị</th>
+            <th style="width:4ch"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var import in Model.List)
+        {
+            <tr>
+                <td>@import.Id</td>
+                <td>@import.Name</td>
+                <td>@import.Amount</td>
+                <td>@import.Unit</td>
+                <td>
+                    @if (User.IsInRole(P24RoleName.Admin))
+                    {
+                        <a href="#" class="text-danger" onclick="a_importDelete('@import.Id')">Xóa</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

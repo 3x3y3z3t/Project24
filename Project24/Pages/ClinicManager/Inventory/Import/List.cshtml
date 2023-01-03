@@ -1,0 +1,93 @@
+@*  P24/Inventory/Import/List.cshtml
+    *  Version: 1.0 (2023.01.03)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.ClinicManager.Inventory.Import.ListModel
+@{
+    ViewData["Title"] = "Danh sách nhập kho";
+    Layout = "_Layout";
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="/ClinicManager/Inventory/List">Trở về danh sách chung</a>
+<hr />
+
+<div class="" style="font-size: x-large">
+    <span>Tổng số: <span class="font-weight-bold">@Model.ImportBatches.Count</span> phiếu</span>
+</div>
+
+<div class="d-flex">
+    <div class="col-12 col-sm-5">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th style="width:6ch">Mã</th>
+                    <th style="">Người nhập</th>
+                    <th style="">Thời gian</th>
+                    <th style="width:10ch"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var batch in Model.ImportBatches)
+                {
+                    <tr>
+                        <td>@batch.Id</td>
+                        <td>@batch.AddedUserName</td>
+                        <td>@batch.AddedDate</td>
+
+                        <td>
+                            <div class="text-center">
+                                <a href="#" onclick="a_batchDetails('@batch.Id')">Chi tiết</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div id="div-batch-details-view" class="col-12 col-sm-7" hidden>
+
+
+
+
+
+
+        <div class="text-break mb-1">
+            Phiếu nhập kho
+            <span class="font-weight-bold" id="span-batch-id"></span>
+            (<span id="span-batch-user"></span>)
+            (<span id="span-batch-date"></span>)
+        </div>
+        <div><a id="a-delete-batch" href="#" class="font-weight-bold mb-3" onclick="">Xóa phiếu này</a></div>
+
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th style="width:6ch">Mã</th>
+                    <th>Tên thuốc</th>
+                    <th style="width:9ch">Số lượng</th>
+                    <th style="width:8ch">Đơn vị</th>
+                    <th style="width:4ch"></th>
+                </tr>
+            </thead>
+            <tbody id="tbody-batch-details"></tbody>
+        </table>
+    </div>
+
+    @Html.AntiForgeryToken();
+</div>
+
+<partial name="_Modals/_CommonInfoModal" />
+
+@section Scripts {
+    <script src="~/js/site.js"></script>
+    <script src="~/js/clinic-manager/inventory-import-list.js"></script>
+    <script src="~/js/modal/modal.js"></script>
+}

@@ -1,5 +1,5 @@
 @*  P24/Inventory/List.cshtml
-    *  Version: 1.0 (2022.12.31)
+    *  Version: 1.1 (2023.01.03)
     *
     *  Contributor
     *      Arime-chan
@@ -17,7 +17,14 @@
 
 <div>
     <a asp-page="Import/Create" class="btn btn-primary">Nhập kho</a>
-    <a href="#" class="btn btn-secondary ml-3" onclick="" disabled>Kiểm kho toàn bộ</a>
+    <a asp-page="Import/List" class="btn btn-secondary mx-1">Danh sách phiếu nhập kho</a>
+
+    <div class="my-2">
+    <form method="POST" asp-page-handler="ValidateStorage">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-secondary ml-3">Kiểm kho toàn bộ</button>
+    </form>
+    </div>
 </div>
 <hr />
 

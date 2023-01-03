@@ -1,5 +1,5 @@
 /*  ViewModel.cs
- *  Version: 1.3 (2023.01.02)
+ *  Version: 1.4 (2023.01.03)
  *
  *  Contributor
  *      Arime-chan
@@ -116,6 +116,23 @@ namespace Project24.Models.ClinicManager.DataModel
 
         public P24ImageListingModel()
         { }
+    }
+
+    public class ImportExportQuickViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Amount { get; set; }
+        public string Unit { get; set; }
+    }
+
+    public class ImportExportBatchViewModel
+    {
+        public int Id { get; set; }
+        public string AddedUserName { get; set; }
+        public DateTime AddedDate { get; set; }
+
+        public List<ImportExportQuickViewModel> List { get; set; }
     }
 
 }

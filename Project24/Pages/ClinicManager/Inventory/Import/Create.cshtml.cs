@@ -1,5 +1,5 @@
 /*  P24/Inventory/Import/Create.cshtml.cs
- *  Version: 1.0 (2022.12.30)
+ *  Version: 1.1 (2023.01.03)
  *
  *  Contributor
  *      Arime-chan
@@ -14,6 +14,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -27,6 +28,7 @@ using Project24.Models.Internal.ClinicManager;
 
 namespace Project24.Pages.ClinicManager.Inventory.Import
 {
+    [Authorize(Roles = P24RoleName.Manager)]
     public class CreateModel : PageModel
     {
         public class AddedDrug

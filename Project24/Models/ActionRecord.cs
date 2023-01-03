@@ -1,5 +1,5 @@
 /*  ActionLog.cs
- *  Version: 1.14 (2022.12.31)
+ *  Version: 1.15 (2023.01.03)
  *
  *  Contributor
  *      Arime-chan
@@ -39,6 +39,8 @@ namespace Project24.Models
 
             public const string ValidateDrugStorage = "Verify Drug Storage";
             public const string InventoryImportCreate = "Inventory Import Create";
+            public const string InventoryImportDelete = "Inventory Import Delete";
+            public const string InventoryImportBatchDelete = "Inventory Import Batch Delete";
             public const string InventoryExportCreate = "Inventory Export Create";
 
             public const string CreateNasFolder = "Create NAS Folder";

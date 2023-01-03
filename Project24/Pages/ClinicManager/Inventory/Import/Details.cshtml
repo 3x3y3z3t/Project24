@@ -1,0 +1,29 @@
+@*  P24/Inventory/Import/Details.cshtml
+    *  Version: 1.0 (2023.01.03)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.ClinicManager.Inventory.Import.DetailsModel
+@{
+    ViewData["Title"] = "Chi tiết phiếu nhập kho";
+    Layout = "_Layout";
+}
+
+<h1>@ViewData["Title"]</h1>
+<a asp-page="/ClinicManager/Inventory/Import/List">Trở về danh sách</a>
+<hr />
+
+@if (Model.Batch.AddedUserName == CustomInfoTag.Error)
+{
+    <div class="font-weight-bold text-danger" style="font-size:larger">@string.Format(P24Message.BatchNotFound, Model.Batch.Id)</div>
+}
+else
+{
+    <div class="col-12 col-sm-7">
+        <partial name="_BatchDetails" model="Model.Batch" />
+    </div>
+}
