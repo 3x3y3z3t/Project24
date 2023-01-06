@@ -1,5 +1,5 @@
-@*  P24/Inventory/Import/List.cshtml
-    *  Version: 1.1 (2023.01.07)
+@*  P24/Inventory/Export/List.cshtml
+    *  Version: 1.0 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -7,9 +7,9 @@
 
 @page
 
-@model Project24.Pages.ClinicManager.Inventory.Import.ListModel
+@model Project24.Pages.ClinicManager.Inventory.Export.ListModel
 @{
-    ViewData["Title"] = "Danh sách nhập kho";
+    ViewData["Title"] = "Danh sách xuất kho";
     Layout = "_Layout";
 }
 
@@ -18,12 +18,12 @@
 <hr />
 
 <div class="" style="font-size: x-large">
-    <span>Tổng số: <span class="font-weight-bold">@Model.ImportBatches.Count</span> phiếu nhập</span>
+    <span>Tổng số: <span class="font-weight-bold">@Model.ExportBatches.Count</span> phiếu xuất</span>
 </div>
 
 <div class="d-flex">
     <div class="col-12 col-sm-5">
-        <partial name="ClinicManager/Inventory/_CommonBatchList" model="Model.ImportBatches" />
+        <partial name="ClinicManager/Inventory/_CommonBatchList" model="Model.ExportBatches" />
     </div>
 
     <div id="div-batch-details-view" class="col-12 col-sm-7" hidden></div>
@@ -35,6 +35,6 @@
 
 @section Scripts {
     <script src="~/js/site.js"></script>
-    <script src="~/js/clinic-manager/inventory-import-list.js"></script>
+    <script src="~/js/clinic-manager/inventory-export-list.js"></script>
     <script src="~/js/modal/modal.js"></script>
 }

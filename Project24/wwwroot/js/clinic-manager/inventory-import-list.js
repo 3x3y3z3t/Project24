@@ -1,5 +1,5 @@
 /*  inventory-import-list.js
- *  Version: 1.0 (2023.01.03)
+ *  Version: 1.1 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -9,28 +9,16 @@ window.ImportListPage = {};
 
 ImportListPage.Element = {};
 ImportListPage.Element.m_DivBatchDetailsView = null;
-ImportListPage.Element.m_SpanBatchId = null;
-ImportListPage.Element.m_SpanBatchUser = null;
-ImportListPage.Element.m_SpanBatchData = null;
-ImportListPage.Element.m_AnchorDeleteBatch = null;
-ImportListPage.Element.m_TbodyBatchDetails = null;
 
 
 $(document).ready(function () {
     ImportListPage.Element.m_DivBatchDetailsView = $("#div-batch-details-view");
-    ImportListPage.Element.m_SpanBatchId = $("#span-batch-id");
-    ImportListPage.Element.m_SpanBatchUser = $("#span-batch-user");
-    ImportListPage.Element.m_SpanBatchDate = $("#span-batch-date");
-    ImportListPage.Element.m_AnchorDeleteBatch = $("#a-delete-batch");
-    ImportListPage.Element.m_TbodyBatchDetails = $("#tbody-batch-details");
-
-    //$("#tbody-batch-details tr td:nth-child(5)");
 });
 
 // ==================================================
 // ajax request sender
 
-ImportListPage.ajax_getBatchDetails = function (_batchId) {
+ImportListPage.ajax_getImportBatchDetails = function (_batchId) {
     $.ajax({
         type: "GET",
         url: "/ClinicManager/Inventory/Import/Details?handler=PartialOnly&_id=" + _batchId,
@@ -39,7 +27,7 @@ ImportListPage.ajax_getBatchDetails = function (_batchId) {
     });
 }
 
-ImportListPage.ajax_deleteBatch = function (_batchId) {
+ImportListPage.ajax_deleteImportBatch = function (_batchId) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
     $.ajax({
@@ -53,7 +41,7 @@ ImportListPage.ajax_deleteBatch = function (_batchId) {
     });
 }
 
-ImportListPage.ajax_deleteSingleImport = function (_importId) {
+ImportListPage.ajax_deleteImportSingle = function (_importId) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
     $.ajax({
@@ -73,16 +61,16 @@ ImportListPage.ajax_deleteSingleImport = function (_importId) {
 // ==================================================
 // event
 
-function a_batchDetails(_batchId) {
-    ImportListPage.ajax_getBatchDetails(_batchId);
+function a_detailsBatchImport(_batchId) {
+    ImportListPage.ajax_getImportBatchDetails(_batchId);
 }
 
-function a_batchDelete(_batchId) {
-    ImportListPage.ajax_deleteBatch(_batchId);
+function a_deleteBatchImport(_batchId) {
+    ImportListPage.ajax_deleteImportBatch(_batchId);
 }
 
-function a_importDelete(_importId) {
-    ImportListPage.ajax_deleteSingleImport(_importId);
+function a_deleteImport(_importId) {
+    ImportListPage.ajax_deleteImportSingle(_importId);
 }
 
 ImportListPage.ajax_getBatchDetails_success = function (_content, _textStatus, _xhr) {
@@ -118,27 +106,3 @@ ImportListPage.ajax_getBatchDetails_error = function (_xhr, _textStatus, _errorT
 
 // END: helper
 // ==================================================
-
-ImportListPage.updateDetailsView = function (_data) {
-    let parsedData = JSON.parse(_data);
-    let list = parsedData.List;
-
-    let html = "";
-    for (const detail of list) {
-        html += "<tr>";
-        html += "<td>" + detail.Id + "</td>";
-        html += "<td>" + detail.Name + "</td>";
-        html += "<td>" + detail.Amount + "</td>";
-        html += "<td>" + detail.Unit + "</td>";
-        html += "<td><a href=\"#\" onclick=\"a_importDelete('" + detail.Id + "')\">Xóa</a></td>";
-        html += "</tr>";
-    }
-
-    ImportListPage.Element.m_DivBatchDetailsView.removeAttr("hidden");
-    ImportListPage.Element.m_SpanBatchId.html(parsedData.Id);
-    ImportListPage.Element.m_SpanBatchUser.html(parsedData.AddedUserName);
-    ImportListPage.Element.m_SpanBatchDate.html(parsedData.AddedDate);
-    ImportListPage.Element.m_AnchorDeleteBatch.attr("onclick", "a_batchDelete('" + parsedData.Id + "')");
-
-    ImportListPage.Element.m_TbodyBatchDetails.html(html);
-}

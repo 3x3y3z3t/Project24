@@ -1,5 +1,5 @@
 /*  ApplicationDbContext.cs
- *  Version: 1.15 (2023.01.01)
+ *  Version: 1.16 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -10,13 +10,10 @@ using Microsoft.EntityFrameworkCore;
 using Project24.Models;
 using Project24.Models.ClinicManager;
 using Project24.Models.Identity;
-using Project24.Models.Internal.ClinicManager;
+using Project24.Models.Inventory.ClinicManager;
 using Project24.Models.Nas;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Project24.Data
 {
@@ -33,11 +30,11 @@ namespace Project24.Data
 
         public DbSet<Drug> Drugs { get; set; }
 
-        public DbSet<DrugImportation> DrugImportations { get; set; }
-        public DbSet<DrugImportBatch> DrugImportBatches { get; set; }
+        public DbSet<DrugInRecord> DrugInRecords { get; set; }
+        public DbSet<DrugInBatch> DrugInBatches { get; set; }
 
-        public DbSet<DrugExportation> DrugExportations { get; set; }
-        public DbSet<DrugExportBatch> DrugExportBatches { get; set; }
+        public DbSet<DrugOutRecord> DrugOutRecords { get; set; }
+        public DbSet<DrugOutBatch> DrugOutBatches { get; set; }
         #endregion
 
         #region Nas
@@ -139,28 +136,6 @@ namespace Project24.Data
                 .HasIndex(_item => _item.ObjectType);
 
         }
-
-        //public async Task RecordChanges(
-        //    string _username,
-        //    string _operation,
-        //    string _status,
-        //    Dictionary<string, string> _customInfo = null)
-        //{
-        //    string customInfo = null;
-        //    if (_customInfo != null)
-        //        customInfo =  JsonSerializer.Serialize(_customInfo);
-
-        //    ActionRecord record = new ActionRecord()
-        //    {
-        //        Timestamp = DateTime.Now,
-        //        Username = _username,
-        //        Operation = _operation,
-        //        OperationStatus = _status,
-        //        CustomInfo = customInfo
-        //    };
-        //    await AddAsync(record);
-        //    await SaveChangesAsync();
-        //}
     }
 
 }

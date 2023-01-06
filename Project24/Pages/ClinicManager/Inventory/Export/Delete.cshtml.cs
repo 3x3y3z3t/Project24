@@ -1,5 +1,5 @@
-/*  P24/Inventory/Import/Delete.cshtml
- *  Version: 1.0 (2023.01.03)
+/*  P24/Inventory/Export/Delete.cshtml
+ *  Version: 1.0 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -19,7 +19,7 @@ using Project24.Data;
 using Project24.Models;
 using Project24.Models.Identity;
 
-namespace Project24.Pages.ClinicManager.Inventory.Import
+namespace Project24.Pages.ClinicManager.Inventory.Export
 {
     [Authorize(Roles = P24RoleName.Admin)]
     public class DeleteModel : PageModel
@@ -31,52 +31,52 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
         }
 
 
-        public async Task<IActionResult> OnPostDeleteSingleAsync([FromBody] string _importId)
+        public async Task<IActionResult> OnPostDeleteSingleAsync([FromBody] string _exportId)
         {
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
             if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.InventoryImportDelete))
                 return Content("<div class=\"text-danger font-weight-bold\">" + ErrorMessage.InvalidModelState + "</div>", MediaTypeNames.Text.Html);
 
-            if (!int.TryParse(_importId, out int importId))
-                return Content("<div class=\"text-danger font-weight-bold\">" + string.Format(P24Message.RecordNotFound, _importId) + "</div>", MediaTypeNames.Text.Html);
+            if (!int.TryParse(_exportId, out int exportId))
+                return Content("<div class=\"text-danger font-weight-bold\">" + string.Format(P24Message.RecordNotFound, _exportId) + "</div>", MediaTypeNames.Text.Html);
 
-            var import = await (from _import in m_DbContext.DrugInRecords
-                                where _import.Id == importId
-                                select _import)
+            var export = await (from _export in m_DbContext.DrugOutRecords
+                                where _export.Id == exportId
+                                select _export)
                          .FirstOrDefaultAsync();
 
-            if (import == null)
-                return Content("<div class=\"text-danger font-weight-bold\">" + string.Format(P24Message.RecordNotFound, _importId) + "</div>", MediaTypeNames.Text.Html);
+            if (export == null)
+                return Content("<div class=\"text-danger font-weight-bold\">" + string.Format(P24Message.RecordNotFound, _exportId) + "</div>", MediaTypeNames.Text.Html);
 
-            int batchId = import.BatchId;
+            int batchId = export.BatchId;
 
-            m_DbContext.Remove(import);
+            m_DbContext.Remove(export);
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
-                ActionRecord.Operation_.InventoryImportDelete,
+                ActionRecord.Operation_.InventoryExportDelete,
                 ActionRecord.OperationStatus_.Success,
-                JsonSerializer.Serialize(new { Id = _importId })
+                JsonSerializer.Serialize(new { Id = _exportId })
             );
 
-            var imports = await (from _import in m_DbContext.DrugInRecords
-                                 where _import.BatchId == batchId
-                                 select _import.Id)
+            var exports = await (from _export in m_DbContext.DrugOutRecords
+                                 where _export.BatchId == batchId
+                                 select _export.Id)
                           .ToListAsync();
 
-            if (imports.Count <= 0)
+            if (exports.Count <= 0)
             {
                 await DeleteBatchAsync(batchId);
 
                 await m_DbContext.RecordChanges(
                     currentUser.UserName,
-                    ActionRecord.Operation_.InventoryImportBatchDelete,
+                    ActionRecord.Operation_.InventoryExportBatchDelete,
                     ActionRecord.OperationStatus_.Success,
                     JsonSerializer.Serialize(new { Id = batchId })
                 );
 
                 string html = "<div class=\"font-weight-bold\">";
-                html += "<div>"+ string.Format(P24Message.RecordDeleted, _importId) + "</div>";
+                html += "<div>"+ string.Format(P24Message.RecordDeleted, _exportId) + "</div>";
                 html += "<div>"+ string.Format(P24Message.BatchDeleted, batchId) + "</div>";
                 html += "</div>";
                 return Content(html, MediaTypeNames.Text.Html);
@@ -89,7 +89,7 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
         public async Task<IActionResult> OnPostDeleteBatchAsync([FromBody] string _batchId)
         {
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
-            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.InventoryImportDelete))
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.InventoryExportDelete))
                 return Content(CustomInfoTag.Error + ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
 
             if (!int.TryParse(_batchId, out int batchId))
@@ -99,7 +99,7 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
-                ActionRecord.Operation_.InventoryImportBatchDelete,
+                ActionRecord.Operation_.InventoryExportBatchDelete,
                 ActionRecord.OperationStatus_.Success,
                 JsonSerializer.Serialize(new { Id = batchId })
             );
@@ -109,7 +109,7 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
 
         private async Task DeleteBatchAsync(int _batchId)
         {
-            var batch = await (from _batch in m_DbContext.DrugInBatches
+            var batch = await (from _batch in m_DbContext.DrugOutBatches
                                where _batch.Id == _batchId
                                select _batch)
                         .FirstOrDefaultAsync();

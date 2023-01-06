@@ -1,5 +1,5 @@
-﻿/*  P24ImageModels.cs
- *  Version: 1.3 (2022.12.13)
+/*  P24ImageModels.cs
+ *  Version: 1.4 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -92,14 +92,14 @@ namespace Project24.Models.ClinicManager
         public TicketImage()
             : base()
         {
-            Module = P24Module.Customer;
+            Module = P24Module.Ticket;
         }
 
         public TicketImage(P24IdentityUser _addedUser, TicketProfile _ownerTicket)
             : base(_addedUser)
         {
             OwnerTicket = _ownerTicket;
-            Module = P24Module.Customer;
+            Module = P24Module.Ticket;
         }
     }
 

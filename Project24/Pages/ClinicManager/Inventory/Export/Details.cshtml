@@ -1,5 +1,5 @@
-@*  P24/Inventory/Import/Details.cshtml
-    *  Version: 1.1 (2023.01.07)
+@*  P24/Inventory/Export/Details.cshtml
+    *  Version: 1.0 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -7,14 +7,14 @@
 
 @page
 
-@model Project24.Pages.ClinicManager.Inventory.Import.DetailsModel
+@model Project24.Pages.ClinicManager.Inventory.Export.DetailsModel
 @{
-    ViewData["Title"] = "Chi tiết phiếu nhập kho";
+    ViewData["Title"] = "Chi tiết phiếu xuất kho";
     Layout = "_Layout";
 }
 
 <h1>@ViewData["Title"]</h1>
-<a asp-page="List">Trở về danh sách</a>
+<a asp-page="/ClinicManager/Inventory/Export/List">Trở về danh sách</a>
 <hr />
 
 @if (Model.Batch.AddedUserName == CustomInfoTag.Error)
@@ -24,7 +24,7 @@
 else
 {
     <div class="col-12 col-sm-7">
-        <partial name="/ClinicManager/Inventory/_CommonBatchDetails" model="Model.Batch" />
+        <partial name="ClinicManager/Inventory/_CommonBatchDetails" model="Model.Batch" />
     </div>
 }
 
@@ -32,6 +32,6 @@ else
 
 @section Scripts {
     <script src="~/js/site.js"></script>
-    <script src="~/js/clinic-manager/inventory-import-list.js"></script>
+    <script src="~/js/clinic-manager/inventory-export-list.js"></script>
     <script src="~/js/modal/modal.js"></script>
 }

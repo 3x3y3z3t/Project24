@@ -1,25 +1,20 @@
 /*  P24MutableObject.cs
- *  Version: 1.0 (2022.12.29)
+ *  Version: 1.0 (2023.01.06)
  *
  *  Contributor
  *      Arime-chan
  */
 
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Project24.Models.Identity;
 
-namespace Project24.Models
+namespace Project24.Models.ClinicManager
 {
-    /// <summary> The base class for Project24 objects. P24MutableObject can be edited and deleted. </summary>
-    public abstract class P24MutableObject
+    /// <summary> P24MutableObject can be edited. </summary>
+    public abstract class P24MutableObject : P24ObjectBase
     {
-        [Key]
-        public int Id { get; set; }
-
-        [ForeignKey(nameof(AddedUser))]
-        public string AddedUserId { get; protected set; }
 
         [ForeignKey(nameof(EditedUser))]
         public string EditedUserId { get; protected set; }
@@ -28,29 +23,30 @@ namespace Project24.Models
         public int? PreviousVersionId { get; protected set; }
 
 
-        [DataType(DataType.MultilineText)]
-        public string Note { get; set; }
-
-        public DateTime AddedDate { get; protected set; } = DateTime.Now;
-
         public DateTime EditedDate { get; set; } = DateTime.Now;
 
-        public DateTime DeletedDate { get; set; } = DateTime.MinValue;
 
-
+        [JsonIgnore]
         public virtual P24ObjectPreviousVersion PreviousVersion { get; set; }
-        public virtual P24IdentityUser AddedUser { get; protected set; }
+        [JsonIgnore]
         public virtual P24IdentityUser EditedUser { get; set; }
 
 
         protected P24MutableObject()
+            : base()
         { }
 
         protected P24MutableObject(P24IdentityUser _addedUser)
+            : base(_addedUser)
         {
-            AddedUser = _addedUser;
             EditedUser = _addedUser;
         }
+
+
+        public abstract P24ObjectPreviousVersion ConstructCurrentVersionObject();
+
+        protected P24ObjectPreviousVersion ConstructCurrentVersionObject_Internal(string _objectTypeName)
+            => new P24ObjectPreviousVersion(_objectTypeName, Id, SerializeToJson(), PreviousVersion);
     }
 
 }

@@ -1,0 +1,48 @@
+@*  P24/Inventory/_CommonBatchList.cshtml
+    *  Version: 1.0 (2023.01.07)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@using Project24.App;
+@using Project24.Models.ClinicManager.DataModel;
+@model List<ImportExportBatchViewModel>
+@{
+    string userAlias = "Người nhập";
+    string batchDetailsFuncName = "a_detailsBatchImport('{0}')";
+
+    if (Model.Count > 0 && Model[0].Type == P24ImportExportType.Export)
+    {
+        userAlias = "Người xuất";
+        batchDetailsFuncName = "a_detailsBatchExport('{0}')";
+    }
+}
+
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th style="width:6ch">Mã</th>
+            <th>@userAlias</th>
+            <th>Thời gian</th>
+            <th style="width:10ch"></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var batch in Model)
+        {
+            <tr>
+                <td>@batch.Id</td>
+                <td>@batch.AddedUserName</td>
+                <td>@batch.AddedDate</td>
+
+                <td>
+                    <div class="text-center">
+                        <a href="#" onclick="@string.Format(batchDetailsFuncName, batch.Id)">Chi tiết</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

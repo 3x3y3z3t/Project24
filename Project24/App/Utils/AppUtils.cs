@@ -1,5 +1,5 @@
-﻿/*  AppUtils.cs
- *  Version: 1.3 (2022.12.16)
+/*  AppUtils.cs
+ *  Version: 1.4 (2023.01.06)
  *
  *  Contributor
  *      Arime-chan
@@ -8,7 +8,9 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 using Project24.App.Utils;
 
@@ -67,7 +69,12 @@ namespace Project24.App
         }
     }
 
-    public class AppUtils
+    public static class BackingObject
+    {
+        public static bool IsP24StorageValidationInProgress { get; set; } = false;
+    }
+
+    public static class AppUtils
     {
         public static int ProcessId { get; private set; } = Process.GetCurrentProcess().Id;
         public static string AppRoot { get; private set; } = System.IO.Directory.GetCurrentDirectory();
@@ -78,6 +85,8 @@ namespace Project24.App
         public static string CurrentVersion { get; set; }
 
         public static UpdaterStats UpdaterStats { get; set; } = new UpdaterStats();
+
+        public static JavaScriptEncoder FullUnicodeRangeJsonEncoder { get; set; } = JavaScriptEncoder.Create(UnicodeRanges.All);
 
         public static string FormatDataSize(long _size)
         {

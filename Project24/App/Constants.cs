@@ -1,5 +1,5 @@
 /*  Constants.cs
- *  Version: 1.10 (2023.01.02)
+ *  Version: 1.11 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -86,8 +86,8 @@ namespace Project24
 
         public const string PasswordCannotBeEmpty = "Mật khẩu không được để trống.";
 
-        public const string ImportNotFound = "Không tìm thấy bản ghi có mã {0}.";
-        public const string ImportDeleted = "Đã xóa bản ghi {0}.";
+        public const string RecordNotFound = "Không tìm thấy bản ghi có mã {0}.";
+        public const string RecordDeleted = "Đã xóa bản ghi {0}.";
         public const string BatchNotFound = "Không tìm thấy phiếu có mã {0}.";
         public const string BatchDeleted = "Đã xóa phiếu {0}.";
     }
@@ -116,6 +116,8 @@ namespace Project24
     public static class CustomInfoKey
     {
         public const string UseFullWidth = "UseFullWidth";
+
+        public const string IsStorageValidationInProgress = nameof(IsStorageValidationInProgress);
 
         public const string Error = "error";
         public const string Added = "added";

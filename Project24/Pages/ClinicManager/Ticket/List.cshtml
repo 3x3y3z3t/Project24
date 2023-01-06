@@ -1,5 +1,5 @@
 @*  List.cshtml
-    *  Version: 1.4 (2023.01.02)
+    *  Version: 1.5 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -46,8 +46,8 @@
             <th style="width:12ch">Mã</th>
             <th style="width:25ch">Họ Tên bệnh nhân</th>
             <th style="width:50ch">Chẩn đoán - Xử trí</th>
-            <th style="width:9ch">Tiêu hao</th>
             <th style="">Ghi chú</th>
+            <th style="width:9ch">Tiêu hao</th>
             <th style="width:20ch"></th>
         </tr>
     </thead>
@@ -60,23 +60,22 @@
                 <td>@ticket.Code</td>
                 <td>@ticket.CustomerFullName (@age)</td>
                 <td>@ticket.Diagnose: @ticket.Treatment</td>
+                <td>@ticket.Notes</td>
 
                 <td class="text-center">
                     @if (ticket.DrugExportBatchId.HasValue)
                     {
                         <div>Có</div>
-                        <div>(<a asp-page="/ClinicManager/Inventory/Export/Details" asp-route-_ticketCode="@ticket.Code" asp-route-_returnUrl="@thisPageUrl" hidden>Xem</a>)</div>
+                        <div>(<a asp-page="/ClinicManager/Inventory/Export/Details" asp-route-_id="@ticket.DrugExportBatchId">Xem</a>)</div>
                     }
                     else
                     {
                         <div class="text-danger">
                             <div>Không</div>
-                            <div>(<a asp-page="/ClinicManager/Inventory/Export/Create" asp-route-_ticketCode="@ticket.Code" asp-route-_returnUrl="@thisPageUrl">Thêm</a>)</div>
+                            <div>(<a asp-page="/ClinicManager/Inventory/Export/Create" asp-route-_ticketCode="@ticket.Code">Thêm</a>)</div>
                         </div>
                     }
                 </td>
-
-                <td>@ticket.Notes</td>
 
                 <td>
                     <div class="text-center">

@@ -8,7 +8,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Project24.Models.Internal.ClinicManager
+namespace Project24.Models.Inventory.ClinicManager
 {
     public class Drug
     {

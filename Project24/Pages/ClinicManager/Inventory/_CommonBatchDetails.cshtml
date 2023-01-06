@@ -1,0 +1,76 @@
+@*  P24/Inventory/_CommonBatchDetails.cshtml
+    *  Version: 1.0 (2023.01.07)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@using Project24.App;
+@model Project24.Models.ClinicManager.DataModel.ImportExportBatchViewModel
+@{
+    string noteTitle = "Phiếu ???";
+    string deleteBatchFuncName = "";
+    string deleteSingleFuncName = "";
+
+    if (Model.Type == P24ImportExportType.Import)
+    {
+        noteTitle = "Phiếu nhập kho";
+        deleteBatchFuncName = "a_deleteBatchImport('" + Model.Id + "')";
+        deleteSingleFuncName = "a_deleteImport('{0}')";
+    }
+    else if (Model.Type == P24ImportExportType.Export)
+    {
+        noteTitle = "Phiếu xuất kho";
+        deleteBatchFuncName = "a_deleteBatchExport('" + Model.Id + "')";
+        deleteSingleFuncName = "a_deleteExport('{0}')";
+    }
+}
+
+<div class="text-break">
+    @noteTitle
+    <span class="font-weight-bold">@Model.Id</span>
+    (<span>@Model.AddedUserName</span>)
+    (<span>@Model.AddedDate</span>)
+</div>
+
+@if (Model.Type == P24ImportExportType.Export)
+{
+    <div class="ml-3 font-italic">
+        Đính kèm: Phiếu khám
+        <a asp-page="/ClinicManager/Ticket/Details" asp-route-_code="@Model.TicketCode">@Model.TicketCode</a>
+    </div>
+}
+
+@if (User.IsInRole(P24RoleName.Admin))
+{
+    <div class="my-3"><a id="a-delete-batch" href="#" class="font-weight-bold text-danger" onclick="@deleteBatchFuncName">Xóa phiếu này</a></div>
+}
+
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th style="width:6ch">Mã</th>
+            <th>Tên thuốc</th>
+            <th style="width:9ch">Số lượng</th>
+            <th style="width:8ch">Đơn vị</th>
+            <th style="width:4ch"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.List)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Amount</td>
+                <td>@item.Unit</td>
+                <td>
+                    @if (User.IsInRole(P24RoleName.Admin))
+                    {
+                        <a href="#" class="text-danger" onclick="@string.Format(deleteSingleFuncName, item.Id)">Xóa</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

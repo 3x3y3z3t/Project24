@@ -1,5 +1,5 @@
 /*  P24/Inventory/List.cshtml.cs
- *  Version: 1.1 (2023.01.03)
+ *  Version: 1.2 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -18,11 +18,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Project24.App;
 using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.Identity;
-using Project24.Models.Internal.ClinicManager;
+using Project24.Models.Inventory.ClinicManager;
 
 namespace Project24.Pages.ClinicManager.Inventory
 {
@@ -39,17 +40,9 @@ namespace Project24.Pages.ClinicManager.Inventory
             { }
         }
 
-        public class QuickSearchFormDataModel
-        {
-            public string Name { get; set; }
-
-            public QuickSearchFormDataModel()
-            { }
-        }
+        public string DrugNameFilter { get; private set; }
 
         public List<StorageDrugViewModel> DrugListings { get; private set; }
-
-        public QuickSearchFormDataModel SearchFormData { get; private set; }
 
         public bool IsSearchMode { get; private set; } = false;
 
@@ -71,7 +64,6 @@ namespace Project24.Pages.ClinicManager.Inventory
                         .ToListAsync();
 
             DrugListings = drugs;
-            SearchFormData = new QuickSearchFormDataModel();
         }
 
         public async Task OnGetSearchAsync(string _name)
@@ -88,10 +80,7 @@ namespace Project24.Pages.ClinicManager.Inventory
                         .ToListAsync();
 
             DrugListings = drugs;
-            SearchFormData = new QuickSearchFormDataModel()
-            {
-                Name = _name,
-            };
+            DrugNameFilter = _name;
 
             IsSearchMode = true;
         }
@@ -100,7 +89,7 @@ namespace Project24.Pages.ClinicManager.Inventory
         public async Task<IActionResult> OnGetFetchAvailDrugsInfoAsync()
         {
             var drugs = await (from _drug in m_DbContext.Drugs
-                               select new 
+                               select new
                                {
                                    _drug.Name,
                                    _drug.Unit
@@ -131,14 +120,20 @@ namespace Project24.Pages.ClinicManager.Inventory
             return Content(CustomInfoTag.Success + json, MediaTypeNames.Text.Plain);
         }
 
+        // ajax call only;
         public async Task<IActionResult> OnPostValidateStorageAsync()
         {
             P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
             if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.ValidateDrugStorage))
-                return Page();
+                return Content(CustomInfoTag.Error + ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
 
-            var importations = await (from _importation in m_DbContext.DrugImportations
-                                      group _importation by _importation.DrugId into _group
+            if (BackingObject.IsP24StorageValidationInProgress)
+                return Content(CustomInfoTag.Info + "Storage validation in progress, please try again in a few minutes..", MediaTypeNames.Text.Plain);
+
+            BackingObject.IsP24StorageValidationInProgress = true;
+
+            var importations = await (from _record in m_DbContext.DrugInRecords
+                                      group _record by _record.DrugId into _group
                                       select new
                                       {
                                           Id = _group.Key,
@@ -146,8 +141,8 @@ namespace Project24.Pages.ClinicManager.Inventory
                                       })
                                .ToDictionaryAsync(_im => _im.Id, _im => _im.Amount);
 
-            var exportations = await (from _exportation in m_DbContext.DrugExportations
-                                      group _exportation by _exportation.DrugId into _group
+            var exportations = await (from _record in m_DbContext.DrugOutRecords
+                                      group _record by _record.DrugId into _group
                                       select new
                                       {
                                           Id = _group.Key,
@@ -206,10 +201,9 @@ namespace Project24.Pages.ClinicManager.Inventory
             //    return _m1.Drug.Name.CompareTo(_m2.Drug.Name);
             //});
 
-            DrugListings = list;
-            SearchFormData = new QuickSearchFormDataModel();
+            BackingObject.IsP24StorageValidationInProgress = false;
 
-            return Page();
+            return Content(CustomInfoTag.Success, MediaTypeNames.Text.Plain);
         }
 
 

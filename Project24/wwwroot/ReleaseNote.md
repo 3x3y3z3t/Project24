@@ -1,4 +1,10 @@
 
+#### v0.14.0 (2023.01.07)
+- Added Inventory Drug Export note listing (Clinic Manager side).
+- Database Reset.
+
+---
+
 #### v0.13.2 (2023.01.03)
 - Added Inventory Drug Import note listing (Clinic Manager side).
 - Fool-proof'd Inventory Drug Import note creation (Clinic Manager side).
@@ -10,6 +16,8 @@
 #### v0.13.0 (2022.12.31)
 - Added Inventory tracking for Clinic Manager.
 - Added object version tracker (for future data restoration function).
+
+---
 
 #### v0.12.7 (2022.12.25)
 - Minor QoL update for NAS.

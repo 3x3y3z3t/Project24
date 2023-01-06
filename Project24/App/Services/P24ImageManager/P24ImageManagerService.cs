@@ -24,9 +24,9 @@ namespace Project24.App.Services.P24ImageManager
         private class RequestData
         {
             public readonly P24IdentityUser User;
-            public readonly P24ModelBase Entity;
+            public readonly P24ObjectBase Entity;
 
-            public RequestData(P24IdentityUser _user, P24ModelBase _entity)
+            public RequestData(P24IdentityUser _user, P24ObjectBase _entity)
             {
                 User = _user;
                 Entity = _entity;
@@ -57,7 +57,7 @@ namespace Project24.App.Services.P24ImageManager
         /// <param name="_entity">The entity to be attached to.</param>
         /// <param name="_files">The list of files to be processed.</param>
         /// <param name="_cancellationToken">Cancellation Token.</param>
-        public async Task<ResponseData> UploadAsync(P24IdentityUser _user, P24ModelBase _entity, IFormFile[] _files, CancellationToken _cancellationToken = default)
+        public async Task<ResponseData> UploadAsync(P24IdentityUser _user, P24ObjectBase _entity, IFormFile[] _files, CancellationToken _cancellationToken = default)
         {
             m_RequestData = new RequestData(_user, _entity);
             m_ResponseData = new ResponseData();

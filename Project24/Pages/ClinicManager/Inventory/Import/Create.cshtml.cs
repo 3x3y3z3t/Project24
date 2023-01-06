@@ -1,5 +1,5 @@
 /*  P24/Inventory/Import/Create.cshtml.cs
- *  Version: 1.1 (2023.01.03)
+ *  Version: 1.2 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -19,12 +19,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.Identity;
-using Project24.Models.Internal.ClinicManager;
+using Project24.Models.Inventory.ClinicManager;
 
 namespace Project24.Pages.ClinicManager.Inventory.Import
 {
@@ -47,11 +46,10 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
         public int Amount { get; private set; }
 
 
-        public CreateModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<CreateModel> _logger)
+        public CreateModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
-            //m_Logger = _logger;
         }
 
 
@@ -68,11 +66,11 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
                                select _drug)
                         .ToDictionaryAsync(_d => _d.Name);
 
-            DrugImportBatch batch = new DrugImportBatch(currentUser);
+            DrugInBatch batch = new DrugInBatch(currentUser);
 
             List<Drug> drugUpdateList = new List<Drug>();
             List<Drug> drugAddList = new List<Drug>();
-            List<DrugImportation> importAddList = new List<DrugImportation>();
+            List<DrugInRecord> importAddList = new List<DrugInRecord>();
 
             foreach (var data in _data)
             {
@@ -102,7 +100,7 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
                     drugAddList.Add(drug);
                 }
 
-                DrugImportation importation = new DrugImportation(batch, drug, amount);
+                DrugInRecord importation = new DrugInRecord(batch, drug, amount);
                 importAddList.Add(importation);
             }
 

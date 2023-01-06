@@ -20,11 +20,12 @@ namespace Project24.Models
         public int? PreviousVersionId { get; private set; }
 
 
+        /// <summary> Use nameof(classname) to get object type name. </summary>
         [Required(AllowEmptyStrings = false)]
         public string ObjectType { get; private set; }
 
         [Required(AllowEmptyStrings = false)]
-        public string ObjectId { get; private set; }
+        public int ObjectId { get; private set; }
 
         [Required(AllowEmptyStrings = false)]
         public string Data { get; private set; }
@@ -38,10 +39,10 @@ namespace Project24.Models
         public P24ObjectPreviousVersion()
         { }
 
-        public P24ObjectPreviousVersion(string _objType, string _objId, string _data, P24ObjectPreviousVersion _previousVersion = null)
+        public P24ObjectPreviousVersion(string _objTypeName, int _objId, string _data, P24ObjectPreviousVersion _previousVersion = null)
         {
             PreviousVersion = _previousVersion;
-            ObjectType = _objType;
+            ObjectType = _objTypeName;
             ObjectId = _objId;
             Data = _data;
         }

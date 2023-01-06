@@ -1,5 +1,5 @@
 @*  P24/Ticket/Details.cshtml
-    *  Version: 1.3 (2023.01.02)
+    *  Version: 1.4 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -56,28 +56,64 @@
     </div>
 
     <div class="col-md-6">
-        <dl class="row">
-            <dt class="col-sm-4">Mã bệnh nhân:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.Code</dd>
+        <div class="mb-2">
+            <div class="font-weight-bold">
+                Bệnh nhân
+                <a asp-page="/ClinicManager/Customer/Details" asp-route-_code="@Model.TicketViewData.Customer.Code">@Model.TicketViewData.Customer.Code</a>:
+            </div>
+            <ul>
+                <li>
+                    @Model.TicketViewData.Customer.Fullname -
+                    @Model.TicketViewData.Customer.Gender -
+                    @Model.TicketViewData.Customer.DoB (@age)
+                </li>
+                <li>@Model.TicketViewData.Customer.PhoneNumber</li>
+                <li>@Model.TicketViewData.Customer.Address</li>
+                @if (!string.IsNullOrEmpty(Model.TicketViewData.Customer.Note))
+                {
+                    <li>@Model.TicketViewData.Customer.Note</li>
+                }
+            </ul>
+        </div>
 
-            <dt class="col-sm-4">Họ và Tên bệnh nhân:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.Fullname</dd>
+        <div class="mb-2">
+            @if (Model.TicketViewData.DrugExportBatchId != null)
+            {
+                <div class="font-weight-bold">
+                    Phiếu tiêu hao
+                    <a asp-page="/ClinicManager/Inventory/Export/Details" asp-route-_id="@Model.TicketViewData.DrugExportBatchId">@Model.TicketViewData.DrugExportBatchId</a>:
+                </div>
 
-            <dt class="col-sm-4">Giới tính:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.Gender</dd>
+                <table class="table table-sm table-hover ml-3">
+                    <thead>
+                        <tr>
+                            <th style="width:6ch">Mã</th>
+                            <th>Tên thuốc</th>
+                            <th style="width:9ch">Số lượng</th>
+                            <th style="width:8ch">Đơn vị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var export in Model.DrugExportList)
+                        {
+                            <tr>
+                                <td>@export.Id</td>
+                                <td>@export.Name</td>
+                                <td>@export.Amount</td>
+                                <td>@export.Unit</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="font-weight-bold">
+                    <a asp-page="/ClinicManager/Inventory/Export/Create" asp-route-_ticketCode="@Model.TicketViewData.Code">Thêm phiếu tiêu hao</a>
+                </div>
+            }
+        </div>
 
-            <dt class="col-sm-4">Năm sinh:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.DoB (@age)</dd>
-
-            <dt class="col-sm-4">Số điện thoại:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.PhoneNumber</dd>
-
-            <dt class="col-sm-4">Địa chỉ:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.Address</dd>
-
-            <dt class="col-sm-4">Ghi chú:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.Note</dd>
-        </dl>
     </div>
 </div>
 
@@ -98,5 +134,5 @@
 </div>
 
 @section Scripts {
-<script src="~/js/clinic-manager/clinic-manager-utils.js"></script>
+    <script src="~/js/clinic-manager/clinic-manager-utils.js"></script>
 }

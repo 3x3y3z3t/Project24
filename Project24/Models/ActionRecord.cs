@@ -1,5 +1,5 @@
 /*  ActionLog.cs
- *  Version: 1.15 (2023.01.03)
+ *  Version: 1.16 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -42,6 +42,8 @@ namespace Project24.Models
             public const string InventoryImportDelete = "Inventory Import Delete";
             public const string InventoryImportBatchDelete = "Inventory Import Batch Delete";
             public const string InventoryExportCreate = "Inventory Export Create";
+            public const string InventoryExportDelete = "Inventory Export Delete";
+            public const string InventoryExportBatchDelete = "Inventory Export Batch Delete";
 
             public const string CreateNasFolder = "Create NAS Folder";
             public const string DeleteNasFile = "Delete NAS File";

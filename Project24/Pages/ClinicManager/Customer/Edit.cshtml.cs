@@ -1,5 +1,5 @@
 /*  P24/Customer/Edit.cshtml
- *  Version: 1.6 (2023.01.03)
+ *  Version: 1.7 (2023.01.06)
  *
  *  Contributor
  *      Arime-chan
@@ -10,9 +10,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Unicode;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -108,9 +105,7 @@ namespace Project24.Pages.ClinicManager.Customer
                 return RedirectToPage("Details", new { _code = FormData.Code });
             }
 
-            var jsonEncoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-            string jsonData = JsonSerializer.Serialize(customer, new JsonSerializerOptions() { Encoder = jsonEncoder });
-            P24ObjectPreviousVersion previousVersion = new P24ObjectPreviousVersion(nameof(CustomerProfile), customer.Id.ToString(), jsonData, customer.PreviousVersion);
+            P24ObjectPreviousVersion previousVersion = customer.ConstructCurrentVersionObject();
             await m_DbContext.AddAsync(previousVersion);
             
             var tokens = P24Utils.SplitFirstLastName(FormData.Fullname);

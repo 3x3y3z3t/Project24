@@ -1,5 +1,5 @@
 /*  CustomerProfile.cs
- *  Version: 1.6 (2023.01.01)
+ *  Version: 1.7 (2023.01.06)
  *
  *  Contributor
  *      Arime-chan
@@ -9,11 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Project24.Models.Identity;
 
 namespace Project24.Models.ClinicManager
 {
-    public class CustomerProfile : P24ModelBase
+    public class CustomerProfile : P24MutableObject
     {
         [Required(AllowEmptyStrings = false)]
         public string Code { get; protected set; }
@@ -41,7 +42,9 @@ namespace Project24.Models.ClinicManager
         public string Address { get; set; }
 
 
+        [JsonIgnore]
         public virtual ICollection<CustomerImage> CustomerImages { get; protected set; }
+        [JsonIgnore]
         public virtual ICollection<TicketProfile> VisitingTickets { get; protected set; }
 
 
@@ -56,6 +59,12 @@ namespace Project24.Models.ClinicManager
             : base(_addedUser)
         {
             Code = string.Format(AppConfig.CustomerCodeFormatString, AddedDate, _dailyIndex);
+        }
+
+
+        public override P24ObjectPreviousVersion ConstructCurrentVersionObject()
+        {
+            return ConstructCurrentVersionObject_Internal(nameof(CustomerProfile));
         }
     }
 

@@ -1,4 +1,4 @@
-/*  P24/Inventory/Import/List.cshtml
+/*  P24/Inventory/Export/List.cshtml
  *  Version: 1.0 (2023.01.07)
  *
  *  Contributor
@@ -15,12 +15,12 @@ using Project24.App;
 using Project24.Data;
 using Project24.Models.ClinicManager.DataModel;
 
-namespace Project24.Pages.ClinicManager.Inventory.Import
+namespace Project24.Pages.ClinicManager.Inventory.Export
 {
     [Authorize(Roles = P24RoleName.Manager)]
     public class ListModel : PageModel
     {
-        public List<ImportExportBatchViewModel> ImportBatches { get; private set; }
+        public List<ImportExportBatchViewModel> ExportBatches { get; private set; }
 
 
         public ListModel(ApplicationDbContext _dbContext)
@@ -31,17 +31,17 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
 
         public async Task OnGetAsync()
         {
-            var batches = await (from _batch in m_DbContext.DrugInBatches.Include(_b => _b.AddedUser)
+            var batches = await (from _batch in m_DbContext.DrugOutBatches.Include(_b => _b.AddedUser)
                                  select new ImportExportBatchViewModel()
                                  {
                                      Id = _batch.Id,
                                      AddedUserName = _batch.AddedUser.UserName,
                                      AddedDate = _batch.AddedDate,
-                                     Type = P24ImportExportType.Import
+                                     Type = P24ImportExportType.Export
                                  })
                           .ToListAsync();
 
-            ImportBatches = batches;
+            ExportBatches = batches;
         }
 
 

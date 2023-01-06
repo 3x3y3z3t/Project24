@@ -1,5 +1,5 @@
-﻿/*  Enums.cs
- *  Version: 1.3 (2022.12.29)
+/*  Enums.cs
+ *  Version: 1.4 (2023.01.06)
  *
  *  Contributor
  *      Arime-chan
@@ -20,9 +20,15 @@ namespace Project24.App
         Ticket
     }
 
+    public enum P24ImportExportType : byte
+    {
+        Import = 1,
+        Export = 2
+    }
+
     public static class P24ExportType_
     {
-        /// <summary> Represents  retail sale. </summary>
+        /// <summary> Represents retail sale. </summary>
         public const string Retail = "Retail";
 
         /// <summary> Represents usage as consumptiosn during services. </summary>

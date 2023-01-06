@@ -1,5 +1,5 @@
 /*  ViewModel.cs
- *  Version: 1.4 (2023.01.03)
+ *  Version: 1.5 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -57,6 +57,8 @@ namespace Project24.Models.ClinicManager.DataModel
     public class P24TicketDetailsViewModel
     {
         public string Code { get; set; }
+
+        public int? DrugExportBatchId { get; set; }
 
         public string Symptom { get; set; }
 
@@ -124,6 +126,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public string Name { get; set; }
         public int Amount { get; set; }
         public string Unit { get; set; }
+        public P24ImportExportType Type { get; set; }
     }
 
     public class ImportExportBatchViewModel
@@ -131,6 +134,10 @@ namespace Project24.Models.ClinicManager.DataModel
         public int Id { get; set; }
         public string AddedUserName { get; set; }
         public DateTime AddedDate { get; set; }
+        public P24ImportExportType Type { get; set; }
+
+        /// <summary> Only if this is an Export Batch. </summary>
+        public string TicketCode { get; set; }
 
         public List<ImportExportQuickViewModel> List { get; set; }
     }

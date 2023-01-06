@@ -1,5 +1,5 @@
-/*  P24/Inventory/Import/Details.cshtml
- *  Version: 1.1 (2023.01.07)
+/*  P24/Inventory/Export/Details.cshtml
+ *  Version: 1.0 (2023.01.06)
  *
  *  Contributor
  *      Arime-chan
@@ -14,7 +14,7 @@ using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models.ClinicManager.DataModel;
 
-namespace Project24.Pages.ClinicManager.Inventory.Import
+namespace Project24.Pages.ClinicManager.Inventory.Export
 {
     [Authorize(Roles = P24RoleName.Manager)]
     public class DetailsModel : PageModel
@@ -30,7 +30,7 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
 
         public async Task OnGetAsync(int _id)
         {
-            Batch = await this.DrugImport_GetBatchDetailsAsync(m_DbContext, _id);
+            Batch = await this.DrugExport_GetBatchDetailsAsync(m_DbContext, _id);
             if (Batch == null)
             {
                 Batch = new ImportExportBatchViewModel()
@@ -43,7 +43,7 @@ namespace Project24.Pages.ClinicManager.Inventory.Import
 
         public async Task<IActionResult> OnGetPartialOnlyAsync(int _id)
         {
-            Batch = await this.DrugImport_GetBatchDetailsAsync(m_DbContext, _id);
+            Batch = await this.DrugExport_GetBatchDetailsAsync(m_DbContext, _id);
             if (Batch == null)
             {
                 string html = "<div class=\"font-weight-bold text-danger\" style=\"font-size:larger\">" + string.Format(P24Message.BatchNotFound, _id) + "</div>";

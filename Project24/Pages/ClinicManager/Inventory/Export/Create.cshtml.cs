@@ -24,7 +24,7 @@ using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
 using Project24.Models.Identity;
-using Project24.Models.Internal.ClinicManager;
+using Project24.Models.Inventory.ClinicManager;
 
 namespace Project24.Pages.ClinicManager.Inventory.Export
 {
@@ -116,13 +116,13 @@ namespace Project24.Pages.ClinicManager.Inventory.Export
             if (ticket == null)
                 return Content(CustomInfoTag.Error + "Ticket " + _formData.TicketCode + " not found", MediaTypeNames.Text.Plain);
 
-            DrugExportBatch batch = new DrugExportBatch(currentUser, ticket)
+            DrugOutBatch batch = new DrugOutBatch(currentUser, ticket)
             {
                 ExportType = P24ExportType_.Consumption
             };
 
             List<Drug> drugUpdateList = new List<Drug>();
-            List<DrugExportation> exportAddList = new List<DrugExportation>();
+            List<DrugOutRecord> exportAddList = new List<DrugOutRecord>();
 
             foreach (var data in _formData.Data)
             {
@@ -140,7 +140,7 @@ namespace Project24.Pages.ClinicManager.Inventory.Export
                 drug.Amount -= amount;
                 drugUpdateList.Add(drug);
 
-                DrugExportation exportation = new DrugExportation(batch, drug, amount);
+                DrugOutRecord exportation = new DrugOutRecord(batch, drug, amount);
                 exportAddList.Add(exportation);
             }
 
