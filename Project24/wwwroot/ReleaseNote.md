@@ -1,4 +1,8 @@
 
+#### v0.14.1 (2023.01.07)
+- Fixed Search function in Customer List (Clinic Manager side).
+- Minor QoL updates.
+
 #### v0.14.0 (2023.01.07)
 - Added Inventory Drug Export note listing (Clinic Manager side).
 - Database Reset.

@@ -1,5 +1,5 @@
 @*  P24/Ticket/Details.cshtml
-    *  Version: 1.4 (2023.01.07)
+    *  Version: 1.5 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -7,6 +7,7 @@
 
 @page
 
+@using Project24.App;
 @model Project24.Pages.ClinicManager.Ticket.DetailsModel
 @{
     ViewData[CustomInfoKey.Language] = CustomInfoKey.Lang_Vi_VN;
@@ -29,8 +30,8 @@
     <br />
 }
 
-<div class="d-flex">
-    <div class="col-md-6">
+<div class="d-flex flex-wrap">
+    <div class="col-12 col-md-6">
         <dl class="row">
             <dt class="col-sm-4">Mã phiếu khám:</dt>
             <dd class="col-sm-8">@Model.TicketViewData.Code</dd>
@@ -45,7 +46,7 @@
             <dd class="col-sm-8">@Model.TicketViewData.Treatment</dd>
 
             <dt class="col-sm-4">Ghi chú:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Notes</dd>
+            <dd class="col-sm-8">@AppUtils.FormatHtmlDisplayForMultilineText(Model.TicketViewData.Note)</dd>
 
             <dt class="col-sm-4">Ngày đăng ký:</dt>
             <dd class="col-sm-8">@Model.TicketViewData.AddedDate (bởi @Model.TicketViewData.AddedUserName)</dd>
@@ -55,56 +56,63 @@
         </dl>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
         <div class="mb-2">
             <div class="font-weight-bold">
-                Bệnh nhân
-                <a asp-page="/ClinicManager/Customer/Details" asp-route-_code="@Model.TicketViewData.Customer.Code">@Model.TicketViewData.Customer.Code</a>:
+                <a href="#" data-toggle="collapse" data-target="#div-customer-view">Bệnh nhân <i>@Model.TicketViewData.Customer.Code</i> (click để mở rộng)</a>
             </div>
-            <ul>
-                <li>
-                    @Model.TicketViewData.Customer.Fullname -
-                    @Model.TicketViewData.Customer.Gender -
-                    @Model.TicketViewData.Customer.DoB (@age)
-                </li>
-                <li>@Model.TicketViewData.Customer.PhoneNumber</li>
-                <li>@Model.TicketViewData.Customer.Address</li>
-                @if (!string.IsNullOrEmpty(Model.TicketViewData.Customer.Note))
-                {
-                    <li>@Model.TicketViewData.Customer.Note</li>
-                }
-            </ul>
+
+            <div id="div-customer-view" class="collapse">
+                <a class="ml-3" asp-page="/ClinicManager/Customer/Details" asp-route-_code="@Model.TicketViewData.Customer.Code"><i>(Xem chi tiết)</i></a>
+                <ul>
+                    <li>
+                        @Model.TicketViewData.Customer.Fullname -
+                        @Model.TicketViewData.Customer.Gender -
+                        @Model.TicketViewData.Customer.DoB (@age)
+                    </li>
+                    <li>@Model.TicketViewData.Customer.PhoneNumber</li>
+                    <li>@Model.TicketViewData.Customer.Address</li>
+                    @if (!string.IsNullOrEmpty(Model.TicketViewData.Customer.Note))
+                    {
+                        <li>@Model.TicketViewData.Customer.Note</li>
+                    }
+                </ul>
+            </div>
+
+            <hr />
         </div>
 
         <div class="mb-2">
             @if (Model.TicketViewData.DrugExportBatchId != null)
             {
                 <div class="font-weight-bold">
-                    Phiếu tiêu hao
-                    <a asp-page="/ClinicManager/Inventory/Export/Details" asp-route-_id="@Model.TicketViewData.DrugExportBatchId">@Model.TicketViewData.DrugExportBatchId</a>:
+                    <a href="#" data-toggle="collapse" data-target="#div-export-view">Phiếu tiêu hao <i>@Model.TicketViewData.DrugExportBatchId</i> (click để mở rộng)</a>
                 </div>
 
-                <table class="table table-sm table-hover ml-3">
-                    <thead>
-                        <tr>
-                            <th style="width:6ch">Mã</th>
-                            <th>Tên thuốc</th>
-                            <th style="width:9ch">Số lượng</th>
-                            <th style="width:8ch">Đơn vị</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var export in Model.DrugExportList)
-                        {
+                <div id="div-export-view" class="collapse">
+                    <a class="ml-3" asp-page="/ClinicManager/Inventory/Export/Details" asp-route-_id="@Model.TicketViewData.DrugExportBatchId">(Xem chi tiết)</a>:
+                    <table class="table table-sm table-hover ml-3">
+                        <thead>
                             <tr>
-                                <td>@export.Id</td>
-                                <td>@export.Name</td>
-                                <td>@export.Amount</td>
-                                <td>@export.Unit</td>
+                                <th style="width:6ch">Mã</th>
+                                <th>Tên thuốc</th>
+                                <th style="width:9ch">Số lượng</th>
+                                <th style="width:8ch">Đơn vị</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var export in Model.DrugExportList)
+                            {
+                                <tr>
+                                    <td>@export.Id</td>
+                                    <td>@export.Name</td>
+                                    <td>@export.Amount</td>
+                                    <td>@export.Unit</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
             else
             {
@@ -112,6 +120,7 @@
                     <a asp-page="/ClinicManager/Inventory/Export/Create" asp-route-_ticketCode="@Model.TicketViewData.Code">Thêm phiếu tiêu hao</a>
                 </div>
             }
+            <hr />
         </div>
 
     </div>

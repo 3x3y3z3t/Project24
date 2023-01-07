@@ -1,5 +1,5 @@
 @*  P24/_CommonListImage.cshtml
-    *  Version: 1.1 (2022.12.13)
+    *  Version: 1.2 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -7,35 +7,32 @@
 
 @using Project24.App
 @model Project24.Models.ClinicManager.DataModel.P24ImageListingModel
+@{ bool hasImage = Model.Images != null && Model.Images.Count > 0;
 
-@{
-    bool hasImage = Model.Images != null && Model.Images.Count > 0;
+    string deleteImageFunc = "";
+    if (Model.Module == P24Module.Customer)
+    {
+        deleteImageFunc = "customer_commonListImage_DeleteCustomerImage('{0}')";
+    }
+    else if (Model.Module == P24Module.Ticket)
+    {
+        deleteImageFunc = "customer_commonListImage_DeleteTicketImage('{0}')";
+    }
 }
 
-<div>
-    @if (Model.IsReadonly)
-    {
-        if (hasImage)
-        {
-            <h5 class="text-bold">Ảnh (@Model.Images.Count ảnh)</h5>
-        }
-    }
-    else
-    {
-        if (hasImage)
-        {
-            <h5 class="text-bold">Ảnh (@Model.Images.Count ảnh) | <a href="#" data-toggle="collapse" data-target="#add-image-form">Thêm ảnh</a></h5>
-        }
-        else
-        {
-            <h5 class="text-bold"><a href="#" data-toggle="collapse" data-target="#add-image-form">Thêm ảnh</a></h5>
-        }
+@if (hasImage || !Model.IsReadonly)
+{
+    <div class="mb-2" style="font-size:large; font-weight:500!important">Ảnh (@Model.Images.Count ảnh)</div>
+}
 
-        <div id="add-image-form" class="collapse">
-            <form method="post" asp-page="Create" asp-page-handler="CreateImage" enctype="multipart/form-data" id="add-image-form" class="col-md-6" style="@ViewData["AddImgFormStyles"]">
-                <hr />
-                <div class="form-group" >
-                    <input asp-for="_formData.OwnerCode" class="form-control" value="@Model.OwnerCode" readonly />
+@if (!Model.IsReadonly)
+{
+    <div class="dropdown">
+        <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown">Thêm ảnh</button>
+        <div class="dropdown-menu px-4 py-2" style="width:55ch">
+            <form method="post" asp-page="Create" asp-page-handler="CreateImage" enctype="multipart/form-data" id="add-image-form" style="@ViewData["AddImgFormStyles0"]">
+                <div class="form-group" hidden>
+                    <input asp-for="_formData.OwnerCode" class="form-control" value="@Model.OwnerCode" readonly/>
                     <span asp-validation-for="_formData.OwnerCode" class="text-danger"></span>
                 </div>
                 <div class="form-group">
@@ -44,47 +41,37 @@
                     <span asp-validation-for="_formData.UploadedFiles" class="text-danger"></span>
                 </div>
 
-                <hr />
-
-                <button type="submit" class="btn btn-primary">Thêm</button>
-                <button type="reset" data-toggle="collapse" data-target="#add-image-form" class="btn btn-secondary">Hủy bỏ</button>
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-sm btn-primary">Thêm</button>
+                    <button type="reset" class="btn btn-sm btn-secondary">Hủy bỏ</button>
+                </div>
 
                 @Html.AntiForgeryToken()
             </form>
         </div>
-        <hr />
-    }
+    </div>
+}
 
-    @if (hasImage)
-    {
-        <div class="d-flex flex-wrap">
-            @foreach (var image in Model.Images)
-            {
-                string path = "/" + image.Path + "/" + image.Name;
-                string fullpath = "/data" + path;
+@if (hasImage)
+{
+    <div class="d-flex flex-wrap">
 
-                <figure class="figure m-2">
-                    <img src="@fullpath" class="figure-img img-fluid" style="max-height:200px;" />
-                    <figcaption class="figure-caption">@image.Name</figcaption>
+        @foreach (var image in Model.Images)
+        {
+            string path = "/" + image.Path + "/" + image.Name;
+            string fullpath = "/data" + path;
 
-                    @if (!Model.IsReadonly)
-                    {
-                        string func = "";
-                        switch (@Model.Module)
-                        {
-                            case P24Module.Customer:
-                                func = "customer_commonListImage_DeleteCustomerImage('" + image.Id + "')";
-                                break;
-                            case P24Module.Ticket:
-                                func = "customer_commonListImage_DeleteTicketImage('" + image.Id + "')";
-                                break;
-                        }
+            <figure class="figure m-2">
+                <img src="@fullpath" class="figure-img img-fluid" style="max-height:200px" />
+                <figcaption class="figure-caption">@image.Name</figcaption>
 
-                        <a href="#" onclick="@func">Xóa</a>
-                    }
+                @if (!Model.IsReadonly)
+                {
+                    // delete button;
+                    <a href="#" onclick="@string.Format(deleteImageFunc, image.Id)">Xóa</a>
+                }
+            </figure>
+        }
 
-                </figure>
-            }
-        </div>
-    }
-</div>
+    </div>
+}

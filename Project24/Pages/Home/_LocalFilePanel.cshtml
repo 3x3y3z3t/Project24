@@ -1,4 +1,4 @@
-﻿@*  _LocalFilePanel.cshtml
+@*  _LocalFilePanel.cshtml
     *  Version: 1.2 (2022.12.18)
     *
     *  Contributor
@@ -94,7 +94,7 @@
             path += "/";
 
         string hashCode = AppUtils.ComputeCyrb53HashCode(path + file.Name);
-        string date = AppUtils.FormatDateTimetring_EndsWithMinute(file.LastModified);
+        string date = AppUtils.FormatDateTimeString_EndsWithMinute(file.LastModified);
 
         <div id="local-file-@i" class="d-flex align-itens-center mr-2">
             <div hidden>@hashCode:@date</div>

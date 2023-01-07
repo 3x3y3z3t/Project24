@@ -1,5 +1,5 @@
 /*  AppUtils.cs
- *  Version: 1.4 (2023.01.06)
+ *  Version: 1.5 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -12,6 +12,7 @@ using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Project24.App.Utils;
 
 namespace Project24.App
@@ -118,9 +119,21 @@ namespace Project24.App
             return string.Format("{0:##0.00}  B", (float)_size);
         }
 
-        public static string FormatDateTimetring_EndsWithMinute(DateTime _dateTime)
+        public static string FormatDateTimeString_EndsWithMinute(DateTime _dateTime)
         {
             return string.Format("{0:yyyy}/{0:MM}/{0:dd} {0:HH}:{0:mm}", _dateTime);
+        }
+
+        public static HtmlString FormatHtmlDisplayForMultilineText(string _multilineText)
+        {
+            if (_multilineText == null)
+                return new HtmlString("");
+
+            string res = _multilineText.Replace("\\r", "\r").Replace("\\n", "\n");
+            res = _multilineText.Replace("\r\n", "</div><div class=\"rev-indent mt-1\">");
+            res = "<div class=\"rev-indent\">" + res + "</div>";
+
+            return new HtmlString(res);
         }
 
         public static string NormalizeGenderString(char _gender)

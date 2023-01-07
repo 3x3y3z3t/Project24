@@ -1,5 +1,5 @@
 @*  List.cshtml
-    *  Version: 1.5 (2023.01.07)
+    *  Version: 1.6 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -48,7 +48,7 @@
             <th style="width:50ch">Chẩn đoán - Xử trí</th>
             <th style="">Ghi chú</th>
             <th style="width:9ch">Tiêu hao</th>
-            <th style="width:20ch"></th>
+            <th style="width:9ch"></th>
         </tr>
     </thead>
 
@@ -80,8 +80,8 @@
                 <td>
                     <div class="text-center">
                         <div>
-                            <a asp-page="Details" asp-route-_code="@ticket.Code">Chi tiết</a> |
-                            <a asp-page="Edit" asp-route-_code="@ticket.Code">Sửa thông tin</a>
+                            <a asp-page="Details" asp-route-_code="@ticket.Code">Xem</a> |
+                            <a asp-page="Edit" asp-route-_code="@ticket.Code">Sửa</a>
                         </div>
                         <div>
                             <a asp-page="Delete" asp-route-_code="@ticket.Code" class="text-danger font-weight-bold">Xóa</a>

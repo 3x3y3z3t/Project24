@@ -56,7 +56,7 @@ namespace Project24.Pages.ClinicManager.Ticket
                                     Symptom = _ticket.Symptom,
                                     Diagnose = _ticket.Diagnose,
                                     Treatment = _ticket.ProposeTreatment,
-                                    Notes = _ticket.Note,
+                                    Note = _ticket.Note,
                                     AddedDate = _ticket.AddedDate,
                                     UpdatedDate = _ticket.EditedDate,
                                     DeletedDate = _ticket.DeletedDate,

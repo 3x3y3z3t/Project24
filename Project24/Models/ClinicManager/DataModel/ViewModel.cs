@@ -67,7 +67,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public string Treatment { get; set; }
 
         [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
+        public string Note { get; set; }
 
         public DateTime AddedDate { get; set; }
 

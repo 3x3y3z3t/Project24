@@ -1,5 +1,5 @@
 /*  P24/Ticket/List.cshtml.cs
- *  Version: 1.4 (2023.01.02)
+ *  Version: 1.5 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -94,7 +94,7 @@ namespace Project24.Pages.ClinicManager
                 _phone = "";
             if (_addr == null)
                 _addr = "";
-            if (_endDate == P24Constants.MinDate)
+            if (_endDate == P24Constants.MinDate || _endDate == DateTime.MinValue)
                 _endDate = DateTime.Today;
 
             if (_name != "")

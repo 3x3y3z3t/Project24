@@ -1,5 +1,5 @@
 @*  P24/Ticket/Delete.cshtml
-    *  Version: 1.2 (2023.01.02)
+    *  Version: 1.3 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -7,6 +7,7 @@
 
 @page
 
+@using Project24.App;
 @model Project24.Pages.ClinicManager.Ticket.DeleteModel
 @{
     ViewData[CustomInfoKey.Language] = CustomInfoKey.Lang_Vi_VN;
@@ -47,7 +48,7 @@
             <dd class="col-sm-8">@Model.TicketViewData.Treatment</dd>
 
             <dt class="col-sm-4">Ghi chú:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Notes</dd>
+            <dd class="col-sm-8">@AppUtils.FormatHtmlDisplayForMultilineText(Model.TicketViewData.Note)</dd>
 
             <dt class="col-sm-4">Ngày đăng ký:</dt>
             <dd class="col-sm-8">@Model.TicketViewData.AddedDate (bởi @Model.TicketViewData.AddedUserName)</dd>
@@ -81,7 +82,7 @@
             <dd class="col-sm-8">@Model.TicketViewData.Customer.Address</dd>
 
             <dt class="col-sm-4">Ghi chú:</dt>
-            <dd class="col-sm-8">@Model.TicketViewData.Customer.Note</dd>
+            <dd class="col-sm-8">@AppUtils.FormatHtmlDisplayForMultilineText(Model.TicketViewData.Customer.Note)</dd>
         </dl>
 
         <div class="row">

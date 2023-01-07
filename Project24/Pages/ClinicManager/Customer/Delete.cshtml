@@ -1,5 +1,5 @@
 @*  P24/Customer/Delete.cshtml
-    *  Version: 1.4 (2022.12.29)
+    *  Version: 1.5 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
@@ -7,6 +7,7 @@
 
 @page
 
+@using Project24.App;
 @model Project24.Pages.ClinicManager.Customer.DeleteModel
 @{
     ViewData[CustomInfoKey.Language] = CustomInfoKey.Lang_Vi_VN;
@@ -46,13 +47,13 @@
     <dd class="col-sm-10">@Model.CustomerViewData.DoB (@age)</dd>
 
     <dt class="col-sm-2">Địa chỉ:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.Address</dd>
+    <dd class="col-sm-10">@AppUtils.FormatHtmlDisplayForMultilineText(Model.CustomerViewData.Address)</dd>
 
     <dt class="col-sm-2">Số điện thoại:</dt>
     <dd class="col-sm-10">@Model.CustomerViewData.PhoneNumber</dd>
 
     <dt class="col-sm-2">Ghi chú:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.Note</dd>
+    <dd class="col-sm-10">@AppUtils.FormatHtmlDisplayForMultilineText(Model.CustomerViewData.Note)</dd>
 
     <dt class="col-sm-2">Ngày đăng ký:</dt>
     <dd class="col-sm-10">@Model.CustomerViewData.AddedDate (bởi @Model.CustomerViewData.AddedUserName)</dd>

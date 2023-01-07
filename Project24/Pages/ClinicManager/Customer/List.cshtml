@@ -1,11 +1,11 @@
 @*  P24/Customer/List.cshtml
-    *  Version: 1.4 (2023.01.02)
+    *  Version: 1.5 (2023.01.07)
     *
     *  Contributor
     *      Arime-chan
 *@
 
-@page
+@page "{handler?}"
 
 @using System.Globalization
 @model Project24.Pages.ClinicManager.Customer.ListModel
@@ -46,8 +46,8 @@
             <th style="width:12ch">SĐT</th>
             <th style="">Địa chỉ</th>
             <th style="">Ghi chú</th>
-            <th style="width: 12ch;">Phiếu khám</th>
-            <th style="width: 20ch;"></th>
+            <th style="width:11ch">Phiếu khám</th>
+            <th style="width:9ch"></th>
         </tr>
     </thead>
 
@@ -83,8 +83,8 @@
                 <td>
                     <div class="text-center">
                         <div>
-                            <a asp-page="Details" asp-route-_code="@customer.Code">Chi tiết</a> |
-                            <a asp-page="Edit" asp-route-_code="@customer.Code">Sửa thông tin</a>
+                            <a asp-page="Details" asp-route-_code="@customer.Code">Xem</a> |
+                            <a asp-page="Edit" asp-route-_code="@customer.Code">Sửa</a>
                         </div>
                         <div>
                             <a asp-page="Delete" asp-route-_code="@customer.Code" class="text-danger font-weight-bold">Xóa</a>

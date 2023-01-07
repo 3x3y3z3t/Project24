@@ -1,5 +1,5 @@
 /*  P24/Customer/List.cshtml
- *  Version: 1.4 (2023.01.02)
+ *  Version: 1.5 (2023.01.07)
  *
  *  Contributor
  *      Arime-chan
@@ -71,7 +71,7 @@ namespace Project24.Pages.ClinicManager.Customer
                                        PhoneNumber = _customer.PhoneNumber,
                                        Address = _customer.Address,
                                        Note = _customer.Note,
-                                       TicketCount = _customer.VisitingTickets.Count()
+                                       TicketCount = _customer.VisitingTickets.Count
                                    })
                             .ToListAsync();
 
@@ -88,34 +88,54 @@ namespace Project24.Pages.ClinicManager.Customer
                 _phone = "";
             if (_addr == null)
                 _addr = "";
-            if (_endDate == P24Constants.MinDate)
+            if (_endDate == P24Constants.MinDate || _endDate == DateTime.MinValue)
                 _endDate = DateTime.Today;
 
             if (_name != "")
                 _name = StringUtils.ToTitleCase(_name);
 
-            var customers = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
-                                   where _ticket.Customer.DeletedDate == DateTime.MinValue
-                                      && _ticket.AddedDate.Date > _startDate
-                                      && _ticket.AddedDate.Date < _endDate
-                                      && (_name == "" || _ticket.Customer.LastName == _name)
-                                      && _ticket.Customer.PhoneNumber.EndsWith(_phone)
-                                      && _ticket.Customer.Address.Contains(_addr)
+            if (_startDate == DateTime.MinValue && _endDate == DateTime.Today)
+            {
+                // no date supply, get all customer;
+                Customers = await (from _customer in m_DbContext.CustomerProfiles.Include(_c => _c.VisitingTickets)
+                                   where _customer.DeletedDate == DateTime.MinValue
+                                   && (_name == "" || _customer.LastName == _name)
+                                   && _customer.PhoneNumber.EndsWith(_phone)
+                                   && _customer.Address.Contains(_addr)
                                    select new CustomerViewModel()
                                    {
-                                       Code = _ticket.Customer.Code,
-                                       Fullname = _ticket.Customer.FullName,
-                                       DoB = _ticket.Customer.DateOfBirth,
-                                       PhoneNumber = _ticket.Customer.PhoneNumber,
-                                       Address = _ticket.Customer.Address,
-                                       Note = _ticket.Customer.Note,
-                                       TicketCount = (from _tk in m_DbContext.TicketProfiles
-                                                      where _tk.CustomerId == _ticket.Customer.Id && _ticket.DeletedDate == DateTime.MinValue
-                                                      select _tk.Id).Count()
+                                       Code = _customer.Code,
+                                       Fullname = _customer.FullName,
+                                       DoB = _customer.DateOfBirth,
+                                       PhoneNumber = _customer.PhoneNumber,
+                                       Address = _customer.Address,
+                                       Note = _customer.Note,
+                                       TicketCount = _customer.VisitingTickets.Count
                                    })
                             .ToListAsync();
-
-            Customers = customers;
+            }
+            else
+            {
+                // has date supply, get customer with tickets only;
+                Customers = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
+                                       where _ticket.Customer.DeletedDate == DateTime.MinValue
+                                          && _ticket.AddedDate.Date >= _startDate
+                                          && _ticket.AddedDate.Date <= _endDate
+                                          && (_name == "" || _ticket.Customer.LastName == _name)
+                                          && _ticket.Customer.PhoneNumber.EndsWith(_phone)
+                                          && _ticket.Customer.Address.Contains(_addr)
+                                       select new CustomerViewModel()
+                                       {
+                                           Code = _ticket.Customer.Code,
+                                           Fullname = _ticket.Customer.FullName,
+                                           DoB = _ticket.Customer.DateOfBirth,
+                                           PhoneNumber = _ticket.Customer.PhoneNumber,
+                                           Address = _ticket.Customer.Address,
+                                           Note = _ticket.Customer.Note,
+                                           TicketCount = _ticket.Customer.VisitingTickets.Count
+                                       })
+                            .ToListAsync();
+            }
 
             SearchFormData = new QuickSearchFormDataModel()
             {
