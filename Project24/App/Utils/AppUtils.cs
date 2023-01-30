@@ -1,5 +1,5 @@
 /*  AppUtils.cs
- *  Version: 1.5 (2023.01.07)
+ *  Version: 1.6 (2023.01.27)
  *
  *  Contributor
  *      Arime-chan
@@ -88,6 +88,56 @@ namespace Project24.App
         public static UpdaterStats UpdaterStats { get; set; } = new UpdaterStats();
 
         public static JavaScriptEncoder FullUnicodeRangeJsonEncoder { get; set; } = JavaScriptEncoder.Create(UnicodeRanges.All);
+
+        private static char[] s_InvalidFilenameChars = new char[]
+        {
+            '\u0000', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007', '\u0008', '\u0009', '\u000a', '\u000b', '\u000c', '\u000d', '\u000e', '\u000f',
+            '\u0010', '\u0011', '\u0012', '\u0013', '\u0014', '\u0015', '\u0016', '\u0017', '\u0018', '\u0019', '\u001a', '\u001b', '\u001c', '\u001d', '\u001e', '\u001f',
+            '\\', '/', ':', '*', '?', '\"', '<', '>', '|'
+        };
+
+        private static string[] s_InvalidFileNameString = new string[]
+        {
+            "CON", "PRN", "AUX", "NUL",
+            "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+        };
+
+
+        public static bool IsFileNameValid(string _filename, bool _isFolder = false)
+        {
+            /* Reference:
+             * https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+             */
+
+            // file name cannot be all white spaces;
+            if (string.IsNullOrWhiteSpace(_filename))
+                return false;
+
+            // file name cannot be "." (Current Directory) or ".." (Parent Directory);
+            if (_filename == "." || _filename == "..")
+                return false;
+
+            // file name cannot end with white space or period character;
+            if (_filename.EndsWith(' ') || _filename.EndsWith('.'))
+                return false;
+
+            // file name cannot contains any of invalid characters;
+            if (_filename.IndexOfAny(s_InvalidFilenameChars) >= 0)
+                return false;
+
+            // file name cannot be any of reserved names;
+            foreach (string name in s_InvalidFileNameString)
+            {
+                if (_filename.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                if (!_isFolder && _filename.StartsWith(name + ".", StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            return true;
+        }
 
         public static string FormatDataSize(long _size)
         {

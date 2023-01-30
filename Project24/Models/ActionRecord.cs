@@ -1,5 +1,5 @@
 /*  ActionLog.cs
- *  Version: 1.16 (2023.01.07)
+ *  Version: 1.17 (2023.01.29)
  *
  *  Contributor
  *      Arime-chan
@@ -61,6 +61,8 @@ namespace Project24.Models
 
             public const string Nas_CreateFolder = "Nas Create Folder";
             public const string Nas_RenameFile = "Nas Rename File";
+            public const string Nas_CopyTo = "Nas Copy To";
+            public const string Nas_MoveTo = "Nas Move To";
             public const string Nas_DeleteFile = "Nas Delete File";
 
         }

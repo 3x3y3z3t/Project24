@@ -1,109 +1,131 @@
-﻿/*  nas-upload.js
- *  Version: 1.1 (2022.12.23)
+/*  nas-upload.js
+ *  Version: 1.2 (2023.01.30)
  *
  *  Contributor
  *      Arime-chan
  */
 
 // =====
-window.ConfigPanel = {};
+window.NasUploadPage = {};
 
-ConfigPanel.m_Path = null;
-ConfigPanel.m_FileType = null;
-ConfigPanel.m_OrgFileName = null;
-ConfigPanel.m_OrgFileExtension = null;
+NasUploadPage.m_CurrentLocation = "";
 
-ConfigPanel.m_InputRename = null;
-ConfigPanel.m_BtnRenameReset = null;
-ConfigPanel.m_BtnRenameSubmit = null;
+NasUploadPage.Elements = {};
+NasUploadPage.Elements.m_InputNewFolder = null;
+NasUploadPage.Elements.m_BtnNewFolderReset = null;
+NasUploadPage.Elements.m_BtnNewFolderSubmit = null;
 
-ConfigPanel.m_BtnCopyTo = null;
-ConfigPanel.m_BtnMoveTo = null;
-ConfigPanel.m_BtnDelete = null;
+NasUploadPage.ManagePanel = {};
+NasUploadPage.ManagePanel.m_Path = null;
+NasUploadPage.ManagePanel.m_FileType = null;
+NasUploadPage.ManagePanel.m_OrgFileName = null;
+NasUploadPage.ManagePanel.m_OrgFileExtension = null;
 
-// =====
-window.NewFolderInput = {};
-
-NewFolderInput.m_Input = null;
-NewFolderInput.m_BtnReset = null;
-NewFolderInput.m_BtnSubmit = null;
-
-// =====
-window.ModalConfirm = {}
-
-ModalConfirm.m_ModalConfirmTitle = null;
-ModalConfirm.m_ModalConfirmMsg = null;
-ModalConfirm.m_BtnConfirmSubmit = null;
+NasUploadPage.ManagePanel.Elements = {};
+NasUploadPage.ManagePanel.Elements.m_Modal = null;
+NasUploadPage.ManagePanel.Elements.m_Header = null;
+NasUploadPage.ManagePanel.Elements.m_InputRename = null;
+NasUploadPage.ManagePanel.Elements.m_BtnRenameReset = null;
+NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit = null;
+NasUploadPage.ManagePanel.Elements.m_InputDst = null;
+NasUploadPage.ManagePanel.Elements.m_BtnCopyTo = null;
+NasUploadPage.ManagePanel.Elements.m_BtnMoveTo = null;
+NasUploadPage.ManagePanel.Elements.m_BtnDelete = null;
 
 
 $(document).ready(function () {
-    updateBrowserPanel();
-    updateUploadLocation();
+    NasUploadPage.updateBrowserPanel();
+    NasUploadPage.updateUploadLocation();
 
-    ConfigPanel.m_InputRename = $("#modal-config-input-rename");
-    ConfigPanel.m_BtnRenameReset = $("#modal-config-btn-rename-reset");
-    ConfigPanel.m_BtnRenameSubmit = $("#modal-config-btn-rename-submit");
+    NasUploadPage.ManagePanel.Elements.m_Modal = $("#modal-manage");
+    NasUploadPage.ManagePanel.Elements.m_Header = $("#modal-manage-header");
 
-    ConfigPanel.m_BtnCopyTo = $("#modal-config-btn-copy");
-    ConfigPanel.m_BtnMoveTo = $("#modal-config-btn-move");
-    ConfigPanel.m_BtnDelete = $("#modal-config-btn-delete");
+    NasUploadPage.ManagePanel.Elements.m_InputRename = $("#modal-manage-input-rename");
+    NasUploadPage.ManagePanel.Elements.m_BtnRenameReset = $("#modal-manage-btn-rename-reset");
+    NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit = $("#modal-manage-btn-rename-submit");
 
-    ModalConfirm.m_ModalConfirmTitle = $("#modal-confirm-title");
-    ModalConfirm.m_ModalConfirmMsg = $("#modal-confirm-msg");
-    ModalConfirm.m_BtnConfirmSubmit = $("#modal-confirm-btn-submit");
+    NasUploadPage.ManagePanel.Elements.m_InputDst = $("#modal-manage-input-dst");
+    NasUploadPage.ManagePanel.Elements.m_BtnCopyTo = $("#modal-manage-btn-copy");
+    NasUploadPage.ManagePanel.Elements.m_BtnMoveTo = $("#modal-manage-btn-move");
+    NasUploadPage.ManagePanel.Elements.m_BtnDelete = $("#modal-manage-btn-delete");
 
-    $("#modal-config").on('hide.bs.modal', function (_e) {
-        ConfigPanel.m_Path = null;
-        ConfigPanel.m_FileType = null;
-        ConfigPanel.m_OrgFileName = null;
-        ConfigPanel.m_OrgFileExtension = null;
+    NasUploadPage.ManagePanel.Elements.m_Modal.on("hide.bs.modal", function (_e) {
+        NasUploadPage.ManagePanel.m_Path = null;
+        NasUploadPage.ManagePanel.m_FileType = null;
+        NasUploadPage.ManagePanel.m_OrgFileName = null;
+        NasUploadPage.ManagePanel.m_OrgFileExtension = null;
 
-        modalConfig_btnRenameReset();
+        NasUploadPage.resetRenameForm();
+    });
 
-        ModalConfirm.m_ModalConfirmTitle.html("");
-        ModalConfirm.m_ModalConfirmMsg.html("");
-        ModalConfirm.m_BtnConfirmSubmit.off(".modal");
+    let tooltipTemplate =
+        "<div class=\"tooltip\" role=\"tooltip\">" +
+        "<div class=\"arrow\"></div>" +
+        "<div class=\"tooltip-inner text-left text-danger border border-dark tooltip-custom-nas\"></div>" +
+        "</div>";
+
+    NasUploadPage.Elements.m_InputNewFolder.tooltip({
+        animation: true,
+        container: "body",
+        html: true,
+        placement: "bottom",
+        trigger: "manual",
+        template: tooltipTemplate
+    });
+
+    NasUploadPage.ManagePanel.Elements.m_InputRename.tooltip({
+        animation: true,
+        container: "body",
+        html: true,
+        placement: "bottom",
+        trigger: "manual",
+        template: tooltipTemplate
+    });
+
+    $(document).on("click", ".a-tooltip-naming", function () {
+        $("#modal-naming-rules").modal();
     });
 
 });
 
-function openCfgPanel(_fileName, _fileType) {
-    ConfigPanel.m_Path = $("#current-location").text();
-    ConfigPanel.m_FileType = _fileType;
-    ConfigPanel.m_OrgFileName = _fileName;
-    if (_fileType == "File") {
-        ConfigPanel.m_OrgFileExtension = getFileExtension(_fileName);
-    }
-
-    ConfigPanel.m_InputRename.val(_fileName);
-
-    $("#modal-config-title").html(_fileName);
-
-    $("#modal-config").modal();
-}
 
 function browseNas(_path) {
-    //$("#modal-browsing-path").html(_path);
-    //$("#modal-browsing").modal();
+    NasUploadPage.ajax_browseNas(_path);
+}
 
-    $.ajax({
-        type: 'GET',
-        url: "/Nas/Upload/?handler=Browse&_path=" + _path,
-        success: function (_content) {
-            $("#nas-browser").html(_content);
-            updateBrowserPanel();
-            updateUploadLocation();
-        },
-        error: function () {
-            window.alert("Could not fetch browser.");
-        }
-    });
+NasUploadPage.openManagePanel = function (_filename, _filetype) {
+    NasUploadPage.ManagePanel.m_Path = NasUploadPage.m_CurrentLocation
+    NasUploadPage.ManagePanel.m_FileType = _filetype;
+    NasUploadPage.ManagePanel.m_OrgFileName = _filename;
+    if (_filetype == "File") {
+        NasUploadPage.ManagePanel.m_OrgFileExtension = P24Utils.getFileExtension(_filename);
+    }
+
+    NasUploadPage.ManagePanel.Elements.m_Header.html(_filename);
+    NasUploadPage.ManagePanel.Elements.m_InputRename.val(_filename);
+    NasUploadPage.ManagePanel.Elements.m_InputDst.val(NasUploadPage.ManagePanel.m_Path);
+
+    modalManage_inputDst_onInput();
+
+    NasUploadPage.ManagePanel.Elements.m_Modal.modal();
 }
 
 // ==================================================
 // ajax request sender
 
-function ajax_createNewFolder(_path, _folderName) {
+NasUploadPage.ajax_browseNas = function (_path) {
+    $.ajax({
+        type: "GET",
+        url: "/Nas/Upload/?handler=Browse&_path=" + _path,
+        success: function (_content, _textStatus, _xhr) {
+            NasUploadPage.updateBrowserPanel(_content);
+            NasUploadPage.updateUploadLocation();
+        },
+        error: P24Utils.ajax_error
+    });
+}
+
+NasUploadPage.ajax_createNewFolder = function (_path, _folderName) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
     $.ajax({
@@ -116,18 +138,15 @@ function ajax_createNewFolder(_path, _folderName) {
         }),
         contentType: "application/json; charset=utf-8",
         processData: false,
-        success: function (_content) {
-            $("#nas-browser").html(_content);
-            updateBrowserPanel();
-            updateUploadLocation();
-        },
-        error: function () {
-            window.alert("Could not fetch browser.");
+        success: NasUploadPage.ajax_createNewFolder_success,
+        error: function (_xhr, _textStatus, _errorThrown) {
+            NasUploadPage.releaseBtnNewFolderSubmit();
+            P24Utils.ajax_error(_xhr, _textStatus, _errorThrown);
         }
     });
 }
 
-function ajax_rename(_path, _newName, _fileType) {
+NasUploadPage.ajax_rename = function (_path, _newName, _fileType) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
     $.ajax({
@@ -140,36 +159,69 @@ function ajax_rename(_path, _newName, _fileType) {
         }),
         contentType: "application/json; charset=utf-8",
         processData: false,
-        success: function (_content) {
-            $("#nas-browser").html(_content);
-            updateBrowserPanel();
-            updateUploadLocation();
+        success: function (_content, _textStatus, _xhr) {
+            if (!NasUploadPage.ajax_rename_success(_content, _textStatus, _xhr)) {
+                return;
+            }
 
-            $("#modal-config").modal("hide");
-            openCfgPanel(_newName, _fileType);
+            NasUploadPage.updateBrowserPanel(_content);
+            NasUploadPage.updateUploadLocation();
+
+            NasUploadPage.ManagePanel.Elements.m_Modal.modal("hide");
+            NasUploadPage.openManagePanel(_newName, _fileType);
         },
-        error: function () {
-            window.alert("Could not fetch browser.");
+        error: function (_xhr, _textStatus, _errorThrown) {
+            NasUploadPage.releaseBtnRenameSubmit();
+            P24Utils.ajax_error(_xhr, _textStatus, _errorThrown);
         }
     });
 }
 
-function ajax_moveTo(_src, _dst) {
+NasUploadPage.ajax_copyTo = function (_srcDir, _dstDir) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
-    //TODO: ajax
+    $.ajax({
+        type: "POST",
+        url: "/Nas/Manage?handler=CopyTo",
+        headers: { "RequestVerificationToken": token },
+        data: JSON.stringify({
+            Item1: _srcDir,
+            Item2: _dstDir,
+        }),
+        contentType: "application/json; charset=utf-8",
+        processData: false,
+        success: NasUploadPage.ajax_copyTo_success,
+        error: function (_xhr, _textStatus, _errorThrown) {
+            NasUploadPage.releaseBtnCopyTo();
+            P24Utils.ajax_error(_xhr, _textStatus, _errorThrown);
+        }
+    });
 }
 
-function ajax_copyTo(_src, _dst) {
+NasUploadPage.ajax_moveTo = function (_srcDir, _dstDir) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
-    //TODO: ajax
+    $.ajax({
+        type: "POST",
+        url: "/Nas/Manage?handler=MoveTo",
+        headers: { "RequestVerificationToken": token },
+        data: JSON.stringify({
+            Item1: _srcDir,
+            Item2: _dstDir,
+        }),
+        contentType: "application/json; charset=utf-8",
+        processData: false,
+        success: NasUploadPage.ajax_moveTo_success,
+        error: function (_xhr, _textStatus, _errorThrown) {
+            NasUploadPage.releaseBtnMoveTo();
+            P24Utils.ajax_error(_xhr, _textStatus, _errorThrown);
+        }
+    });
 }
 
-function ajax_delete(_path) {
+NasUploadPage.ajax_delete = function (_path) {
     let token = $("input[name='__RequestVerificationToken']").val();
 
-    //TODO: ajax
     $.ajax({
         type: "POST",
         url: "/Nas/Manage?handler=Delete",
@@ -180,15 +232,10 @@ function ajax_delete(_path) {
         }),
         contentType: "application/json; charset=utf-8",
         processData: false,
-        success: function (_content) {
-            $("#nas-browser").html(_content);
-            updateBrowserPanel();
-            updateUploadLocation();
-
-            $("#modal-config").modal("hide");
-        },
-        error: function () {
-            window.alert("Could not fetch browser.");
+        success: NasUploadPage.ajax_delete_success,
+        error: function (_xhr, _textStatus, _errorThrown) {
+            NasUploadPage.releaseBtnDelete();
+            P24Utils.ajax_error(_xhr, _textStatus, _errorThrown);
         }
     });
 }
@@ -199,108 +246,286 @@ function ajax_delete(_path) {
 // ==================================================
 // events
 
-function inputNewFolder_typing() {
-    let name = NewFolderInput.m_Input.val();
+function inputNewFolder_onInput() {
+    let name = NasUploadPage.Elements.m_InputNewFolder.val();
+
     if (name == "") {
-        NewFolderInput.m_BtnReset.attr("disabled", true);
-        NewFolderInput.m_BtnSubmit.attr("disabled", true);
+        NasUploadPage.Elements.m_InputNewFolder.tooltip("hide");
+        NasUploadPage.Elements.m_BtnNewFolderReset.attr("disabled", true);
+        NasUploadPage.Elements.m_BtnNewFolderSubmit.attr("disabled", true);
+    } else if (NasUploadPage.isFileNameValid(name)) {
+        NasUploadPage.Elements.m_InputNewFolder.tooltip("hide");
+        NasUploadPage.Elements.m_BtnNewFolderReset.removeAttr("disabled");
+        NasUploadPage.Elements.m_BtnNewFolderSubmit.removeAttr("disabled");
     } else {
-        NewFolderInput.m_BtnReset.removeAttr("disabled");
-        NewFolderInput.m_BtnSubmit.removeAttr("disabled");
+        NasUploadPage.Elements.m_InputNewFolder.tooltip("show");
+        NasUploadPage.Elements.m_BtnNewFolderReset.attr("disabled", true);
+        NasUploadPage.Elements.m_BtnNewFolderSubmit.attr("disabled", true);
     }
 }
 
-function btnNewFolder_reset() {
-    NewFolderInput.m_Input.val("");
-    NewFolderInput.m_BtnReset.attr("disabled", true);
-    NewFolderInput.m_BtnSubmit.attr("disabled", true);
+function btnNewFolderReset_onClick() {
+    NasUploadPage.Elements.m_InputNewFolder.val("");
+    NasUploadPage.Elements.m_BtnNewFolderReset.attr("disabled", true);
+    NasUploadPage.Elements.m_BtnNewFolderSubmit.attr("disabled", true);
 }
 
-function btnNewFolder_submit() {
-    let path = $("#current-location").text();
-    let folderName = NewFolderInput.m_Input.val();
+function btnNewFolderSubmit_onClick() {
+    let folderName = NasUploadPage.Elements.m_InputNewFolder.val();
 
-    ajax_createNewFolder(path, folderName);
+    NasUploadPage.Elements.m_BtnNewFolderSubmit.attr("disabled", true);
+    NasUploadPage.ajax_createNewFolder(NasUploadPage.m_CurrentLocation, folderName);
 }
 
-function modalConfig_inputRename_typing() {
-    if (ConfigPanel.m_InputRename.val() == ConfigPanel.m_OrgFileName) {
-        ConfigPanel.m_InputRename.removeClass("text-success");
-        ConfigPanel.m_BtnRenameReset.attr("disabled", true);
-        ConfigPanel.m_BtnRenameSubmit.attr("disabled", true);
+function modalManage_inputRename_onInput() {
+    let name = NasUploadPage.ManagePanel.Elements.m_InputRename.val();
+
+    if (name == NasUploadPage.ManagePanel.m_OrgFileName) {
+        NasUploadPage.ManagePanel.Elements.m_InputRename.removeClass("text-success");
+        NasUploadPage.ManagePanel.Elements.m_BtnRenameReset.attr("disabled", true);
+        NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.attr("disabled", true);
     } else {
-        ConfigPanel.m_InputRename.addClass("text-success");
-        ConfigPanel.m_BtnRenameReset.removeAttr("disabled");
-        ConfigPanel.m_BtnRenameSubmit.removeAttr("disabled");
+        NasUploadPage.ManagePanel.Elements.m_InputRename.addClass("text-success");
+        NasUploadPage.ManagePanel.Elements.m_BtnRenameReset.removeAttr("disabled");
+        NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.removeAttr("disabled");
+
+        if (name == "") {
+            NasUploadPage.ManagePanel.Elements.m_InputRename.tooltip("hide");
+            NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.attr("disabled", true);
+        }
+        else if (NasUploadPage.isFileNameValid(name)) {
+            NasUploadPage.ManagePanel.Elements.m_InputRename.tooltip("hide");
+            NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.removeAttr("disabled");
+        } else {
+            NasUploadPage.ManagePanel.Elements.m_InputRename.tooltip("show");
+            NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.attr("disabled", true);
+        }
     }
 }
 
-function modalConfig_btnRenameReset() {
-    ConfigPanel.m_InputRename.val(ConfigPanel.m_OrgFileName);
-    ConfigPanel.m_InputRename.removeClass("text-success");
-    ConfigPanel.m_BtnRenameReset.attr("disabled", true);
-    ConfigPanel.m_BtnRenameSubmit.attr("disabled", true);
+function modalManage_btnRenameReset_onClick() {
+    NasUploadPage.resetRenameForm();
 }
 
-function modalConfig_btnRenameBeforeSubmit() {
-    if (ConfigPanel.m_FileType != "File") {
-        modalConfig_btnRenameSubmit();
+function modalManage_btnRenameSubmit_onClick() {
+    if (NasUploadPage.ManagePanel.m_FileType != "File") {
+        NasUploadPage.submitRename();
         return;
     }
 
-    let ext = getFileExtension(ConfigPanel.m_InputRename.val());
-    if (ext != ConfigPanel.m_OrgFileExtension) {
-        ModalConfirm.m_ModalConfirmTitle.html("Rename");
-        ModalConfirm.m_ModalConfirmMsg.html(
-            "<div>If you change a file name extension, the file might become unusable.</div><div>Are you sure you want to change it?</div>"
+    let ext = getFileExtension(NasUploadPage.ManagePanel.Elements.m_InputRename.val());
+    if (ext != NasUploadPage.ManagePanel.m_OrgFileExtension) {
+        Modals.Common.Confirm.openModal(
+            "Rename",
+            "<div>If you change a file name extension, the file might become unusable.</div><div>Are you sure you want to change it?</div>",
+            "NasUploadPage.submitRename()"
         );
-        ModalConfirm.m_BtnConfirmSubmit.on("click.modal", modalConfig_btnRenameSubmit);
-
-        $("#modal-confirm").modal();
     }
 }
 
-function modalConfig_btnRenameSubmit() {
-    let path = ConfigPanel.m_OrgFileName;
-    if (ConfigPanel.m_Path != "")
-        path = ConfigPanel.m_Path + "/" + path;
-    let newName = ConfigPanel.m_InputRename.val();
-    let fileType = ConfigPanel.m_FileType;
+function modalManage_inputDst_onInput() {
+    let dstDir = NasUploadPage.ManagePanel.Elements.m_InputDst.val();
 
-    ajax_rename(path, newName, fileType);
+    if (dstDir == NasUploadPage.ManagePanel.m_Path) {
+        NasUploadPage.ManagePanel.Elements.m_BtnCopyTo.children("span").html("Make Copy");
+
+        NasUploadPage.ManagePanel.Elements.m_BtnMoveTo.attr("disabled", true);
+        NasUploadPage.ManagePanel.Elements.m_BtnMoveTo.children("span").html("Same Directory");
+    } else {
+        NasUploadPage.ManagePanel.Elements.m_BtnCopyTo.children("span").html("Copy To");
+
+        NasUploadPage.ManagePanel.Elements.m_BtnMoveTo.removeAttr("disabled");
+        NasUploadPage.ManagePanel.Elements.m_BtnMoveTo.children("span").html("Move To");
+    }
 }
 
+function modalManage_btnCopy_onClick() {
+    let dstDir = NasUploadPage.ManagePanel.Elements.m_InputDst.val();
 
+    if (dstDir == NasUploadPage.ManagePanel.m_Path) {
+        Modals.Common.Confirm.openModal(
+            "Make Copy",
+            "<div>Destination direntory is the same as current directory.</div><div class=\"text-primary\">Are you sure you want to make copy of selected item?</div>",
+            "NasUploadPage.submitCopy()"
+        );
 
-//TODO: Copy, Move;
+        return;
+    }
 
+    NasUploadPage.submitCopy();
+}
 
+function modalManage_btnMove_onClick() {
+    let dstDir = NasUploadPage.ManagePanel.Elements.m_InputDst.val();
+    if (dstDir == NasUploadPage.ManagePanel.m_Path) {
+        return;
+    }
 
+    NasUploadPage.submitMove();
+}
 
-function modalConfig_btnDeleteBeforeSubmit() {
-    let msg = "<div>Are you sure you want to delete this " + ConfigPanel.m_FileType.toLowerCase() + "?</div>";
-    msg += "<div>" + ConfigPanel.m_OrgFileName + "</div>";
+function modalManage_btnDelete_onClick() {
+    let msg = "<div>Are you sure you want to delete this " + NasUploadPage.ManagePanel.m_FileType.toLowerCase() + "?</div>";
+    msg += "<div class=\"ml-3\">Name: <code>" + NasUploadPage.ManagePanel.m_OrgFileName + "</code></div>";
     // TODO: add more metadata;
 
-    if (ConfigPanel.m_FileType == "Directory") {
+    if (NasUploadPage.ManagePanel.m_FileType == "Directory") {
         msg += "<br/><div class=\"text-danger\">All subdirectories will be deleted as well!</div>";
     }
 
-    ModalConfirm.m_ModalConfirmTitle.html("Delete");
-    ModalConfirm.m_ModalConfirmMsg.html(msg);
-    ModalConfirm.m_BtnConfirmSubmit.on("click.modal", modalConfig_btnDeleteSubmit);
-
-    $("#modal-confirm").modal();
+    Modals.Common.Confirm.openModal(
+        "Delete",
+        msg,
+        "NasUploadPage.submitDelete()"
+    );
 }
 
-function modalConfig_btnDeleteSubmit() {
-    let path = ConfigPanel.m_OrgFileName;
-    if (ConfigPanel.m_Path != "")
-        path = ConfigPanel.m_Path + "/" + path;
-    let fileType = ConfigPanel.m_FileType;
+NasUploadPage.ajax_createNewFolder_success = function (_content, _textStatus, _xhr) {
+    NasUploadPage.releaseBtnNewFolderSubmit();
 
-    ajax_delete(path, fileType);
+    if (_content.startsWith("<fail>")) {
+        let body = _content.substring(6);
+        if (body.startsWith("<excp>")) {
+            body = "<pre>" + body.substring(6) + "<pre>";
+        }
+
+        body = "<div>" + body + "<div>";
+
+        Modals.CommonInfoModal.openErrorModal("Create New Folder failed", body, null);
+        return;
+    }
+
+    if (_content.startsWith("<warn>")) {
+        let body = "<div>" + _content.substring(6) + "</div>";
+        Modals.CommonInfoModal.openWarningModal("Create New Folder failed", body, null);
+        return;
+    }
+
+    NasUploadPage.updateBrowserPanel(_content);
+    NasUploadPage.updateUploadLocation();
+
+    $("#new-folder-jump")[0].scrollIntoView();
 }
+
+NasUploadPage.ajax_rename_success = function (_content, _textStatus, _xhr) {
+    NasUploadPage.releaseBtnRenameSubmit();
+
+    if (_content.startsWith("<fail>")) {
+        let body = _content.substring(6);
+        if (body.startsWith("<excp>")) {
+            body = "<pre>" + body.substring(6) + "<pre>";
+        }
+
+        body = "<div>" + body + "<div>";
+
+        Modals.CommonInfoModal.openErrorModal("Rename failed", body, null);
+        return false;
+    }
+
+    if (_content.startsWith("<warn>")) {
+        let body = "<div>" + _content.substring(6) + "</div>";
+        Modals.CommonInfoModal.openWarningModal("Rename failed", body, null);
+        return false;
+    }
+
+    return true;
+}
+
+NasUploadPage.ajax_copyTo_success = function (_content, _textStatus, _xhr) {
+    NasUploadPage.releaseBtnCopyTo();
+
+    if (_content.startsWith("<fail>")) {
+        let body = _content.substring(6);
+        if (body.startsWith("<excp>")) {
+            body = "<pre>" + body.substring(6) + "<pre>";
+        }
+
+        body = "<div>" + body + "<div>";
+
+        Modals.CommonInfoModal.openErrorModal("Copy failed", body, null);
+        return;
+    }
+
+    if (_content.startsWith("<warn>")) {
+        let body = "<div>" + _content.substring(6) + "</div>";
+        Modals.CommonInfoModal.openWarningModal("Copy failed", body, null);
+        return;
+    }
+
+    if (_content.startsWith("<done>")) {
+        let body = "<div>Item has been copied.</div>" +
+            "<div class=\"ml-3\">Name: <code>" + NasUploadPage.ManagePanel.m_OrgFileName + "</code></div> " +
+            "<div class=\"ml-3\">Destination: <code>" + NasUploadPage.ManagePanel.Elements.m_InputDst.val() + "</code></div> ";
+        Modals.CommonInfoModal.openInfoModal("Copy success", body, null);
+        return;
+    }
+
+    NasUploadPage.updateBrowserPanel(_content);
+    NasUploadPage.updateUploadLocation();
+
+    $("#new-folder-jump")[0].scrollIntoView();
+
+    return;
+}
+
+NasUploadPage.ajax_moveTo_success = function (_content, _textStatus, _xhr) {
+    NasUploadPage.releaseBtnCopyTo();
+
+    if (_content.startsWith("<fail>")) {
+        let body = _content.substring(6);
+        if (body.startsWith("<excp>")) {
+            body = "<pre>" + body.substring(6) + "<pre>";
+        }
+
+        body = "<div>" + body + "<div>";
+
+        Modals.CommonInfoModal.openErrorModal("Move failed", body, null);
+        return;
+    }
+
+    if (_content.startsWith("<warn>")) {
+        let body = "<div>" + _content.substring(6) + "</div>";
+        Modals.CommonInfoModal.openWarningModal("Move failed", body, null);
+        return;
+    }
+
+    NasUploadPage.updateBrowserPanel(_content);
+    NasUploadPage.updateUploadLocation();
+
+    let body = "<div>Item has been moved.</div>" +
+        "<div class=\"ml-3\">Name: <code>" + NasUploadPage.ManagePanel.m_OrgFileName + "</code></div> " +
+        "<div class=\"ml-3\">Destination: <code>" + NasUploadPage.ManagePanel.Elements.m_InputDst.val() + "</code></div> ";
+    Modals.CommonInfoModal.openInfoModal("Move success", body, null);
+    return;
+}
+
+NasUploadPage.ajax_delete_success = function (_content, _textStatus, _xhr) {
+    NasUploadPage.releaseBtnDelete();
+
+    if (_content.startsWith("<fail>")) {
+        let body = _content.substring(6);
+        if (body.startsWith("<excp>")) {
+            body = "<pre>" + body.substring(6) + "<pre>";
+        }
+
+        body = "<div>" + body + "<div>";
+
+        Modals.CommonInfoModal.openErrorModal("Delete failed", body, null);
+        return;
+    }
+
+    if (_content.startsWith("<warn>")) {
+        let body = "<div>" + _content.substring(6) + "</div>";
+        Modals.CommonInfoModal.openWarningModal("Delete failed", body, null);
+        return;
+    }
+
+    NasUploadPage.updateBrowserPanel(_content);
+    NasUploadPage.updateUploadLocation();
+
+    NasUploadPage.ManagePanel.Elements.m_Modal.modal("hide");
+}
+
 
 // END: events
 // ==================================================
@@ -308,20 +533,133 @@ function modalConfig_btnDeleteSubmit() {
 // ==================================================
 // helper
 
-function updateUploadLocation() {
+NasUploadPage.releaseBtnNewFolderSubmit = function () {
+    NasUploadPage.Elements.m_BtnNewFolderSubmit.removeAttr("disabled");
+}
+
+NasUploadPage.releaseBtnRenameSubmit = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.removeAttr("disabled");
+}
+
+NasUploadPage.releaseBtnDelete = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnDelete.removeAttr("disabled");
+}
+
+NasUploadPage.releaseBtnCopyTo = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnCopyTo.removeAttr("disabled");
+}
+
+NasUploadPage.releaseBtnMoveTo = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnMoveTo.removeAttr("disabled");
+}
+
+NasUploadPage.updateBrowserPanel = function (_content = null) {
+    if (_content != null)
+        $("#nas-browser").html(_content);
+
+    NasUploadPage.Elements.m_InputNewFolder = $("#input-new-folder");
+    NasUploadPage.Elements.m_BtnNewFolderReset = $("#btn-new-folder-reset");
+    NasUploadPage.Elements.m_BtnNewFolderSubmit = $("#btn-new-folder-submit");
+}
+
+NasUploadPage.updateUploadLocation = function () {
     if (window.NasUploader.m_ActiveTusUpload != null)
         return;
 
-    NasUploader.m_UploadLocation = $("#current-location").text();
-    $("#upload-location").html("root/" + NasUploader.m_UploadLocation);
-    //window.alert(newLocation);
+    NasUploadPage.m_CurrentLocation = $("#current-location").text();
+    window.NasUploader.m_UploadLocation = NasUploadPage.m_CurrentLocation;
+    $("#upload-location").html("root/" + NasUploadPage.m_CurrentLocation);
 }
 
-function updateBrowserPanel() {
-    NewFolderInput.m_Input = $("#input-new-folder");
-    NewFolderInput.m_BtnReset = $("#btn-new-folder-reset");
-    NewFolderInput.m_BtnSubmit = $("#btn-new-folder-submit");
+NasUploadPage.resetRenameForm = function () {
+    NasUploadPage.ManagePanel.Elements.m_InputRename.val(NasUploadPage.ManagePanel.m_OrgFileName);
+    NasUploadPage.ManagePanel.Elements.m_InputRename.removeClass("text-success");
+    NasUploadPage.ManagePanel.Elements.m_BtnRenameReset.attr("disabled", true);
+    NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.attr("disabled", true);
+}
 
+NasUploadPage.submitRename = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnRenameSubmit.attr("disabled", true);
+
+    let path = NasUploadPage.ManagePanel.m_OrgFileName;
+    if (NasUploadPage.ManagePanel.m_Path != "")
+        path = NasUploadPage.ManagePanel.m_Path + "/" + path;
+    let newName = NasUploadPage.ManagePanel.Elements.m_InputRename.val();
+    let fileType = NasUploadPage.ManagePanel.m_FileType;
+
+    NasUploadPage.ajax_rename(path, newName, fileType);
+}
+
+NasUploadPage.submitCopy = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnCopyTo.attr("disabled", true);
+
+    let srcDir = NasUploadPage.ManagePanel.m_OrgFileName;
+    if (NasUploadPage.ManagePanel.m_Path != "")
+        srcDir = NasUploadPage.ManagePanel.m_Path + "/" + srcDir;
+
+    let dstDir = NasUploadPage.ManagePanel.Elements.m_InputDst.val();
+
+    NasUploadPage.ajax_copyTo(srcDir, dstDir);
+}
+
+NasUploadPage.submitMove = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnMoveTo.attr("disabled", true);
+
+    let srcDir = NasUploadPage.ManagePanel.m_OrgFileName;
+    if (NasUploadPage.ManagePanel.m_Path != "")
+        srcDir = NasUploadPage.ManagePanel.m_Path + "/" + srcDir;
+
+    let dstDir = NasUploadPage.ManagePanel.Elements.m_InputDst.val();
+
+    NasUploadPage.ajax_moveTo(srcDir, dstDir);
+}
+
+NasUploadPage.submitDelete = function () {
+    NasUploadPage.ManagePanel.Elements.m_BtnDelete.attr("disabled", true);
+
+    let path = NasUploadPage.ManagePanel.m_OrgFileName;
+    if (NasUploadPage.ManagePanel.m_Path != "")
+        path = NasUploadPage.ManagePanel.m_Path + "/" + path;
+    let fileType = NasUploadPage.ManagePanel.m_FileType;
+
+    NasUploadPage.ajax_delete(path, fileType);
+}
+
+NasUploadPage.isFileNameValid = function (_filename, _isFolder = false) {
+    /* Reference:
+     * https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+     */
+
+    // file name cannot be all white spaces;
+    if (_filename.trim() == "")
+        return false;
+
+    // file name cannot be "." (Current Directory) or ".." (Parent Directory);
+    if (_filename == "." || _filename == "..")
+        return false;
+
+    // file name cannot end with white space or period character;
+    if (_filename.endsWith(' ') || _filename.endsWith('.'))
+        return false;
+
+    // file name cannot contains any of invalid characters;
+    for (let i = 0; i < P24Utils.InvalidFilenameChars.length; ++i) {
+        if (_filename.indexOf(P24Utils.InvalidFilenameChars[i]) >= 0)
+            return false;
+    }
+
+    // file name cannot be any of reserved names;
+    _filename = _filename.toUpperCase();
+    for (let i = 0; i < P24Utils.InvalidFilenameString.length; ++i) {
+
+        if (_filename == P24Utils.InvalidFilenameString[i] >= 0)
+            return false;
+
+        if (!_isFolder && _filename.startsWith(P24Utils.InvalidFilenameString[i] + "."))
+            return false;
+    }
+
+    return true;
 }
 
 // END: helpers

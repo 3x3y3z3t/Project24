@@ -1,5 +1,5 @@
 /*  modal/modal.js
- *  Version: 1.1 (2023.01.06)
+ *  Version: 1.2 (2023.01.27)
  *
  *  Contributor
  *      Arime-chan
@@ -14,6 +14,16 @@ Modals.CommonInfoModal.Icon = null;
 Modals.CommonInfoModal.Body = null;
 Modals.CommonInfoModal.Footer = null;
 
+Modals.Common = {};
+
+Modals.Common.Confirm = {};
+Modals.Common.Confirm.m_Modal = null;
+Modals.Common.Confirm.m_Header = null;
+Modals.Common.Confirm.m_Icon = null;
+Modals.Common.Confirm.m_Body = null;
+Modals.Common.Confirm.m_BtnYes = null;
+Modals.Common.Confirm.m_BtnNo = null;
+
 $(document).ready(function () {
 
     Modals.CommonInfoModal.Modal = $("#modal-common-info");
@@ -22,7 +32,41 @@ $(document).ready(function () {
     Modals.CommonInfoModal.Body = $("#modal-common-info-body");
     Modals.CommonInfoModal.Footer = $("#modal-common-info-footer");
 
+    Modals.Common.Confirm.m_Modal = $("#modal-common-confirm");
+    Modals.Common.Confirm.m_Header = $("#modal-common-confirm-header");
+    Modals.Common.Confirm.m_Icon = $("#modal-common-confirm-icon");
+    Modals.Common.Confirm.m_Body = $("#modal-common-confirm-body");
+    Modals.Common.Confirm.m_BtnYes = $("#modal-common-confirm-btn-yes");
+    Modals.Common.Confirm.m_BtnNo = $("#modal-common-confirm-btn-no");
+
+    if (Modals.Common.Confirm.m_Modal != null) {
+        Modals.Common.Confirm.m_Modal.on("hide.bs.modal", function (_e) {
+            Modals.Common.Confirm.m_Header.html("");
+            Modals.Common.Confirm.m_Icon.html("");
+            Modals.Common.Confirm.m_Body.html("");
+            //Modals.Common.Confirm.m_BtnYes.html("");
+            //Modals.Common.Confirm.m_BtnNo.html("");
+
+            Modals.Common.Confirm.m_BtnYes.attr("onclick", "");
+            Modals.Common.Confirm.m_BtnNo.attr("onclick", "");
+        });
+    }
+
 });
+
+Modals.Common.Confirm.openModal = function (_header, _body, _fnNameYes) {
+    if (_header != null)
+        Modals.Common.Confirm.m_Header.html(_header);
+
+    if (_body != null)
+        Modals.Common.Confirm.m_Body.html(_body);
+
+    Modals.Common.Confirm.m_BtnYes.attr("onclick", _fnNameYes);
+
+    Modals.Common.Confirm.m_Icon.html(Modals.Common.buildSvgIcon("info"));
+
+    Modals.Common.Confirm.m_Modal.modal();
+}
 
 // ==================================================
 // event
@@ -110,6 +154,10 @@ Modals.CommonInfoModal.buildSvgIcon = function (_name) {
     let html = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + size + "\" height=\"" + size + "\" fill=\"currentColor\" class=\"bi " + iconClass + "\" viewBox=\"0 0 16 16\">"
         + path + "</svg>";
     return html;
+}
+
+Modals.Common.buildSvgIcon = function (_name) {
+    return Modals.CommonInfoModal.buildSvgIcon(_name);
 }
 
 // END: helper

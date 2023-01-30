@@ -1,5 +1,5 @@
-﻿@*  _NoScrollLayout.cshtml
-    *  Version: 1.0 (2022.11.13)
+@*  _NoScrollLayout.cshtml
+    *  Version: 1.1 (2023.01.17)
     *
     *  Contributor
     *      Arime-chan
@@ -14,6 +14,8 @@
     <title>@ViewData["Title"] - Project24</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+
+    @RenderSection("Stylesheets", required: false)
 </head>
 
 <body class="d-flex flex-column flex-nowrap h-100" style="min-height: 100%;">

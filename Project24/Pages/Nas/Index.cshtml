@@ -1,5 +1,5 @@
-﻿@*  Index.cshtml
-    *  Version: 1.4 (2022.12.25)
+@*  Index.cshtml
+    *  Version: 1.5 (2023.01.30)
     *
     *  Contributor
     *      Arime-chan
@@ -16,6 +16,10 @@
 <div class="container h-100">
     <partial name="_NasBrowser" model="@Model.Data" />
 </div>
+
+@section Stylesheets {
+    <link rel="stylesheet" href="~/css/nas/nas.css" />
+}
 
 @section Scripts {
     <script src="~/js/nas/nas-index.js"></script>

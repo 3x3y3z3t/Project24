@@ -1,0 +1,54 @@
+/*  nas/nas.css
+ *  Version: 1.0 (2023.01.27)
+ *
+ *  Contributor
+ *      Arime-chan
+ */
+
+.div-table {
+}
+
+.div-tr {
+    border-top: 1px solid #e5e5e5 !important; /* color taken from bootstrap */
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+}
+
+    .div-tr.div-th {
+        border-bottom: 2px solid #e5e5e5 !important; /* color taken from bootstrap */
+        font-weight: bold !important;
+        width: 100% !important;
+    }
+
+.div-table.div-table-hover .div-tr:hover {
+    background-color: rgba(0,0,0,.075);
+}
+
+.div-tr .col-icon {
+    text-align: left;
+    width: 5ch;
+}
+
+.div-tr .col-filename {
+    flex-grow: 1;
+    padding-right: 0.25rem;
+    text-align: left;
+}
+
+.div-tr .col-lastmod {
+    flex-grow: 0;
+    flex-shrink: 0;
+    text-align: right;
+    width: 15ch;
+}
+
+.div-tr .col-size {
+    flex-grow: 0;
+    flex-shrink: 0;
+    text-align: right;
+    width: 11ch;
+}
+
+.tooltip-custom-nas {
+    background-color: #f5f5f5;
+}

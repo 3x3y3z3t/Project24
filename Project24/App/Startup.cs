@@ -1,4 +1,4 @@
-﻿/*  Startup.cs
+/*  Startup.cs
  *  Version: 1.13 (2022.11.30)
  *
  *  Contributor

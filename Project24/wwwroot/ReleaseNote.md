@@ -1,4 +1,13 @@
 
+#### v0.15.0 (2023.01.30)
+- Added Copy/Move function in NAS Upload.
+- Fixed Search by address on Clinic Manager side.
+- Fixed some visual bug on NAS Upload page.
+- Reworked Create New Folder, Rename and Delete function in NAS Upload.
+- Reworked NAS browser display.
+
+---
+
 #### v0.14.1 (2023.01.07)
 - Fixed Search function in Customer List (Clinic Manager side).
 - Minor QoL updates.

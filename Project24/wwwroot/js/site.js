@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.4 (2022.12.29)
+ *  Version: 1.5 (2023.01.29)
  *
  *  Contributor
  *      Arime-chan
@@ -52,6 +52,34 @@ var HttpStatusCodeName = {
     '504': 'Gateway Timeout',
     '505': 'HTTP Version Not Supported',
 };
+
+// =====
+window.P24Utils = {};
+
+P24Utils.InvalidFilenameChars = [
+    '\u0000', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007', '\u0008', '\u0009', '\u000a', '\u000b', '\u000c', '\u000d', '\u000e', '\u000f',
+    '\u0010', '\u0011', '\u0012', '\u0013', '\u0014', '\u0015', '\u0016', '\u0017', '\u0018', '\u0019', '\u001a', '\u001b', '\u001c', '\u001d', '\u001e', '\u001f',
+    '\\', '/', ':', '*', '?', '\"', '<', '>', '|'
+];
+
+P24Utils.InvalidFilenameString = [
+    "CON", "PRN", "AUX", "NUL",
+    "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+    "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+];
+
+P24Utils.ajax_error = function (_xhr, _textStatus, _errorThrown) {
+    let body = "<div>Status Code: <code>" + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "</code></div><div>jq Status: <code>" + _textStatus + "</code></div>";
+    Modals.CommonInfoModal.openErrorModal("Request error", body, null);
+}
+
+P24Utils.getFileExtension = function (_fileName) {
+    let pos = _fileName.lastIndexOf('.');
+    if (pos <= 0)
+        return "";
+    else
+        return _fileName.substring(pos + 1);
+}
 
 function formatDataLength(_length) {
     const oneKiB = 1024;

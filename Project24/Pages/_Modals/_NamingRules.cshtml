@@ -1,0 +1,64 @@
+@*  _Modals/_NamingRules.cshtml
+    *  Version: 1.0 (2023.01.17)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+<div id="modal-naming-rules" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Project24 NAS Naming Conventions</h4>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body">
+
+                <p>Project24 NAS employs naming convention that ensure compatibility with Linux and Windows.</p>
+                <p>Files and Folders' name must:</p>
+
+                <ul>
+                    <li><i>Not be</i> all white spaces.</li>
+                    <li><i>Not be</i> <code>.</code> (current directory) or <code>..</code> (parent directory).</li>
+                    <li><i>Not end with</i> white space or period character (<code>.</code>).</li>
+                    <li>
+                        <i>Not contain any</i> of the following <b>reserved characters</b>:
+                        <ul>
+                            <li><code>\</code> (backslash)</li>
+                            <li><code>/</code> (slash)</li>
+                            <li><code>:</code> (colon)</li>
+                            <li><code>*</code> (asterisk)</li>
+                            <li><code>?</code> (question mark)</li>
+                            <li><code>&quot;</code> (quotation mark)</li>
+                            <li><code>&lt;</code> (less than)</li>
+                            <li><code>&gt;</code> (greater than)</li>
+                            <li><code>|</code> (vertical bar/pipe)</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <i>Not contain any</i> of the following <b>control characters</b>:
+                        <ul>
+                            <li>Characters whose integer representations are in range of 0 through 31 (<code>0x00</code> through <code>0x1f</code>)</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <i>Not be any</i> of the following <b>reserved names</b>:
+                        <ul>
+                            <li><code>CON</code>, <code>PRN</code>, <code>AUX</code>, <code>NUL</code></li>
+                            <li><code>COM0</code>, <code>COM1</code>, <code>COM2</code>, <code>COM3</code>, <code>COM4</code>, <code>COM5</code>, <code>COM6</code>, <code>COM7</code>, <code>COM8</code>, <code>COM9</code></li>
+                            <li><code>LPT0</code>, <code>LPT1</code>, <code>LPT2</code>, <code>LPT3</code>, <code>LPT4</code>, <code>LPT5</code>, <code>LPT6</code>, <code>LPT7</code>, <code>LPT8</code>, <code>LPT9</code></li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+            </div>
+
+        </div>
+    </div>
+</div>

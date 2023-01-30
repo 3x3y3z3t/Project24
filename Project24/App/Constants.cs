@@ -1,5 +1,5 @@
 /*  Constants.cs
- *  Version: 1.11 (2023.01.07)
+ *  Version: 1.12 (2023.01.29)
  *
  *  Contributor
  *      Arime-chan
@@ -32,7 +32,7 @@ namespace Project24
     public static class Constants
     {
         public const string DefaultPassword = "123@123a";
-
+        public const int MaxFileDuplication = 100;
     }
 
     public static class AppConfig
@@ -160,6 +160,8 @@ namespace Project24
         public const string Info = "<info>";
         public const string Warning = "<warn>";
         public const string Error = "<fail>";
+
+        public const string Exception = "<excp>";
     }
 
     public static class P24RoleName

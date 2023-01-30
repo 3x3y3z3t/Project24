@@ -1,5 +1,5 @@
-﻿@*  Upload.cshtml
-    *  Version: 1.10 (2022.12.25)
+@*  Upload.cshtml
+    *  Version: 1.11 (2023.01.17)
     *
     *  Contributor
     *      Arime-chan
@@ -8,7 +8,6 @@
 @page
 
 @model Project24.Pages.Nas.UploadModel
-
 @{
     ViewData["Title"] = "Upload";
     ViewData[CustomInfoKey.UseFullWidth] = "true";
@@ -93,10 +92,6 @@
             <hr />
         </div>
 
-        <div>
-            <p id="files-list-overview">Total: 0 file</p>
-        </div>
-
         <div id="files-list" class="overflow-auto mh-100">
         </div>
     </div>
@@ -105,12 +100,19 @@
 
 <partial name="_Upload_Modal" />
 
-@section Scripts {
-    <link rel="stylesheet" href="~/lib/jstree/dist/themes/default/style.min.css" />
+<partial name="_Modals/_CommonInfoModal" />
+<partial name="_Modals/_CommonConfirmModal" />
+<partial name="_Modals/_NamingRules" />
 
+@section Stylesheets {
+    <link rel="stylesheet" href="~/css/nas/nas.css" />
+}
+
+@section Scripts {
+    <script src="~/js/modal/modal.js"></script>
     <script src="~/js/nas/nas-upload.js"></script>
-    <script src="~/js/nas/nas-upload-uploader.js"></script>
     <script src="~/js/nas/nas-upload-tus-uploader.js"></script>
-    <script src="~/js/nas/nas-utils.js"></script>
+    <script src="~/js/nas/nas-upload-uploader.js"></script>
+
     <script src="~/lib/tus-js-client/tus.min.js"></script>
 }
