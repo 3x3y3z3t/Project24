@@ -1,5 +1,5 @@
 /*  Drug.cs
- *  Version: 1.0 (2022.12.29)
+ *  Version: 1.1 (2023.02.12)
  *
  *  Contributor
  *      Arime-chan
@@ -26,6 +26,8 @@ namespace Project24.Models.Inventory.ClinicManager
         public string Note { get; set; }
 
         public int? Amount { get; set; }
+
+        public bool Hidden { get; set; } = false;
 
         public DateTime DeletedDate { get; set; } = DateTime.MinValue;
 

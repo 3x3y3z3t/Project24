@@ -1,5 +1,5 @@
 @*  P24/Ticket/Details.cshtml
-    *  Version: 1.5 (2023.01.07)
+    *  Version: 1.6 (2023.02.13)
     *
     *  Contributor
     *      Arime-chan
@@ -57,9 +57,10 @@
     </div>
 
     <div class="col-12 col-md-6">
+        @* Customer quickinfo *@
         <div class="mb-2">
             <div class="font-weight-bold">
-                <a href="#" data-toggle="collapse" data-target="#div-customer-view">Bệnh nhân <i>@Model.TicketViewData.Customer.Code</i> (click để mở rộng)</a>
+                <a href="#" data-toggle="collapse" data-target="#div-customer-view">Bệnh nhân <span class="text-success">@Model.TicketViewData.Customer.Code</span> (click để mở rộng)</a>
             </div>
 
             <div id="div-customer-view" class="collapse">
@@ -82,11 +83,12 @@
             <hr />
         </div>
 
+        @* Drug export quickinfo *@
         <div class="mb-2">
             @if (Model.TicketViewData.DrugExportBatchId != null)
             {
                 <div class="font-weight-bold">
-                    <a href="#" data-toggle="collapse" data-target="#div-export-view">Phiếu tiêu hao <i>@Model.TicketViewData.DrugExportBatchId</i> (click để mở rộng)</a>
+                    <a href="#" data-toggle="collapse" data-target="#div-export-view">Phiếu tiêu hao <span class="text-success">@Model.TicketViewData.DrugExportBatchId</span> (click để mở rộng)</a>
                 </div>
 
                 <div id="div-export-view" class="collapse">
@@ -117,7 +119,7 @@
             else
             {
                 <div class="font-weight-bold">
-                    <a asp-page="/ClinicManager/Inventory/Export/Create" asp-route-_ticketCode="@Model.TicketViewData.Code">Thêm phiếu tiêu hao</a>
+                    <a asp-page="/ClinicManager/Inventory/Export/Create" asp-route-_ticketCode="@Model.TicketViewData.Code" class="btn btn-primary">Thêm phiếu tiêu hao</a>
                 </div>
             }
             <hr />
@@ -142,6 +144,13 @@
     <partial name="_CommonListImage" model="@Model.ListImageModel" />
 </div>
 
+<partial name="_CommonListImage_Modal" model="@Model.ListImageModel" />
+
+@section Stylesheets {
+    <link rel="stylesheet" href="~/css/nas/nas.css" />
+}
+
 @section Scripts {
+    <script src="~/js/modal/modal.js"></script>
     <script src="~/js/clinic-manager/clinic-manager-utils.js"></script>
 }

@@ -1,5 +1,5 @@
-﻿/*  DriveUtils.cs
- *  Version: 1.7 (2022.11.08)
+/*  DriveUtils.cs
+ *  Version: 1.8 (2023.02.13)
  *
  *  Contributor
  *      Arime-chan
@@ -43,6 +43,7 @@ namespace Project24.App
             // create directory for app data container;
             Directory.CreateDirectory(DataRootPath);
             Directory.CreateDirectory(DeletedDataRootPath);
+            Directory.CreateDirectory(DataRootPath + "/thumb");
 
             // create directory for app nas container;
             Directory.CreateDirectory(NasRootPath);

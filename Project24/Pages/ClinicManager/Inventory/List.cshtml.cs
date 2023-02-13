@@ -1,5 +1,5 @@
 /*  P24/Inventory/List.cshtml.cs
- *  Version: 1.2 (2023.01.07)
+ *  Version: 1.3 (2023.02.13)
  *
  *  Contributor
  *      Arime-chan
@@ -57,6 +57,7 @@ namespace Project24.Pages.ClinicManager.Inventory
         public async Task OnGetAsync()
         {
             var drugs = await (from _drug in m_DbContext.Drugs
+                               orderby _drug.Name
                                select new StorageDrugViewModel()
                                {
                                    Drug = _drug
@@ -73,6 +74,7 @@ namespace Project24.Pages.ClinicManager.Inventory
 
             var drugs = await (from _drug in m_DbContext.Drugs
                                where _drug.Name.Contains(_name, StringComparison.OrdinalIgnoreCase)
+                               orderby _drug.Name
                                select new StorageDrugViewModel()
                                {
                                    Drug = _drug
@@ -89,6 +91,7 @@ namespace Project24.Pages.ClinicManager.Inventory
         public async Task<IActionResult> OnGetFetchAvailDrugsInfoAsync()
         {
             var drugs = await (from _drug in m_DbContext.Drugs
+                               orderby _drug.Name
                                select new
                                {
                                    _drug.Name,
@@ -106,6 +109,7 @@ namespace Project24.Pages.ClinicManager.Inventory
         public async Task<IActionResult> OnGetFetchAvailDrugsInfoWithAmountAsync()
         {
             var drugs = await (from _drug in m_DbContext.Drugs
+                               orderby _drug.Name
                                select new
                                {
                                    _drug.Name,
@@ -118,6 +122,28 @@ namespace Project24.Pages.ClinicManager.Inventory
             string json = JsonSerializer.Serialize(drugs, new JsonSerializerOptions() { Encoder = jsonEncoder });
 
             return Content(CustomInfoTag.Success + json, MediaTypeNames.Text.Plain);
+        }
+
+        // ajax call only;
+        public async Task<IActionResult> OnPostHideDrug(int _drugId, bool _hidden)
+        {
+            P24IdentityUser currentUser = await m_UserManager.GetUserAsync(User);
+            if (!await this.ValidateModelState(m_DbContext, currentUser, ActionRecord.Operation_.HideUnhideDrug))
+                return Content(CustomInfoTag.Error + ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
+
+            var drug = await (from _drug in m_DbContext.Drugs
+                              where _drug.Id == _drugId
+                              select _drug)
+                       .FirstOrDefaultAsync();
+
+            if (drug == null)
+                return Content(CustomInfoTag.Error + string.Format(P24Message.RecordNotFound, _drugId), MediaTypeNames.Text.Plain);
+
+            drug.Hidden = _hidden;
+            m_DbContext.Update(drug);
+            await m_DbContext.SaveChangesAsync();
+
+            return Content(CustomInfoTag.Success, MediaTypeNames.Text.Plain);
         }
 
         // ajax call only;

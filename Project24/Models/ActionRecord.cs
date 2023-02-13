@@ -1,5 +1,5 @@
 /*  ActionLog.cs
- *  Version: 1.17 (2023.01.29)
+ *  Version: 1.18 (2023.02.14)
  *
  *  Contributor
  *      Arime-chan
@@ -23,6 +23,11 @@ namespace Project24.Models
             public const string UpdateUser = "Update User";
             public const string DetailUser = "Detail User";
 
+            public const string ImageManager_RenameCustomerImage = "Rename Customer Image";
+            public const string ImageManager_RenameTicketImage = "Rename Ticket Image";
+            public const string ImageManager_DeleteCustomerImage = "Delete Customer Image";
+            public const string ImageManager_DeleteTicketImage = "Delete Ticket Image";
+
             public const string CreateCustomer = "Create Customer";
             public const string CreateCustomer_CreateImage = "Create Customer Image";
             public const string DeleteCustomer = "Delete Customer";
@@ -37,6 +42,7 @@ namespace Project24.Models
             public const string UpdateTicket = "Update Visiting Ticket";
             public const string DetailTicket = "Detail Visiting Ticket";
 
+            public const string HideUnhideDrug = "Hide/Unhide Drug";
             public const string ValidateDrugStorage = "Verify Drug Storage";
             public const string InventoryImportCreate = "Inventory Import Create";
             public const string InventoryImportDelete = "Inventory Import Delete";

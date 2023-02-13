@@ -1,5 +1,5 @@
 /*  Enums.cs
- *  Version: 1.4 (2023.01.06)
+ *  Version: 1.5 (2023.02.11)
  *
  *  Contributor
  *      Arime-chan
@@ -28,14 +28,14 @@ namespace Project24.App
 
     public static class P24ExportType_
     {
-        /// <summary> Represents retail sale. </summary>
-        public const string Retail = "Retail";
+        /// <summary> Represents usage as consumptiosn during services. This export will always attaches to a Visiting Ticket. </summary>
+        public const string Ticket = "Ticket";
 
-        /// <summary> Represents usage as consumptiosn during services. </summary>
-        public const string Consumption = "Consumption";
+        /// <summary> Represents common daily or monthly consumption. </summary>
+        public const string Common = "Common";
 
-        /// <summary> Represents a free distribution or after-service service. </summary>
-        public const string FreeService = "FreeService";
+        /// <summary> Represents throwing away equipment (due to expired or damaged). </summary>
+        public const string Dump = "Dump";
     }
 
 }

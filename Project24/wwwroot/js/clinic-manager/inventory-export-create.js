@@ -1,5 +1,5 @@
 /*  inventory-export-create.js
- *  Version: 1.1 (2023.01.03)
+ *  Version: 1.2 (2023.02.13)
  *
  *  Contributor
  *      Arime-chan
@@ -26,6 +26,7 @@ ExportCreatePage.Elements.m_TbodyAddedList = null;
 
 ExportCreatePage.Elements.m_BtnAdd = null;
 ExportCreatePage.Elements.m_BtnFinish = null;
+ExportCreatePage.Elements.m_BtnCreateBlank = null;
 
 
 $(document).ready(function () {
@@ -39,6 +40,7 @@ $(document).ready(function () {
 
     ExportCreatePage.Elements.m_BtnAdd = $("#btn-add");
     ExportCreatePage.Elements.m_BtnFinish = $("#btn-finish");
+    ExportCreatePage.Elements.m_BtnCreateBlank = $("#btn-create-blank");
 
 
     ExportCreatePage.ajax_fetchAvailDrugsInfo();
@@ -142,6 +144,8 @@ function btnFinish() {
     if (ExportCreatePage.getAddedCount() <= 0)
         return;
 
+    ExportCreatePage.Elements.m_BtnFinish.attr("disabled", true);
+
     let dataList = [];
 
     for (let i = 0; i < ExportCreatePage.Backend.m_AddIndex; ++i) {
@@ -154,7 +158,15 @@ function btnFinish() {
 
     let ticketCode = $("#a-ticket-code").text();
     let formData = { "TicketCode": ticketCode, "Data": dataList };
+
     ExportCreatePage.ajax_Submit(formData);
+}
+
+function btnCreateBlank_onClick() {
+    ExportCreatePage.Elements.m_BtnCreateBlank.attr("disabled", true);
+
+    let ticketCode = $("#a-ticket-code").text();
+    ExportCreatePage.ajax_Submit({ "TicketCode": ticketCode, "Data": [] });
 }
 
 function btnUpdate_modal() {
@@ -198,6 +210,7 @@ ExportCreatePage.submit_success = function (_content, _textStatus, _xhr) {
 
         ExportCreatePage.Elements.m_TbodyAddedList.html("");
         ExportCreatePage.Elements.m_BtnFinish.attr("disabled", true);
+        ExportCreatePage.Elements.m_BtnCreateBlank.removeAttr("disabled");
 
         Modals.CommonInfoModal.openSuccessModal("Thành công", body, null);
 
@@ -256,6 +269,7 @@ ExportCreatePage.validateAmount = function () {
     if (amount <= 0) {
         html += "<li>Số lượng phải lớn hơn 0</li>";
         ExportCreatePage.Elements.m_UlValidationMsg.html(html);
+        return false;
     }
 
     let name = ExportCreatePage.Elements.m_InputName.val();

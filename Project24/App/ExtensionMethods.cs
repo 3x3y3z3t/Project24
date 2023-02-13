@@ -1,5 +1,5 @@
 /*  ExtensionMethods.cs
- *  Version: 1.2 (2023.01.07)
+ *  Version: 1.3 (2023.02.14)
  *
  *  Contributor
  *      Arime-chan
@@ -8,12 +8,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mime;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Project24.Data;
@@ -44,7 +42,7 @@ namespace Project24.App.Extension
         }
 
         public static async Task RecordChanges(this ApplicationDbContext _dbContext,
-            string _username, 
+            string _username,
             string _operation,
             string _status,
             Dictionary<string, string> _customInfo = null)
@@ -121,6 +119,7 @@ namespace Project24.App.Extension
                                    AddedUserName = _batch.AddedUser.UserName,
                                    AddedDate = _batch.AddedDate,
                                    Type = P24ImportExportType.Export,
+                                   ExportType = _batch.ExportType,
                                    TicketCode = _batch.Ticket.Code
                                })
                           .FirstOrDefaultAsync();
@@ -144,37 +143,46 @@ namespace Project24.App.Extension
             return batch;
         }
 
-        //public static async Task<IActionResult> DrugImport_GetBatchDetailsAsync_ReturnContent(this PageModel _page, ApplicationDbContext _dbContext, int _batchId)
-        //{
-        //    var batch = await (from _batch in _dbContext.DrugImportBatches.Include(_b => _b.AddedUser)
-        //                       where _batch.Id == _batchId
-        //                       select new ImportExportBatchViewModel()
-        //                       {
-        //                           Id = _batch.Id,
-        //                           AddedUserName = _batch.AddedUser.UserName,
-        //                           AddedDate = _batch.AddedDate
-        //                       })
-        //                  .FirstOrDefaultAsync();
+        public static async Task<List<P24ImageViewModel>> FetchCustomerImages(this Project24.Pages.ClinicManager.ImageManagerModel _page,
+                                                                         ApplicationDbContext _dbContext, string _customerCode)
+        {
+            return await FetchCustomerImagesInternal(_dbContext, _customerCode);
+        }
 
-        //    var importations = await (from _importation in _dbContext.DrugImportations.Include(_im => _im.Drug)
-        //                              where _importation.ImportBatchId == _batchId
-        //                              select new ImportExportQuickViewModel()
-        //                              {
-        //                                  Id = _importation.Id,
-        //                                  Name = _importation.Drug.Name,
-        //                                  Amount = _importation.Amount,
-        //                                  Unit = _importation.Drug.Unit
-        //                              })
-        //                       .ToListAsync();
+        public static async Task<List<P24ImageViewModel>> FetchTicketImages(this Project24.Pages.ClinicManager.ImageManagerModel _page,
+                                                                         ApplicationDbContext _dbContext, string _ticketCode)
+        {
+            return await FetchTicketImagesInternal(_dbContext, _ticketCode);
+        }
 
-        //    batch.List = importations;
 
-        //    var jsonEncoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-        //    string json = JsonSerializer.Serialize(batch, new JsonSerializerOptions() { Encoder = jsonEncoder });
 
-        //    return _page.Content(CustomInfoTag.Success + json, MediaTypeNames.Text.Plain);
+        private static async Task<List<P24ImageViewModel>> FetchCustomerImagesInternal(ApplicationDbContext _dbContext, string _customerCode)
+        {
+            var images = from _image in _dbContext.CustomerImages.Include(_i => _i.OwnerCustomer)
+                         where _image.OwnerCustomer.Code == _customerCode && _image.DeletedDate == DateTime.MinValue
+                         select new P24ImageViewModel()
+                         {
+                             Id = _image.Id,
+                             Path = _image.Path,
+                             Name = _image.Name
+                         };
+            return await images.ToListAsync();
+        }
 
-        //}
+        private static async Task<List<P24ImageViewModel>> FetchTicketImagesInternal(ApplicationDbContext _dbContext, string _ticketCode)
+        {
+            var images = from _image in _dbContext.TicketImages.Include(_i => _i.OwnerTicket)
+                         where _image.OwnerTicket.Code == _ticketCode && _image.DeletedDate == DateTime.MinValue
+                         select new P24ImageViewModel()
+                         {
+                             Id = _image.Id,
+                             Path = _image.Path,
+                             Name = _image.Name
+                         };
+            return await images.ToListAsync();
+        }
+
 
     }
 

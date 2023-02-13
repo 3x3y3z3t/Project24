@@ -1,5 +1,5 @@
 /*  P24/Inventory/Export/List.cshtml
- *  Version: 1.0 (2023.01.07)
+ *  Version: 1.1 (2023.02.12)
  *
  *  Contributor
  *      Arime-chan
@@ -37,7 +37,8 @@ namespace Project24.Pages.ClinicManager.Inventory.Export
                                      Id = _batch.Id,
                                      AddedUserName = _batch.AddedUser.UserName,
                                      AddedDate = _batch.AddedDate,
-                                     Type = P24ImportExportType.Export
+                                     Type = P24ImportExportType.Export,
+                                     ExportType = _batch.ExportType
                                  })
                           .ToListAsync();
 

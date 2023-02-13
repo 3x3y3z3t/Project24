@@ -1,5 +1,5 @@
 /*  P24/Customer/Delete.cshtml
- *  Version: 1.4 (2022.12.29)
+ *  Version: 1.5 (2023.02.13)
  *
  *  Contributor
  *      Arime-chan
@@ -142,7 +142,7 @@ namespace Project24.Pages.ClinicManager.Customer
 
             Dictionary<string, string> customInfo = new Dictionary<string, string>()
             {
-                { CustomInfoKey.TicketCode, image.OwnerCustomer.Code }
+                { CustomInfoKey.CustomerCode, image.OwnerCustomer.Code }
             };
 
             var responseData = m_ImageManagerSvc.Delete(currentUser, image);

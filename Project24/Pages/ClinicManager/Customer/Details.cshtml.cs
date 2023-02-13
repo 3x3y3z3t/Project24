@@ -1,5 +1,5 @@
 /*  P24/Customer/Details.cshtml
- *  Version: 1.8 (2022.12.29)
+ *  Version: 1.9 (2023.02.11)
  *
  *  Contributor
  *      Arime-chan
@@ -61,7 +61,18 @@ namespace Project24.Pages.ClinicManager.Customer
             if (customer == null)
                 return Partial("_CommonNotFound", new CommonNotFoundModel(P24Constants.Customer, _code, "List"));
 
-            CustomerViewData = customer;
+            var tickets = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
+                                 where _ticket.Customer.Code == customer.Code && _ticket.DeletedDate == DateTime.MinValue
+                                 select new P24TicketDetailsViewModel()
+                                 {
+                                     Code = _ticket.Code,
+                                     Symptom = _ticket.Symptom,
+                                     Diagnose = _ticket.Diagnose,
+                                     Treatment = _ticket.ProposeTreatment,
+                                     Note = _ticket.Note,
+                                     AddedDate = _ticket.AddedDate
+                                 })
+                          .ToListAsync();
 
             var images = await (from _image in m_DbContext.CustomerImages.Include(_i => _i.OwnerCustomer)
                                 where _image.OwnerCustomer.Code == _code && _image.DeletedDate == DateTime.MinValue
@@ -73,6 +84,8 @@ namespace Project24.Pages.ClinicManager.Customer
                                 })
                          .ToListAsync();
 
+            CustomerViewData = customer;
+            CustomerViewData.Tickets = tickets;
             ListImageModel = new P24ImageListingModel()
             {
                 Module = P24Module.Customer,

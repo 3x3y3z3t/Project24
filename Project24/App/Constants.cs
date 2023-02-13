@@ -1,5 +1,5 @@
 /*  Constants.cs
- *  Version: 1.12 (2023.01.29)
+ *  Version: 1.13 (2023.02.13)
  *
  *  Contributor
  *      Arime-chan
@@ -45,11 +45,15 @@ namespace Project24
         public const string NasRoot = "/../../../../wwwNas/nasData";
 
         public const long MaxLogFileSize = 16L * 1024L * 1024L;
+        public const int ImageMaxWidth = 200;
+        public const int ImageMaxHeight = 200;
 
         public const int ThisYear = 2022;
 
         public const string CustomerCodeFormatString = "BN{0:yy}{0:MM}{0:dd}{1:00}";
         public const string TicketCodeFormatString = "PK{0:yy}{0:MM}{0:dd}{1:00}";
+
+        public static DateTime AppBeginDate = new DateTime(2022, 8, 31, 2, 18, 37, 135);
     }
 
     public static class ErrorMessage

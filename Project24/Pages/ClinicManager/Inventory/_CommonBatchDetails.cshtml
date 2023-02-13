@@ -1,5 +1,5 @@
 @*  P24/Inventory/_CommonBatchDetails.cshtml
-    *  Version: 1.0 (2023.01.07)
+    *  Version: 1.1 (2023.02.13)
     *
     *  Contributor
     *      Arime-chan
@@ -35,9 +35,21 @@
 
 @if (Model.Type == P24ImportExportType.Export)
 {
+    string thisMonth = DateTime.Now.Month + "." + DateTime.Now.Year;
+
     <div class="ml-3 font-italic">
-        Đính kèm: Phiếu khám
-        <a asp-page="/ClinicManager/Ticket/Details" asp-route-_code="@Model.TicketCode">@Model.TicketCode</a>
+        @if (Model.ExportType == P24ExportType_.Common)
+        {
+            <text>Phiếu tiêu hao chung tháng <span class="text-success">@thisMonth</span></text>
+        }
+        else if (Model.ExportType == P24ExportType_.Dump)
+        {
+            <text>Phiếu hủy vật tư tháng <span class="text-success">@thisMonth</span></text>
+        }
+        else
+        {
+            <text>Đính kèm: Phiếu khám <a asp-page="/ClinicManager/Ticket/Details" asp-route-_code="@Model.TicketCode">@Model.TicketCode</a></text>
+        }
     </div>
 }
 

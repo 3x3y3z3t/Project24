@@ -1,5 +1,5 @@
 @*  P24/Customer/List.cshtml
-    *  Version: 1.5 (2023.01.07)
+    *  Version: 1.6 (2023.02.13)
     *
     *  Contributor
     *      Arime-chan
@@ -41,13 +41,12 @@
 <table class="table table-sm table-hover">
     <thead>
         <tr>
-            <th style="width:12ch">Mã</th>
-            <th style="width:25ch">Họ và Tên</th>
-            <th style="width:12ch">SĐT</th>
-            <th style="">Địa chỉ</th>
-            <th style="">Ghi chú</th>
-            <th style="width:11ch">Phiếu khám</th>
-            <th style="width:9ch"></th>
+            <th>Mã</th>
+            <th>Họ và Tên</th>
+            <th>SĐT</th>
+            <th>Địa chỉ</th>
+            <th>Ghi chú</th>
+            <th class="text-center p24-table-col-ticket">Phiếu khám</th>
         </tr>
     </thead>
 
@@ -56,40 +55,29 @@
         {
             int age = AppConfig.ThisYear - customer.DoB;
             <tr>
-                <td>@customer.Code</td>
-                <td>@customer.Fullname (@age)</td>
-                <td>@customer.PhoneNumber</td>
+                <td class="p24-table-col-code text-break"><a asp-page="Details" asp-route-_code="@customer.Code">@customer.Code</a></td>
+                <td class="p24-table-col-name">@customer.Fullname (@age)</td>
+                <td class="p24-table-col-phone text-break">@customer.PhoneNumber</td>
                 <td>@customer.Address</td>
                 <td>@customer.Note</td>
 
                 <td class="text-center">
                     @if (customer.TicketCount <= 0)
                     {
-                        <div class="text-danger">
+                        <div class="p24-table-col-ticket text-danger">
                             <div>0</div>
                             <div><a asp-page="/ClinicManager/Ticket/Create" asp-route-_customerCode="@customer.Code">Thêm</a></div>
                         </div>
                     }
                     else
-                    {
-                        <div>@customer.TicketCount</div>
-                        <div>
-                            <a asp-page="/ClinicManager/Ticket/List" asp-page-handler="Search" asp-route-_code="@customer.Code">Xem</a> |
-                            <a asp-page="/ClinicManager/Ticket/Create" asp-route-_customerCode="@customer.Code">Thêm</a>
+                    {<div class="p24-table-col-ticket">
+                            <div>@customer.TicketCount</div>
+                            <div>
+                                <a asp-page="/ClinicManager/Ticket/List" asp-page-handler="Search" asp-route-_code="@customer.Code">Xem</a> |
+                                <a asp-page="/ClinicManager/Ticket/Create" asp-route-_customerCode="@customer.Code">Thêm</a>
+                            </div>
                         </div>
                     }
-                </td>
-
-                <td>
-                    <div class="text-center">
-                        <div>
-                            <a asp-page="Details" asp-route-_code="@customer.Code">Xem</a> |
-                            <a asp-page="Edit" asp-route-_code="@customer.Code">Sửa</a>
-                        </div>
-                        <div>
-                            <a asp-page="Delete" asp-route-_code="@customer.Code" class="text-danger font-weight-bold">Xóa</a>
-                        </div>
-                    </div>
                 </td>
             </tr>
         }

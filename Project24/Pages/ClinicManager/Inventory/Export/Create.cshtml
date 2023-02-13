@@ -1,15 +1,34 @@
 @*  P24/Inventory/Export/Create.cshtml
-    *  Version: 1.2 (2023.01.07)
+    *  Version: 1.3 (2023.02.12)
     *
     *  Contributor
     *      Arime-chan
 *@
 
 @page
+
+@using Project24.App;
 @model Project24.Pages.ClinicManager.Inventory.Export.CreateModel
 @{
     ViewData["Title"] = "Xuất kho";
+    ViewData["IsExport"] = true;
     Layout = "_Layout";
+
+    string exportType = (string)ViewData["ExportType"];
+
+    bool isCommonExport = false;
+    string exportBatchName = null;
+
+    if (exportType == P24ExportType_.Common)
+    {
+        exportBatchName = "tiêu hao chung";
+        isCommonExport = true;
+    }
+    else if (exportType == P24ExportType_.Dump)
+    {
+        exportBatchName = "hủy vật tư";
+        isCommonExport = true;
+    }
 
     string colClasses = "col-12 col-lg-7 col-xl-6";
     string colClassesInv = "col-12 col-lg-4 col-xl-5";
@@ -21,26 +40,37 @@
 <hr />
 
 <div class="d-flex flex-wrap">
-    <partial name="ClinicManager/Inventory/_CommonCreateAddList" model="colClasses" />
+    @if (isCommonExport)
+    {
+        string thisMonth = DateTime.Now.Month + "." + DateTime.Now.Year;
 
-    <div class="@colClassesInv border-left border-primary ml-3" style="border-left-width:thick">
-
-        <h3>Thông tin phiếu khám</h3>
-        <div class="text-muted">Vật tư được xuất kèm phiếu khám <a id="a-ticket-code" asp-page="../../Ticket/Details" asp-route-_code="@Model.Ticket.TicketCode">@Model.Ticket.TicketCode</a></div>
-        <hr />
-
-        <div class="mb-2">
-            <div><b>Bệnh nhân:</b></div>
-            <div class="ml-3">@Model.Ticket.CustomerInfo</div>
+        <div class="col-12 mb-4" style="font-size:large">
+            <div><b class="text-danger">Chú ý:</b> Tất cả vật tư này được thêm vào <span class="text-success">phiếu @exportBatchName tháng @thisMonth</span>.</div>
+            <div id="a-ticket-code" hidden>@exportType</div>
         </div>
 
-        <div class="mb-2">
-            <div><b>Chẩn đoán - Xử trí:</b></div>
-            <div class="ml-3">@Model.Ticket.TicketInfo</div>
+        <partial name="ClinicManager/Inventory/_CommonCreateAddList" model="colClasses" />
+    }
+    else
+    {
+        <partial name="ClinicManager/Inventory/_CommonCreateAddList" model="colClasses" />
+
+        <div class="@colClassesInv border-left border-primary ml-3" style="border-left-width:thick">
+            <h3>Thông tin phiếu khám</h3>
+            <div class="text-muted">Vật tư được xuất kèm phiếu khám <a id="a-ticket-code" asp-page="../../Ticket/Details" asp-route-_code="@Model.Ticket.TicketCode">@Model.Ticket.TicketCode</a></div>
+            <hr />
+
+            <div class="mb-2">
+                <div><b>Bệnh nhân:</b></div>
+                <div class="ml-3">@Model.Ticket.CustomerInfo</div>
+            </div>
+
+            <div class="mb-2">
+                <div><b>Chẩn đoán - Xử trí:</b></div>
+                <div class="ml-3">@Model.Ticket.TicketInfo</div>
+            </div>
         </div>
-
-    </div>
-
+    }
 </div>
 
 <partial name="_Modals/_CommonInfoModal" />

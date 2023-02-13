@@ -1,5 +1,5 @@
 /*  P24/Inventory/Export/Create.cshtml.cs
- *  Version: 1.0 (2022.12.31)
+ *  Version: 1.1 (2023.02.12)
  *
  *  Contributor
  *      Arime-chan
@@ -70,9 +70,15 @@ namespace Project24.Pages.ClinicManager.Inventory.Export
                 return BadRequest();
 
             if (string.IsNullOrEmpty(_returnUrl))
-                _returnUrl = Url.Content("~/ClinicManager/Index");
+                _returnUrl = Url.Content("~/ClinicManager/Inventory/List");
 
             ReturnUrl = _returnUrl;
+
+            if (_ticketCode == P24ExportType_.Common || _ticketCode == P24ExportType_.Dump)
+            {
+                ViewData["ExportType"] = _ticketCode;
+                return Page();
+            }
 
             var ticket = await (from _ticket in m_DbContext.TicketProfiles.Include(_t => _t.Customer)
                                 where _ticket.Code == _ticketCode && _ticket.DeletedDate == DateTime.MinValue
@@ -102,24 +108,20 @@ namespace Project24.Pages.ClinicManager.Inventory.Export
                 return Content(CustomInfoTag.Error + ErrorMessage.InvalidModelState, MediaTypeNames.Text.Plain);
 
             if (_formData.Data.Length <= 0)
+            {
+                if (User.IsInRole(P24RoleName.Admin))
+                    return await CreateEmptyBatch(_formData, currentUser);
+
                 return Content(CustomInfoTag.Error + "List Empty", MediaTypeNames.Text.Plain);
+            }
+
+            DrugOutBatch batch = await GetOrCreateDrugOutBatch(_formData.TicketCode, currentUser);
+            if (batch == null)
+                return Content(CustomInfoTag.Error + "Ticket " + _formData.TicketCode + " not found", MediaTypeNames.Text.Plain);
 
             var drugs = await (from _drug in m_DbContext.Drugs
                                select _drug)
                         .ToDictionaryAsync(_d => _d.Name);
-
-            var ticket = await (from _ticket in m_DbContext.TicketProfiles
-                                where _ticket.Code == _formData.TicketCode
-                                select _ticket)
-                         .FirstOrDefaultAsync();
-
-            if (ticket == null)
-                return Content(CustomInfoTag.Error + "Ticket " + _formData.TicketCode + " not found", MediaTypeNames.Text.Plain);
-
-            DrugOutBatch batch = new DrugOutBatch(currentUser, ticket)
-            {
-                ExportType = P24ExportType_.Consumption
-            };
 
             List<Drug> drugUpdateList = new List<Drug>();
             List<DrugOutRecord> exportAddList = new List<DrugOutRecord>();
@@ -146,14 +148,18 @@ namespace Project24.Pages.ClinicManager.Inventory.Export
 
             m_DbContext.UpdateRange(drugUpdateList);
             await m_DbContext.AddRangeAsync(exportAddList);
-            await m_DbContext.AddAsync(batch);
+
+            if ((batch.ExportType == P24ExportType_.Common || batch.ExportType == P24ExportType_.Dump) && batch.Id != 0)
+                m_DbContext.Update(batch);
+            else
+                await m_DbContext.AddAsync(batch);
 
             var jsonEncoder = JavaScriptEncoder.Create(UnicodeRanges.All);
             var json = JsonSerializer.Serialize(_formData.Data, new JsonSerializerOptions() { Encoder = jsonEncoder });
 
             await m_DbContext.RecordChanges(
                 currentUser.UserName,
-                ActionRecord.Operation_.InventoryImportCreate,
+                ActionRecord.Operation_.InventoryExportCreate,
                 ActionRecord.OperationStatus_.Success,
                 new Dictionary<string, string>()
                 {
@@ -163,6 +169,58 @@ namespace Project24.Pages.ClinicManager.Inventory.Export
             );
 
             return Content(CustomInfoTag.Success, MediaTypeNames.Text.Plain);
+        }
+
+        private async Task<IActionResult> CreateEmptyBatch(FormData _formData, P24IdentityUser _currentUser)
+        {
+            DrugOutBatch batch = await GetOrCreateDrugOutBatch(_formData.TicketCode, _currentUser);
+            if (batch == null)
+                return Content(CustomInfoTag.Error + "Ticket " + _formData.TicketCode + " not found", MediaTypeNames.Text.Plain);
+
+            if (batch.Id != 0)
+                m_DbContext.Update(batch);
+            else
+                await m_DbContext.AddAsync(batch);
+
+            await m_DbContext.RecordChanges(
+                _currentUser.UserName,
+                ActionRecord.Operation_.InventoryExportCreate,
+                ActionRecord.OperationStatus_.Success,
+                new Dictionary<string, string>()
+                {
+                    { CustomInfoKey.TicketCode, _formData.TicketCode },
+                }
+            );
+
+            return Content(CustomInfoTag.Success, MediaTypeNames.Text.Plain);
+        }
+
+        private async Task<DrugOutBatch> GetOrCreateDrugOutBatch(string _exportType, P24IdentityUser _currentUser)
+        {
+            if (_exportType == P24ExportType_.Common || _exportType == P24ExportType_.Dump)
+            {
+                var batch = await (from _batch in m_DbContext.DrugOutBatches
+                                   where _batch.ExportType == _exportType
+                                    && _batch.AddedDate.Year == DateTime.Now.Year
+                                    && _batch.AddedDate.Month == DateTime.Now.Month
+                                   select _batch)
+                            .FirstOrDefaultAsync();
+
+                if (batch != null)
+                    return batch;
+
+                return new DrugOutBatch(_currentUser) { ExportType = _exportType };
+            }
+
+            var ticket = await (from _ticket in m_DbContext.TicketProfiles
+                                where _ticket.Code == _exportType
+                                select _ticket)
+                         .FirstOrDefaultAsync();
+
+            if (ticket == null)
+                return null;
+
+            return new DrugOutBatch(_currentUser, ticket) { ExportType = P24ExportType_.Ticket };
         }
 
 

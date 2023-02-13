@@ -1,5 +1,5 @@
 /*  ViewModel.cs
- *  Version: 1.5 (2023.01.07)
+ *  Version: 1.6 (2023.02.12)
  *
  *  Contributor
  *      Arime-chan
@@ -47,7 +47,7 @@ namespace Project24.Models.ClinicManager.DataModel
 
         public string UpdatedUserName { get; set; }
 
-        List<P24TicketDetailsViewModel> Tickets { get; set; }
+        public List<P24TicketDetailsViewModel> Tickets { get; set; }
 
         public P24CustomerDetailsViewModelEx()
             : base()
@@ -137,6 +137,7 @@ namespace Project24.Models.ClinicManager.DataModel
         public P24ImportExportType Type { get; set; }
 
         /// <summary> Only if this is an Export Batch. </summary>
+        public string ExportType { get; set; }
         public string TicketCode { get; set; }
 
         public List<ImportExportQuickViewModel> List { get; set; }

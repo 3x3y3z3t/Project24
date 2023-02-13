@@ -1,5 +1,5 @@
 @*  P24/Customer/Details.cshtml
-    *  Version: 1.10 (2023.01.07)
+    *  Version: 1.11 (2023.02.13)
     *
     *  Contributor
     *      Arime-chan
@@ -30,34 +30,63 @@
     <br />
 }
 
-<dl class="row">
-    <dt class="col-sm-2">Mã bệnh nhân:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.Code</dd>
+<div class="d-flex flex-wrap">
+    <div class="col-12 col-md-6">
+        <dl class="row">
+            <dt class="col-sm-3">Mã bệnh nhân:</dt>
+            <dd class="col-sm-9">@Model.CustomerViewData.Code</dd>
 
-    <dt class="col-sm-2">Họ và Tên bệnh nhân:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.Fullname</dd>
+            <dt class="col-sm-3">Họ và Tên bệnh nhân:</dt>
+            <dd class="col-sm-9">@Model.CustomerViewData.Fullname</dd>
 
-    <dt class="col-sm-2">Giới tính:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.Gender</dd>
+            <dt class="col-sm-3">Giới tính:</dt>
+            <dd class="col-sm-9">@Model.CustomerViewData.Gender</dd>
 
-    <dt class="col-sm-2">Năm sinh:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.DoB (@age)</dd>
+            <dt class="col-sm-3">Năm sinh:</dt>
+            <dd class="col-sm-9">@Model.CustomerViewData.DoB (@age)</dd>
 
-    <dt class="col-sm-2">Số điện thoại:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.PhoneNumber</dd>
+            <dt class="col-sm-3">Số điện thoại:</dt>
+            <dd class="col-sm-9">@Model.CustomerViewData.PhoneNumber</dd>
 
-    <dt class="col-sm-2">Địa chỉ:</dt>
-    <dd class="col-sm-10">@AppUtils.FormatHtmlDisplayForMultilineText(Model.CustomerViewData.Address)</dd>
+            <dt class="col-sm-3">Địa chỉ:</dt>
+            <dd class="col-sm-9">@AppUtils.FormatHtmlDisplayForMultilineText(Model.CustomerViewData.Address)</dd>
 
-    <dt class="col-sm-2">Ghi chú:</dt>
-    <dd class="col-sm-10">@AppUtils.FormatHtmlDisplayForMultilineText(Model.CustomerViewData.Note)</dd>
+            <dt class="col-sm-3">Ghi chú:</dt>
+            <dd class="col-sm-9">@AppUtils.FormatHtmlDisplayForMultilineText(Model.CustomerViewData.Note)</dd>
 
-    <dt class="col-sm-2">Ngày đăng ký:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.AddedDate (bởi @Model.CustomerViewData.AddedUserName)</dd>
+            <dt class="col-sm-3">Ngày đăng ký:</dt>
+            <dd class="col-sm-9">@Model.CustomerViewData.AddedDate (bởi @Model.CustomerViewData.AddedUserName)</dd>
 
-    <dt class="col-sm-2">Cập nhật lần cuối:</dt>
-    <dd class="col-sm-10">@Model.CustomerViewData.UpdatedDate (bởi @Model.CustomerViewData.UpdatedUserName)</dd>
-</dl>
+            <dt class="col-sm-3">Cập nhật lần cuối:</dt>
+            <dd class="col-sm-9">@Model.CustomerViewData.UpdatedDate (bởi @Model.CustomerViewData.UpdatedUserName)</dd>
+        </dl>
+    </div>
+
+    <div class="col-12 col-md-6">
+        @for (int i = 0; i < Model.CustomerViewData.Tickets.Count; ++i)
+        {
+            var ticket = Model.CustomerViewData.Tickets[i];
+            <div class="mb-2">
+                <div class="font-weight-bold">
+                    <a href="#" data-toggle="collapse" data-target="#div-ticket-view-@i">Phiếu khám <span class="text-success">@ticket.Code</span> (click để mở rộng)</a>
+                </div>
+
+                <div id="div-ticket-view-@i" class="collapse">
+                    <a class="ml-3" asp-page="/ClinicManager/Ticket/Details" asp-route-_code="@ticket.Code"><i>(Xem chi tiết)</i></a>
+
+                    <ul>
+                        <li><b>Triệu chứng:</b> @ticket.Symptom</li>
+                        <li><b>Chẩn đoán:</b> @ticket.Diagnose</li>
+                        <li><b>Xử trí:</b> @ticket.Treatment</li>
+                        <li><b>Ghi chú:</b> @ticket.Note</li>
+                        <li><b>Ngày:</b> @ticket.AddedDate</li>
+                    </ul>
+                </div>
+            </div>
+            <hr />
+        }
+    </div>
+</div>
 
 @if (Model.CustomerViewData.DeletedDate == DateTime.MinValue)
 {
@@ -75,6 +104,13 @@
     <partial name="_CommonListImage" model="@Model.ListImageModel" />
 </div>
 
+<partial name="_CommonListImage_Modal" model="@Model.ListImageModel" />
+
+@section Stylesheets {
+    <link rel="stylesheet" href="~/css/nas/nas.css" />
+}
+
 @section Scripts {
-<script src="~/js/clinic-manager/clinic-manager-utils.js"></script>
+    <script src="~/js/modal/modal.js"></script>
+    <script src="~/js/clinic-manager/clinic-manager-utils.js"></script>
 }

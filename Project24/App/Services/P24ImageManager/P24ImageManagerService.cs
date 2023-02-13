@@ -1,5 +1,5 @@
-﻿/*  P24ImageManagerService.cs
- *  Version: 1.3 (2022.12.13)
+/*  P24ImageManagerService.cs
+ *  Version: 1.4 (2023.02.14)
  *
  *  Contributor
  *      Arime-chan
@@ -36,7 +36,7 @@ namespace Project24.App.Services.P24ImageManager
         public class ResponseData
         {
             public bool IsSuccess { get; set; } = false;
-            //public string Message { get; set; }
+            public string LastMessage { get; set; }
 
             public List<string> InvalidFileNames { get; set; } = new List<string>();
             public List<string> AddedFileNames { get; set; } = new List<string>();
@@ -80,6 +80,33 @@ namespace Project24.App.Services.P24ImageManager
 
             m_Logger.LogWarning("Something happened in UploadAsync: control reached method end.");
             return null;
+        }
+
+        /// <summary> Delete an images from database and move them to deleted storage. </summary>
+        /// <param name="_user">The user performing the request.</param>
+        /// <param name="_image">The image to be deletd.</param>
+        /// <param name="_newName">New name that the image will be renamed to.</param>
+        /// <param name="_cancellationToken">Cancellation Token.</param>
+        /// <returns></returns>
+        public ResponseData Rename(P24IdentityUser _user, P24ImageModelBase _image, string _newName, CancellationToken _cancellationToken = default)
+        {
+            m_RequestData = new RequestData(_user, null);
+            m_ResponseData = new ResponseData();
+
+            if (RenameImage(_image, _newName, _cancellationToken))
+            {
+                _image.Name = _newName;
+                _image.UpdatedUser = m_RequestData.User;
+
+                m_DbContext.Update(_image);
+                m_ResponseData.IsSuccess = true;
+            }
+            else
+            {
+                m_ResponseData.IsSuccess = false;
+            }
+
+            return m_ResponseData;
         }
 
         /// <summary> Delete a list of images from database and move them to deleted storage. </summary>
@@ -291,6 +318,53 @@ namespace Project24.App.Services.P24ImageManager
             }
 
             m_ResponseData.DeletedFileNames.Add(_image.Name);
+            return true;
+        }
+        #endregion
+
+        #region Rename
+        /// <summary> "Delete an image by moving the physical file to deleted storage. </summary>
+        /// <param name="_image">The image to be deleted.</param>
+        /// <param name="_newName">New name that the image will be renamed to.</param>
+        /// <param name="_cancellationToken">Cancellation Token.</param>
+        /// <returns>true if the operation success, otherwise false.</returns>
+        private bool RenameImage(P24ImageModelBase _image, string _newName, CancellationToken _cancellationToken)
+        {
+            string srcPath = DriveUtils.DataRootPath + "/" + _image.FullName;
+            string dstPath = DriveUtils.DataRootPath + "/" + _image.Path + "/" + _newName;
+
+            try
+            {
+                if (!File.Exists(srcPath))
+                {
+                    m_ResponseData.ErrorFileMessages.Add(_image.Name + ": file doesn't exist");
+                    m_ResponseData.LastMessage = "File gốc không tồn tại.";
+                    return false;
+                }
+
+                if (File.Exists(dstPath))
+                {
+                    m_ResponseData.ErrorFileMessages.Add(_image.Name + ": file with new name (" + _newName + ") already existed");
+                    m_ResponseData.LastMessage = "File <code>" + _newName + "</code> bị trùng tên.";
+                    return false;
+                }
+
+                File.Move(srcPath, dstPath);
+                if (File.Exists(srcPath))
+                {
+                    m_ResponseData.ErrorFileMessages.Add(_image.Name + ": rename failed");
+                    m_ResponseData.LastMessage = "Không đổi tên được file.";
+                    return false;
+                }
+            }
+            catch (Exception _e)
+            {
+                m_ResponseData.ErrorFileMessages.Add(_image.Name + ": " + _e.Message);
+                m_ResponseData.LastMessage = "Lỗi hệ thống.";
+                return false;
+            }
+
+            m_ResponseData.AddedFileNames.Add(_image.Name);
             return true;
         }
         #endregion

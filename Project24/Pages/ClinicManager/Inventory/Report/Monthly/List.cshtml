@@ -1,0 +1,82 @@
+@*  P24/Inventory/Report/Monthly/List.cshtml
+    *  Version: 1.0 (2023.02.13)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@page
+
+@using Project24.App;
+@model Project24.Pages.ClinicManager.Inventory.Report.Monthly.ListModel
+@{
+    ViewData["Title"] = "Báo cáo nhập xuất";
+    Layout = "_Layout";
+
+}
+
+<h1>Báo cáo nhập xuất kho (theo tháng)</h1>
+
+<div class="row col-md-8 col-lg-6 col-xl-5 my-3">
+    <form class="w-100">
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="select-year">Năm</label>
+                <select id="select-year" class="custom-select" style="width:10ch" onchange="selectYear_onChange()">
+                    @foreach (int year in Model.SelectableYears)
+                    {
+                        if (year == DateTime.Now.Year)
+                        {
+                            <option selected>@year</option>
+                        }
+                        else
+                        {
+                            <option>@year</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="form-group ml-3">
+                <label for="select-year">Tháng</label>
+                <select id="select-month" class="custom-select" style="width:10ch" onchange="selectMonth_onChange()"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="input-group flex-grow-1">
+                <input id="input-name" class="form-control" placeholder="Nhập tên thuốc để tìm kiếm.." />
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-danger" onclick="btnClearFilter_onClick()">&times;</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="btnFilter_onClick()">Lọc nhanh</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th>Tên thuốc</th>
+            @*<th>Ghi chú</th>*@
+            <th class="text-center" style="width:10ch">Số lượng</th>
+            <th style="width:7ch">Đơn vị</th>
+        </tr>
+    </thead>
+
+    <tbody id="tbody-listing"></tbody>
+</table>
+
+
+<div id="div-listing"></div>
+<hr />
+
+<partial name="_Modals/_CommonInfoModal" />
+
+@section Scripts {
+    <script src="~/js/modal/modal.js"></script>
+    <script src="~/js/clinic-manager/inventory/report-in-out.js"></script>
+}
+

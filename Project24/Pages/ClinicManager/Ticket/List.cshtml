@@ -1,5 +1,5 @@
-@*  List.cshtml
-    *  Version: 1.6 (2023.01.07)
+@*  P24/Ticket/List.cshtml
+    *  Version: 1.7 (2023.02.13)
     *
     *  Contributor
     *      Arime-chan
@@ -43,12 +43,11 @@
 <table class="table table-sm">
     <thead>
         <tr>
-            <th style="width:12ch">Mã</th>
-            <th style="width:25ch">Họ Tên bệnh nhân</th>
-            <th style="width:50ch">Chẩn đoán - Xử trí</th>
-            <th style="">Ghi chú</th>
-            <th style="width:9ch">Tiêu hao</th>
-            <th style="width:9ch"></th>
+            <th>Mã</th>
+            <th>Họ Tên bệnh nhân</th>
+            <th>Chẩn đoán - Xử trí</th>
+            <th>Ghi chú</th>
+            <th class="text-center p24-table-col-ticket">Tiêu hao</th>
         </tr>
     </thead>
 
@@ -57,36 +56,23 @@
         {
             int age = AppConfig.ThisYear - ticket.CustomerDoB;
             <tr>
-                <td>@ticket.Code</td>
-                <td>@ticket.CustomerFullName (@age)</td>
-                <td>@ticket.Diagnose: @ticket.Treatment</td>
+                <td class="p24-table-col-code text-break"><a asp-page="Details" asp-route-_code="@ticket.Code">@ticket.Code</a></td>
+                <td class="p24-table-col-name">@ticket.CustomerFullName (@age)</td>
+                <td class="p24-table-col-diag">@ticket.Diagnose: @ticket.Treatment</td>
                 <td>@ticket.Notes</td>
 
                 <td class="text-center">
                     @if (ticket.DrugExportBatchId.HasValue)
                     {
-                        <div>Có</div>
-                        <div>(<a asp-page="/ClinicManager/Inventory/Export/Details" asp-route-_id="@ticket.DrugExportBatchId">Xem</a>)</div>
+                        <div class="p24-table-col-ticket"><a asp-page="/ClinicManager/Inventory/Export/Details" asp-route-_id="@ticket.DrugExportBatchId"><b>Có</b></a></div>
                     }
                     else
                     {
-                        <div class="text-danger">
+                        <div class="text-danger p24-table-col-ticket">
                             <div>Không</div>
                             <div>(<a asp-page="/ClinicManager/Inventory/Export/Create" asp-route-_ticketCode="@ticket.Code">Thêm</a>)</div>
                         </div>
                     }
-                </td>
-
-                <td>
-                    <div class="text-center">
-                        <div>
-                            <a asp-page="Details" asp-route-_code="@ticket.Code">Xem</a> |
-                            <a asp-page="Edit" asp-route-_code="@ticket.Code">Sửa</a>
-                        </div>
-                        <div>
-                            <a asp-page="Delete" asp-route-_code="@ticket.Code" class="text-danger font-weight-bold">Xóa</a>
-                        </div>
-                    </div>
                 </td>
             </tr>
         }

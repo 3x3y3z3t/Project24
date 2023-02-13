@@ -1,0 +1,62 @@
+@*  P24/_CommonListImage > Modal.cshtml
+    *  Version: 1.0 (2023.02.13)
+    *
+    *  Contributor
+    *      Arime-chan
+*@
+
+@using Microsoft.AspNetCore.Html;
+@using System.Web;
+@model Project24.Models.ClinicManager.DataModel.P24ImageListingModel
+@{
+    HtmlString tooltipTitle = new HtmlString(HttpUtility.HtmlEncode(
+        "<div>Tên file không thể chứa các ký tự:</div>" +
+        "<div class=\"font-weight-bold ml-4\">\\ / : * ? \" < > |</div>" +
+        //"<div><a href=\"#\" class=\"a-tooltip-naming\">(more details)</a></div>"
+        ""
+    ));
+}
+
+<!-- Modal -->
+<div id="modal-image" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <figure class="figure m-2">
+                        <img id="modal-image-img" src="" class="figure-img img-fluid" />
+                    </figure>
+                </div>
+                <hr />
+
+                @if (!Model.IsReadonly)
+                {
+                    <div class="d-flex">
+                        <div class="input-group">
+                            <input id="modal-image-input-rename" class="form-control" placeholder="Nhập tên file" oninput="modalImage_inputRename_onInput()"
+                                   data-toggle="tooltip" title="@tooltipTitle" />
+                            <div class="input-group-append">
+                                <button id="modal-image-btn-rename-reset" onclick="modalImage_btnRenameReset_onClick()" class="btn btn-outline-danger" disabled>&times;</button>
+                                <button id="modal-image-btn-rename-submit" onclick="modalImage_btnRenameSubmit_onClick()" class="btn btn-outline-primary" disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <a href="#" id="modal-image-btn-delete" class="btn btn-danger ml-5" onclick="modalImage_btnDelete_onClick()">Xóa</a>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_Modals/_CommonConfirmModal" />
+<partial name="_Modals/_CommonInfoModal" />

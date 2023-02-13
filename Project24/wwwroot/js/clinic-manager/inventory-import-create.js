@@ -1,5 +1,5 @@
 /*  inventory-import-create.js
- *  Version: 1.1 (2023.01.03)
+ *  Version: 1.2 (2023.02.13)
  *
  *  Contributor
  *      Arime-chan
@@ -240,6 +240,7 @@ ImportCreatePage.validateAmount = function () {
     if (ImportCreatePage.Elements.m_InputAmount.val() <= 0) {
         html += "<li>Số lượng phải lớn hơn 0</li>";
         ImportCreatePage.Elements.m_UlValidationMsg.html(html);
+        return false;
     }
 
     return true;

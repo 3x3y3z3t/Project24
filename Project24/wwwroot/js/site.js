@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.5 (2023.01.29)
+ *  Version: 1.6 (2023.02.13)
  *
  *  Contributor
  *      Arime-chan
@@ -79,6 +79,43 @@ P24Utils.getFileExtension = function (_fileName) {
         return "";
     else
         return _fileName.substring(pos + 1);
+}
+
+P24Utils.isFileNameValid = function (_filename, _isFolder = false) {
+    /* Reference:
+     * https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+     */
+
+    // file name cannot be all white spaces;
+    if (_filename.trim() == "")
+        return false;
+
+    // file name cannot be "." (Current Directory) or ".." (Parent Directory);
+    if (_filename == "." || _filename == "..")
+        return false;
+
+    // file name cannot end with white space or period character;
+    if (_filename.endsWith(' ') || _filename.endsWith('.'))
+        return false;
+
+    // file name cannot contains any of invalid characters;
+    for (let i = 0; i < P24Utils.InvalidFilenameChars.length; ++i) {
+        if (_filename.indexOf(P24Utils.InvalidFilenameChars[i]) >= 0)
+            return false;
+    }
+
+    // file name cannot be any of reserved names;
+    _filename = _filename.toUpperCase();
+    for (let i = 0; i < P24Utils.InvalidFilenameString.length; ++i) {
+
+        if (_filename == P24Utils.InvalidFilenameString[i] >= 0)
+            return false;
+
+        if (!_isFolder && _filename.startsWith(P24Utils.InvalidFilenameString[i] + "."))
+            return false;
+    }
+
+    return true;
 }
 
 function formatDataLength(_length) {

@@ -1,5 +1,5 @@
 /*  P24/Customer/Edit.cshtml
- *  Version: 1.7 (2023.01.06)
+ *  Version: 1.8 (2023.02.14)
  *
  *  Contributor
  *      Arime-chan
@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Project24.App.Extension;
 using Project24.Data;
 using Project24.Models;
@@ -33,11 +32,11 @@ namespace Project24.Pages.ClinicManager.Customer
         [BindProperty]
         public P24EditCustomerFormDataModel FormData { get; set; }
 
-        public EditModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager, ILogger<EditModel> _logger)
+
+        public EditModel(ApplicationDbContext _context, UserManager<P24IdentityUser> _userManager)
         {
             m_DbContext = _context;
             m_UserManager = _userManager;
-            m_Logger = _logger;
         }
 
 
@@ -138,7 +137,6 @@ namespace Project24.Pages.ClinicManager.Customer
 
         private readonly ApplicationDbContext m_DbContext;
         private readonly UserManager<P24IdentityUser> m_UserManager;
-        private readonly ILogger<EditModel> m_Logger;
     }
 
 }
