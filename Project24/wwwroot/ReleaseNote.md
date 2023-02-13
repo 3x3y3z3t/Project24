@@ -1,10 +1,12 @@
-#### v0.16.0 (2023.02.14)
+#### v0.16.1 (2023.02.14)
+- Added Ticket listing on Customer profile page.
 - Added Image View for Customer Image and Ticket Image on Clinic Manager side.
     - Image View includes image deletion and rename.
 - Added Monthly Import/Export Report on Clinic Manager side.
 - Added Common Consumption and Dump export type on Clinic Manager side.
 - Minor QoL updaates.
 - Minor fixes.
+- Hotfix .1: Fixed incorrect date display on Export tickets.
 
 ---
 
