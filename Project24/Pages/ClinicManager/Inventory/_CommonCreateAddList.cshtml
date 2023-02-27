@@ -1,5 +1,5 @@
 @*  P24/Inventory/_CommonCreateAddList.cshtml
-    *  Version: 1.1 (2023.02.12)
+    *  Version: 1.2 (2023.02.27)
     *
     *  Contributor
     *      Arime-chan
@@ -7,7 +7,7 @@
 
 @model string
 @{
-
+    bool isExport = ViewData.ContainsKey("IsExport") && (bool)ViewData["IsExport"];
 }
 
 <div class="@Model">
@@ -61,7 +61,7 @@
         @Html.AntiForgeryToken()
         <button id="btn-finish" class="btn btn-primary" type="button" onclick="btnFinish()" disabled>Hoàn tất</button>
 
-        @if ((bool)ViewData["IsExport"])
+        @if (isExport)
         {
             <button id="btn-create-blank" class="btn btn-secondary" type="button" onclick="btnCreateBlank_onClick()">Tạo phiếu trắng</button>
         }

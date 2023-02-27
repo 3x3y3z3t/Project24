@@ -1,3 +1,8 @@
+
+#### v0.16.2 (2023.02.27)
+- Renaming image now also rename its thumbnail. Thumbnails no longer become invalid after image renaming.
+- Fixed crash on Drug Import Create page (Clinic Manager side).
+
 #### v0.16.1 (2023.02.14)
 - Added Ticket listing on Customer profile page.
 - Added Image View for Customer Image and Ticket Image on Clinic Manager side.

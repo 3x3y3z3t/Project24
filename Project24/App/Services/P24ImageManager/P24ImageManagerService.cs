@@ -1,5 +1,5 @@
 /*  P24ImageManagerService.cs
- *  Version: 1.4 (2023.02.14)
+ *  Version: 1.5 (2023.02.20)
  *
  *  Contributor
  *      Arime-chan
@@ -363,6 +363,20 @@ namespace Project24.App.Services.P24ImageManager
                 m_ResponseData.LastMessage = "Lỗi hệ thống.";
                 return false;
             }
+
+            //now try rename the thumbnail;
+            srcPath = DriveUtils.DataRootPath + "/thumb/" + _image.FullName;
+            dstPath = DriveUtils.DataRootPath + "/thumb/" + _image.Path + "/" + _newName;
+
+            try
+            {
+                if (File.Exists(srcPath))
+                {
+                    File.Move(srcPath, dstPath);
+                }
+            }
+            catch (Exception)
+            { }
 
             m_ResponseData.AddedFileNames.Add(_image.Name);
             return true;
