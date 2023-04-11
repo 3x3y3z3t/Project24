@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PublishTrimmed>true</PublishTrimmed>
+    <Optimize>false</Optimize>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <Authors>Arime-chan</Authors>
+  </PropertyGroup>
+
+</Project>
