@@ -7,4 +7,5 @@
 *.log
 *.csproj.user
 
+Versioning.cs
 appsettings.*.json

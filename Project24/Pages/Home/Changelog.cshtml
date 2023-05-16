@@ -1,0 +1,47 @@
+@*  Home/Changelog.cshtml
+ *  Version: v1.0 (2023.05.16)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+
+@using Project24.App;
+@model Project24.Pages.Home.ChangelogModel
+@{
+    Layout = "_LayoutCommon";
+    ViewData[ViewDataKeys.Title] = P24Localization.Page_Changelog;
+    //ViewData[ViewDataKeys.Flags] = (int)ViewData[ViewDataKeys.Flags] | (int)ViewDataFlags.NoTitle;
+}
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <button id="btn-update-notes" type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#div-tab-update-notes">@P24Localization.String_UpdateNotes</button>
+    </li>
+    <li class="nav-item">
+        <button id="btn-changelog" type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#div-tab-changelog">@P24Localization.String_Changelog</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div id="div-tab-update-notes" class="tab-pane show active m-2">
+        <div class="mb-2"><i>@P24Localization.Description_UpdateNotes</i></div>
+        <hr />
+        <div id="div-update-notes"></div>
+    </div>
+
+    <div id="div-tab-changelog" class="tab-pane m-2">
+        <div class="mb-2"><i>@P24Localization.Description_Changelog</i></div>
+        <hr />
+        <div id="div-changelog"></div>
+    </div>
+</div>
+
+<partial name="Modal/_ModalCommon" />
+
+@section Scripts {
+    <script type="text/javascript" src="~/js/modals.js"></script>
+    <script type="text/javascript" src="~/lib/markedjs/marked.min.js"></script>
+    <script type="text/javascript" src="~/js/home/changelog.js"></script>
+}

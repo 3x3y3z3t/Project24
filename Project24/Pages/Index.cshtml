@@ -1,10 +1,24 @@
-﻿@page
+@*  Index.cshtml
+ *  Version: v1.1 (2023.03.11)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    Layout = "_LayoutCommon";
+    ViewData["Title"] = "Trang chủ";
 }
 
+<hr />
+
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <div class="d-flex align-items-center justify-content-center">
+        <a asp-page="Home/Index" class="btn btn-secondary m-2" style="width: 50ch">
+            <div style="font-size: larger">Dashboard</div>
+            <div style="font-size: small">(Home/Index)</div>
+        </a>
+    </div>
 </div>
