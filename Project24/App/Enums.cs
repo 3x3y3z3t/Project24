@@ -1,5 +1,5 @@
 /*  App/Enums.cs
- *  Version: v1.0 (2023.05.11)
+ *  Version: v1.1 (2023.05.16)
  *  
  *  Contributor
  *      Arime-chan
@@ -16,9 +16,11 @@ namespace Project24.App
 
     public static class MessageTag
     {
-        public static string Success = "<done>";
-        public static string Warning = "<warn>";
-        public static string Error = "<fail>";
+        public const string Success = "<done>";
+        public const string Warning = "<warn>";
+        public const string Error = "<fail>";
+
+        public const string Exception = "<excp>";
     }
 
 }

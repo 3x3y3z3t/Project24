@@ -1,5 +1,9 @@
 
-#### v-core6-0.2.0 (2023.05.15)
+#### v-core6-0.2.1 (2023.05.16)
+- Added Modal icons.
+- Fixed unhandled exception in Changelog page.
+
+#### v-core6-0.2.0 (2023.05.16)
 - Added License.
 - Added `Markdig.Signed` package for Markdown parser (unused).
 - Added Changelog page.

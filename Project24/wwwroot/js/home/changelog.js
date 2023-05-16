@@ -1,5 +1,5 @@
 /*  home/changelog.js
-    Version: v1.0 (2023.05.15)
+    Version: v1.1 (2023.05.16)
 
     Contributor
         Arime-chan
@@ -12,17 +12,12 @@ ChangelogPage.Backend = {};
 ChangelogPage.Elements = {};
 ChangelogPage.Elements.m_BtnUpdateNotes = null;
 ChangelogPage.Elements.m_BtnChangelog = null;
-//ChangelogPage.Elements.m_DivTabUpdateNotes = null;
-//ChangelogPage.Elements.m_DivTabChangelog = null;
 ChangelogPage.Elements.m_DivUpdateNotes = null;
 ChangelogPage.Elements.m_DivChangelog = null;
 
 $(document).ready(function () {
     ChangelogPage.Elements.m_BtnUpdateNotes = $("#btn-update-notes");
     ChangelogPage.Elements.m_BtnChangelog = $("#btn-changelog");
-
-    //ChangelogPage.Elements.m_DivTabUpdateNotes = $("#div-tab-update-notes");
-    //ChangelogPage.Elements.m_DivTabChangelog = $("#div-tab-changelog");
 
     ChangelogPage.Elements.m_DivUpdateNotes = $("#div-update-notes");
     ChangelogPage.Elements.m_DivChangelog = $("#div-changelog");
@@ -78,7 +73,7 @@ ChangelogPage.ajax_fetchUpdateNotes_success = function (_content, _textStatus, _
     let body = _content.substring(6);
 
     if (_content.startsWith("<fail>")) {
-        Modal.Common.openOneBtnModal("Thất bại", body, "fail");
+        Modal.Common.openOneBtnModal("Thất bại", body, "error");
         return;
     }
 
@@ -98,7 +93,7 @@ ChangelogPage.ajax_fetchChangelog_success = function (_content, _textStatus, _xh
     let body = _content.substring(6);
 
     if (_content.startsWith("<fail>")) {
-        Modal.Common.openOneBtnModal("Thất bại", body, "fail");
+        Modal.Common.openOneBtnModal("Thất bại", body, "error");
         return;
     }
 

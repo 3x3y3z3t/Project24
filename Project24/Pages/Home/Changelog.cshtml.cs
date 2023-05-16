@@ -1,25 +1,27 @@
 /*  Changelog.cshtml.cs
- *  Version: v1.0 (2023.05.16)
+ *  Version: v1.1 (2023.05.16)
  *  
  *  Contributor
  *      Arime-chan
  */
 
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using Project24.App;
 
 namespace Project24.Pages.Home
 {
     public class ChangelogModel : PageModel
     {
-        public ChangelogModel(IWebHostEnvironment _webHostEnv)
+        public ChangelogModel(IWebHostEnvironment _webHostEnv, ILogger<ChangelogModel> _logger)
         {
             m_WebHostEnv = _webHostEnv;
-
+            m_Logger = _logger;
         }
 
 
@@ -28,10 +30,16 @@ namespace Project24.Pages.Home
         {
             string webRootPath = m_WebHostEnv.WebRootPath;
 
-            string markdown = await System.IO.File.ReadAllTextAsync(webRootPath + "/Changelog.md", Encoding.UTF8);
-            //HtmlString htmlString = new HtmlString(MarkdownUtils.ParseToHtml(markdown));
-
-            return Content(MessageTag.Success + markdown);
+            try
+            {
+                string markdown = await System.IO.File.ReadAllTextAsync(webRootPath + "/Changelog.md", Encoding.UTF8);
+                return Content(MessageTag.Success + markdown);
+            }
+            catch (Exception _e)
+            {
+                m_Logger.LogWarning("" + _e);
+                return Content(MessageTag.Exception + _e);
+            }
         }
 
         // ajax call only;
@@ -60,6 +68,7 @@ namespace Project24.Pages.Home
 
 
         private readonly IWebHostEnvironment m_WebHostEnv;
+        private readonly ILogger<ChangelogModel> m_Logger;
     }
 
 }

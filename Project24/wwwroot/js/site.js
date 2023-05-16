@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.1 (2023.05.15)
+ *  Version: 1.2 (2023.05.16)
  *
  *  Contributor
  *      Arime-chan
@@ -59,5 +59,5 @@ window.P24Utils = {};
 
 P24Utils.ajax_error = function (_xhr, _textStatus, _errorThrown) {
     let body = "<div>Status Code: <code>" + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "</code></div><div>jq Status: <code>" + _textStatus + "</code></div>";
-    Modal.Common.openOneBtnErrorModal("Request error", body, "OK");
+    Modal.Common.openOneBtnModal("Request error", body, "error", "OK");
 }
