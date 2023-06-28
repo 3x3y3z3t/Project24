@@ -1,7 +1,7 @@
 /*  Project24
  *  
  *  Program.cs
- *  Version: v1.0.0 (2023.04.09)
+ *  Version: v1.1 (2023.06.19)
  *  
  *  Contributor
  *      Arime-chan
@@ -9,10 +9,13 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Project24.App;
+using Project24.App.Services;
 using Project24.Data;
 
 namespace Project24
@@ -32,6 +35,17 @@ namespace Project24
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddRazorPages();
+
+            builder.Services.Configure<KestrelServerOptions>(_options =>
+            {
+                _options.Limits.MaxRequestBodySize = Constants.MaxRequestSize;
+            });
+
+            builder.Services.AddSingleton<FileSystemSvc>();
+            builder.Services.AddSingleton<UpdaterSvc>();
+
+            
+
 
             var app = builder.Build();
 

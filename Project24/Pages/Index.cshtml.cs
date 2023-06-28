@@ -15,7 +15,7 @@ namespace Project24.Pages
 
         public IActionResult OnGet()
         {
-            return RedirectToPage("Home/Changelog");
+            return RedirectToPage("Home/Maintenance/Updater");
         }
     }
 }

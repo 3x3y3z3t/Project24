@@ -1,5 +1,5 @@
-@*  _LayoutCommon.cshtml
- *  Version: v1.1 (2023.06.13)
+@*  _NoScrollLayout.cshtml
+ *  Version: v1.0 (2023.06.17)
  *
  *  Contributor
  *      Arime-chan
@@ -8,7 +8,7 @@
 @using Project24.App;
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-100" style="min-height: 100%">
 
 <head>
     <meta charset="utf-8" />
@@ -19,30 +19,29 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Project24.styles.css" asp-append-version="true" />
 
-    @await RenderSectionAsync("Stylesheet", required: false)
+    @await RenderSectionAsync("Stylesheets", required: false)
 </head>
 
-<body>
+<body class="d-flex flex-column flex-nowrap h-100" style="min-height: 100%">
     <partial name="_HeaderCommon" />
+    @if (!Utils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoTitle))
+    {
+        <h1>@ViewData[ViewDataKeys.Title]</h1>
+        <hr />
+    }
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @if (!Utils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoTitle))
-            {
-                <h1>@ViewData[ViewDataKeys.Title]</h1>
-                <hr />
-            }
+    @if (!Utils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoAnnouncement))
+    {
+        <partial name="_ServerAnnouncement" />
+    }
 
-            @if (!Utils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoAnnouncement))
-            {
-                <partial name="_ServerAnnouncement" />
-            }
+    <main role="main" class="container flex-fill w-100 mw-100 px-2" style="min-height: 0">
+        @RenderBody()
+    </main>
 
-            @RenderBody()
-        </main>
-    </div>
-
-    <partial name="_FooterCommon" />
+    <footer class="border-top footer text-muted" style="position:inherit">
+        <partial name="_FooterCommon" />
+    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

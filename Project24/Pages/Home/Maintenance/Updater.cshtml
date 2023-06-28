@@ -1,0 +1,125 @@
+@*  Home/Maintenance/Updater.cshtml
+ *  Version: v1.0 (2023.06.28)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+@using Microsoft.AspNetCore.Html;
+@using Project24.App;
+@using System.Reflection;
+@model Project24.Pages.Home.Maintenance.UpdaterModel
+@{
+    Layout = "_NoScrollLayout";
+    ViewData[ViewDataKeys.Title] = P24Localization.Active[LOCL.PAGE_UPDATER];
+    ViewData[ViewDataKeys.Flags] = (ViewDataFlags)ViewData[ViewDataKeys.Flags] | ViewDataFlags.NoTitle;
+
+    const string classPanelTopCommon = "col-12 col-sm-10 col-md-12 col-lg-10";
+    const string classLblGroup = "col-12 col-md-4";
+    const string classLblGroupInner = "d-flex flex-wrap m-1";
+    const string classLblTitle = "border text-center col-4 col-md-12 p-1 fw-bold";
+    const string classLblValue = "border text-center col-8 col-md-12 p-1 fs-4 d-flex flex-wrap justify-content-center";
+
+    const string classFilesTableTitle = "col-6 border-start border-primary border-2";
+    const string classFilesTableTitleInner = "fw-bold fs-4 text-center border-bottom border-primary border-2 ms-1 me-2";
+}
+
+<div class="d-flex flex-column h-100 pb-2">
+    <div class="d-flex flex-wrap justify-content-center">
+        <div class="col-10">
+            <h1>@ViewData[ViewDataKeys.Title]</h1>
+            <hr />
+        </div>
+
+        <div class="d-flex flex-wrap col-10">
+
+            <div class="d-flex flex-wrap @classPanelTopCommon col-xl-8">
+                <div class="@classLblGroup">
+                    <div class="@classLblGroupInner">
+                        <div class="@classLblTitle">@P24Localization.Active[LOCL.STR_UPDATER_PREV_VER]</div>
+                        <div id="div-lbl-prev" class="@classLblValue text-warning"></div>
+                    </div>
+                </div>
+
+                <div class="@classLblGroup">
+                    <div class="@classLblGroupInner">
+                        <div class="@classLblTitle">@P24Localization.Active[LOCL.STR_UPDATER_MAIN_VER]</div>
+                        <div id="div-lbl-main" class="@classLblValue text-primary"></div>
+                    </div>
+                </div>
+
+                <div class="@classLblGroup">
+                    <div class="@classLblGroupInner">
+                        <div class="@classLblTitle">@P24Localization.Active[LOCL.STR_UPDATER_NEXT_VER]</div>
+                        <div id="div-lbl-next" class="@classLblValue text-success"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="@classPanelTopCommon col-xl-4">
+                <div class="d-flex m-1">
+                    <div class="input-group">
+                        <button id="btn-clear" type="button" class="btn btn-outline-danger" onclick="btnClear_onClick()" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                            </svg>
+                        </button>
+
+                        <div id="div-input-files" class="flex-grow-1 position-relative">
+                            <label for="input-files" id="lbl-input-files" class="form-control text-truncate position-absolute">&nbsp;</label>
+                            <input id="input-files" type="file" class="form-control position-absolute" style="opacity:0" onchange="inputFiles_onChange()" webkitdirectory disabled />
+                        </div>
+                    </div>
+
+                    <button type="button" id="btn-upload" class="btn btn-outline-success ms-2" onclick="btnUpload_onClick()" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="div-upload-stat-panel" class="d-flex flex-wrap"></div>
+            </div>
+
+        </div>
+
+        <div class="col-10"><hr /></div>
+    </div>
+
+    <div id="div-files-table" class="d-flex flex-column h-100" style="min-height:0">
+        <div id="div-files-table-head" class="d-flex flex-nowrap" style="">
+            <div class="@classFilesTableTitle">
+                <div id="div-svr-title" class="@classFilesTableTitleInner">@P24Localization.Active[LOCL.STR_UPDATER_FILES_ON_SVR]</div>
+            </div>
+            <div class="@classFilesTableTitle">
+                <div id="div-upl-title" class="@classFilesTableTitleInner">@P24Localization.Active[LOCL.STR_UPDATER_FILES_TO_UPL]</div>
+            </div>
+        </div>
+
+        <div class="" style="overflow-y:scroll">
+            <div class="d-flex flex-nowrap">
+                <div class="@classFilesTableTitle">
+                    <div id="div-lst-files-svr" class="ps-1"></div>
+                </div>
+
+                <div class="@classFilesTableTitle">
+                    <div id="div-lst-files-upl" class="ps-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@Html.AntiForgeryToken()
+
+<partial name="Shared/Modal/_ModalCommon" />
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/js/cyrb53.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/modals.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/home/management/updater.js" asp-append-version="true"></script>
+}

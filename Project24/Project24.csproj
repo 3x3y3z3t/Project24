@@ -1,15 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <UserSecretsId>aspnet-Project24-9336a08d-3463-4551-8c43-5f720d2d633b</UserSecretsId>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <TransformOnBuild>true</TransformOnBuild>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -42,17 +37,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.15" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="App\Versioning.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Versioning.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v17.0\TextTemplating\Microsoft.TextTemplating.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $(IsPublish) != 'true'" />
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Update="App\Versioning.cs">
       <DesignTime>True</DesignTime>
@@ -61,14 +51,29 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="App\Versioning.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Versioning.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TransformOnBuild>True</TransformOnBuild>
+    <TransformOutOfDateOnly>False</TransformOutOfDateOnly>
+  </PropertyGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --outputVerInfo $(TargetDir) $(TargetFileName)" />
   </Target>
 
   <Target Name="AfterPublishEx" AfterTargets="AfterPublish">
-    <!--Exec Command="copy $(SolutionDir)Updater\\bin\\$(ConfigurationName)\\netcoreapp3.1\\linux-arm64\\publish\\Updater.dll $(PublishDir)Updater.dll" /-->
-    <!--Exec Command="copy $(SolutionDir)Updater\\bin\\$(ConfigurationName)\\netcoreapp3.1\\linux-arm64\\publish\\Updater.deps.json $(PublishDir)Updater.deps.json" /-->
-    <!--Exec Command="copy /v $(PublishDir)..\\version.xml $(PublishDir)version.xml" /-->
+    <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.dll $(PublishDir)AppHelper.dll" />
+    <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.deps.json $(PublishDir)AppHelper.deps.json" />
+    <!-- System.Console.dll is trimmed in main app (Project24) that renders some method in AppHelper missing. Instead we takes the dll from AppHelper build. -->
+    <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\System.Console.dll $(PublishDir)System.Console.dll" />
+    <Exec Command="copy /v $(PublishDir)..\\version.dat $(PublishDir)version.dat" />
     <!--Exec Command="del /f $(PublishDir)appsettings.Development.json" /-->
     <!--Exec Command="del /f $(PublishDir)VersioningHelper*" /-->
   </Target>

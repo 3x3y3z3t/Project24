@@ -1,4 +1,12 @@
 
+#### v-core6-0.3.0 (2023.06.28)
+- Added Updater page.
+- Added Localization.
+- Added FileSystem service.
+- Added Updater service.
+- Added Bootstrap icon library (used icons only).
+- Added Two Buttons Common modal.
+
 #### v-core6-0.2.1 (2023.05.16)
 - Added Modal icons.
 - Fixed unhandled exception in Changelog page.

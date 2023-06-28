@@ -1,9 +1,22 @@
 /*  site.css
-    Version: v1.1 (2023.04.11)
+    Version: v1.2 (2023.06.08)
 
     Contributor
         Arime-chan
 */
+
+@media (min-width: 1600px) {
+    .container {
+        max-width: 1400px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1600px;
+    }
+}
+
 
 .footer {
     position: absolute;
