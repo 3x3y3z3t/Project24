@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AppHelper": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*  App/Enums.cs
- *  Version: v1.2 (2023.06.28)
+ *  Version: v1.2 (2023.08.26)
  *  
  *  Contributor
  *      Arime-chan
@@ -29,10 +29,53 @@ namespace Project24.App
         NextApplyRunning = 4,
     }
 
+    public enum UpdaterInternalState : short
+    {
+        None = 0,
+
+        Step1_Countdown,
+        Step2_DeleteFiles,
+        Step3_BackupFiles,
+        Step4_SwitchExecutableToTmp,
+        Step5_CopyNewFiles,
+        Step6_SwitchExecutableBackToMain,
+    }
+
+    public enum UpdaterQueuedAction : short
+    {
+        None = 0,
+
+        Countdown,
+
+        DeleteFilesInMain,
+        DeleteFilesInPrev,
+        DeleteFilesInNext,
+
+        CopyFilesFromMainToPrev,
+        CopyFilesFromPrevToMain,
+        CopyFilesFromNextToMain,
+
+        SwitchExecutableToPrev,
+        SwitchExecutableToMain
+    }
+
     public enum UpdaterSide : short
     {
         Prev = -1,
         Next = 1
+    }
+
+    public enum ErrorFlagBit : short
+    {
+        Error = 0,
+        NoError = 1,
+    }
+
+    public static class AppSide_
+    {
+        public const string MAIN = "main";
+        public const string PREV = "prev";
+        public const string NEXT = "next";
     }
 
     public static class MessageTag

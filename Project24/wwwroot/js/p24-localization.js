@@ -1,5 +1,5 @@
 /*  localization-string.js
-    Version: v1.0 (2023.06.28)
+    Version: v1.0 (2023.06.30)
 
     Contributor
         Arime-chan
@@ -37,8 +37,10 @@ const LOCL_DESC_UPDATER_NEXT_APPLY_QUEUED = "LOCL_DESC_UPDATER_NEXT_APPLY_QUEUED
 const LOCL_DESC_UPDATER_ABORT_SUCCESS = "LOCL_DESC_UPDATER_ABORT_SUCCESS";
 const LOCL_DESC_UPDATER_CONFIRM_PURGE_PREV = "LOCL_DESC_UPDATER_CONFIRM_PURGE_PREV";
 const LOCL_DESC_UPDATER_CONFIRM_PURGE_NEXT = "LOCL_DESC_UPDATER_CONFIRM_PURGE_NEXT";
-const LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV = "LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV";
-const LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT = "LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT";
+const LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_PURGE = "LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_PURGE";
+const LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_APPLY = "LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_APPLY";
+const LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_PURGE = "LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_PURGE";
+const LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_APPLY = "LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_APPLY";
 const LOCL_DESC_UPDATER_CONFIRM_APPLY_PREV = "LOCL_DESC_UPDATER_CONFIRM_APPLY_PREV";
 const LOCL_DESC_UPDATER_CONFIRM_APPLY_NEXT = "LOCL_DESC_UPDATER_CONFIRM_APPLY_NEXT";
 
@@ -98,8 +100,10 @@ class P24LocalizationClass {
         this.#m_Vie.set(LOCL_DESC_UPDATER_ABORT_SUCCESS, "Hủy tác vụ thành công");
         this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_PURGE_PREV, "<div>Xóa file phiên bản cũ cũng sẽ <b>hủy tác vụ Hạ xuống phiên bản cũ</b>.</div><div>Bạn có chắc muốn xóa file?</div>");
         this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_PURGE_NEXT, "<div>Xóa file phiên bản mới cũng sẽ <b>hủy tác vụ Nâng cấp phiên bản mới</b>.</div><div>Bạn có chắc muốn xóa file?</div>");
-        this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV, "Bạn có chắc muốn <b>hủy tác vụ Hạ xuống phiên bản cũ</b>?");
-        this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT, "Bạn có chắc muốn <b>hủy tác vụ Nâng cấp phiên bản mới</b>?");
+        this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_PURGE, "Bạn có chắc muốn <b>hủy tác vụ Xóa file phiên bản cũ</b>?");
+        this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_APPLY, "Bạn có chắc muốn <b>hủy tác vụ Hạ xuống phiên bản cũ</b>?");
+        this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_PURGE, "Bạn có chắc muốn <b>hủy tác vụ Xóa file phiên bản mới</b>?");
+        this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_APPLY, "Bạn có chắc muốn <b>hủy tác vụ Nâng cấp phiên bản mới</b>?");
         this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_APPLY_PREV, "Bạn có chắc muốn <b>khởi chạy tác vụ Hạ xuống phiên bản cũ</b>?");
         this.#m_Vie.set(LOCL_DESC_UPDATER_CONFIRM_APPLY_NEXT, "Bạn có chắc muốn <b>khởi chạy tác vụ Nâng cấp phiên bản mới</b>?");
         this.#m_Vie.set(LOCL_DESC_UPDATER_INPUTFILES_INITIAL, "Click hoặc thả thư mục vào đây..");

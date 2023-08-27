@@ -1,5 +1,5 @@
 /*  Home/Maintenance/Updater.cshtml.cs
- *  Version: v1.0 (2023.06.28)
+ *  Version: v1.1 (2023.08.25)
  *  
  *  Contributor
  *      Arime-chan
@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Net.Mime;
 using System.Reflection;
@@ -19,12 +20,13 @@ using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.BackendData;
 using Project24.App.Services;
+using Project24.Model;
 using Project24.Model.Home.Maintenance;
 using Project24.SerializerContext;
 
 namespace Project24.Pages.Home.Maintenance
 {
-    public class UpdaterModel : PageModel
+    public class UpdaterModel : ServerAnnouncementIncludedPageModel
     {
         public UpdaterModel(UpdaterSvc _updaterSvc, FileSystemSvc _fileSystemSvc, ILogger<UpdaterModel> _logger)
         {
@@ -37,6 +39,14 @@ namespace Project24.Pages.Home.Maintenance
         public void OnGet()
         {
 
+            ServerMessage = "" +
+                " | Status: " + m_UpdaterSvc.Status.ToString() +
+                " | QueuedAction: " + m_UpdaterSvc.QueuedAction +
+                " | DueTime: "+ m_UpdaterSvc.QueuedActionDueTime.ToString() +
+                " | Remaining: " + m_UpdaterSvc.QueueActionRemainingTime.ToString() +
+                " | AppSide: " + Program.AppSide;
+
+
         }
 
         // ajax call only;
@@ -45,12 +55,14 @@ namespace Project24.Pages.Home.Maintenance
             UpdaterPageDataModel data = new()
             {
                 Status = m_UpdaterSvc.Status,
-                //Message = "SERVER",
             };
+
+            if (m_UpdaterSvc.LastErrorMessage != null)
+                data.Message = m_UpdaterSvc.LastErrorMessage;
 
             try
             {
-                VersionInfo curVerInfo = new (Assembly.GetEntryAssembly().GetName().Version);
+                VersionInfo curVerInfo = new(Assembly.GetEntryAssembly().GetName().Version);
                 data.Main = curVerInfo.ToString();
 
                 string versionFilePath = m_FileSystemSvc.AppNextRoot + "/version.dat";
@@ -59,11 +71,7 @@ namespace Project24.Pages.Home.Maintenance
                     string nextVer = System.IO.File.ReadAllText(versionFilePath);
                     var nextVerInfo = Utils.ParseVersionInfo(nextVer);
 
-                    if (nextVerInfo != null
-                        && (nextVerInfo.Major > curVerInfo.Major
-                        && nextVerInfo.Minor > curVerInfo.Minor
-                        || nextVerInfo.Build > curVerInfo.Build
-                        || nextVerInfo.Revision > curVerInfo.Revision))
+                    if (nextVerInfo != null && Utils.CompareVersion(curVerInfo, nextVerInfo) < 0)
                     {
                         data.Next = nextVer;
                         //data.Files = GetAllFilesInNext();
@@ -107,6 +115,16 @@ namespace Project24.Pages.Home.Maintenance
         }
 
         // ajax call only;
+        public IActionResult OnPostClearInternalError()
+        {
+            if (!ModelState.IsValid)
+                return Content(MessageTag.Error + "Invalid ModelState (clear internal error)", MediaTypeNames.Text.Plain);
+
+            m_UpdaterSvc.ClearErrorMessage();
+            return Content(MessageTag.Success, MediaTypeNames.Text.Plain);
+        }
+
+        // ajax call only;
         public IActionResult OnPostUploadMetadataAsync([FromBody] UpdaterMetadata _data)
         {
             if (!ModelState.IsValid)
@@ -128,12 +146,18 @@ namespace Project24.Pages.Home.Maintenance
 
             long requestLength = (long)Request.ContentLength;
             if (requestLength > Constants.MaxRequestSize)
-                return Content(MessageTag.Error
-                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_OVERSIZE], Constants.MaxRequestSize), MediaTypeNames.Text.Plain);
+            {
+                string msg = "[" + batchId + ", \""
+                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_OVERSIZE], Constants.MaxRequestSize)
+                    + "\"]";
+                return Content(MessageTag.Error + msg, MediaTypeNames.Text.Plain);
+            }
 
             if (!ModelState.IsValid)
-                return Content(MessageTag.Error
-                    + "Invalid ModelState (batch " + batchId + " upload)", MediaTypeNames.Text.Plain);
+            {
+                string msg = "[" + batchId + ", \"Invalid ModelState.\"]";
+                return Content(MessageTag.Error + msg, MediaTypeNames.Text.Plain);
+            }
 
             if (batchId < 0 || batchId > m_UpdaterSvc.GetBatchesCount())
             {
@@ -141,16 +165,24 @@ namespace Project24.Pages.Home.Maintenance
             }
 
             if (_files.Count != batchCount)
-                return Content(MessageTag.Error
-                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_COUNT_MISMATCH], _files.Count, batchCount), MediaTypeNames.Text.Plain);
+            {
+                string msg = "[" + batchId + ", \""
+                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_COUNT_MISMATCH], _files.Count, batchCount)
+                    + "\"]";
+                return Content(MessageTag.Error + msg, MediaTypeNames.Text.Plain);
+            }
 
             long totalSize = 0L;
             foreach (var file in _files)
                 totalSize += file.Length;
 
             if (totalSize != batchSize)
-                return Content(MessageTag.Error
-                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_SIZE_MISMATCH], totalSize, batchSize), MediaTypeNames.Text.Plain);
+            {
+                string msg = "[" + batchId + ", \""
+                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_SIZE_MISMATCH], totalSize, batchSize)
+                    + "\"]";
+                return Content(MessageTag.Error + msg, MediaTypeNames.Text.Plain);
+            }
 
             // ==================================================
 
@@ -162,7 +194,7 @@ namespace Project24.Pages.Home.Maintenance
                 var fi = ComputeFileInfo(file);
 
                 if (fi == null)
-                    return Content(MessageTag.Error + "Bad File in batch " + batchId + ": <code>" + file.FileName + "</code>.", MediaTypeNames.Text.Plain);
+                    return Content(MessageTag.Error + "[" + batchId + ", \"Bad File: <code>" + file.FileName + "</code>.\"", MediaTypeNames.Text.Plain);
 
                 DateTime dt;
                 if (m_UpdaterSvc.IsFileLastModTracked(fi.Item3))
@@ -185,6 +217,12 @@ namespace Project24.Pages.Home.Maintenance
 
             if (errors.Count > 0)
                 return Content(MessageTag.Error + "[" + batchId + "," + errors.Count + "]", MediaTypeNames.Text.Plain);
+
+            m_UpdaterSvc.SetBatchStatus(batchId, true);
+            if (m_UpdaterSvc.IsAllBatchesSuccess())
+            {
+                m_UpdaterSvc.StopMonitoringFileUpload();
+            }
 
             return Content(MessageTag.Success + batchId, MediaTypeNames.Text.Plain);
         }
@@ -241,13 +279,19 @@ namespace Project24.Pages.Home.Maintenance
             }
 
             if (m_UpdaterSvc.Status == codePQ)
-                return Content(MessageTag.Success + "0:" + (int)codePQ, MediaTypeNames.Text.Plain);
+                return Content(MessageTag.Success + (int)ErrorFlagBit.Error + ":" + (int)codePQ, MediaTypeNames.Text.Plain);
 
             if (m_UpdaterSvc.Status == codePR)
-                return Content(MessageTag.Success + "0:" + (int)codePR, MediaTypeNames.Text.Plain);
+                return Content(MessageTag.Success + (int)ErrorFlagBit.Error + ":" + (int)codePR, MediaTypeNames.Text.Plain);
 
-            m_UpdaterSvc.StartPurgePrev();
-            return Content(MessageTag.Success + "1:" + (int)codePQ, MediaTypeNames.Text.Plain);
+            if (_side == UpdaterSide.Prev)
+                m_UpdaterSvc.StartPurgePrev();
+            else if (_side == UpdaterSide.Next)
+                m_UpdaterSvc.StartPurgeNext();
+            else
+                return Content(MessageTag.Error + ErrCode.InvalidBlockName, MediaTypeNames.Text.Plain);
+
+            return Content(MessageTag.Success + (int)ErrorFlagBit.NoError + ":" + (int)codePQ, MediaTypeNames.Text.Plain);
         }
 
         private IActionResult ApplyCommon(UpdaterSide _side)
@@ -272,16 +316,20 @@ namespace Project24.Pages.Home.Maintenance
                 codePR = UpdaterStatus.NextPurgeRunning;
             }
             else
-            {
                 return Content(MessageTag.Error + ErrCode.InvalidBlockName, MediaTypeNames.Text.Plain);
-            }
 
             if (m_UpdaterSvc.Status == codeAQ || m_UpdaterSvc.Status == codeAR
                 || m_UpdaterSvc.Status == codePQ || m_UpdaterSvc.Status == codePR)
-                return Content(MessageTag.Success + "0:" + (int)m_UpdaterSvc.Status, MediaTypeNames.Text.Plain);
+                return Content(MessageTag.Success + (int)ErrorFlagBit.Error + ":" + (int)m_UpdaterSvc.Status, MediaTypeNames.Text.Plain);
 
-            m_UpdaterSvc.StartApplyNext();
-            return Content(MessageTag.Success + "1:" + (int)codeAQ, MediaTypeNames.Text.Plain);
+            if (_side == UpdaterSide.Prev)
+                m_UpdaterSvc.StartApplyPrev();
+            else if (_side == UpdaterSide.Next)
+                m_UpdaterSvc.StartApplyNext();
+            else
+                return Content(MessageTag.Error + ErrCode.InvalidBlockName, MediaTypeNames.Text.Plain);
+
+            return Content(MessageTag.Success + (int)ErrorFlagBit.NoError + ":" + (int)codeAQ, MediaTypeNames.Text.Plain);
         }
 
         private IActionResult AbortCommon(UpdaterSide _side)

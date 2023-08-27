@@ -1,5 +1,5 @@
 /*  App/BackendData/UpdaterMetadata.cs
- *  Version: v1.0 (2023.06.28)
+ *  Version: v1.0 (2023.06.29)
  *  
  *  Contributor
  *      Arime-chan
@@ -53,12 +53,15 @@ namespace Project24.App.BackendData
 
     public sealed class UpdaterBatchMetadata
     {
-        public int Id { get; set; }
+        public int Id { get; set; } = 0;
 
-        public int FilesCount { get; set; }
-        public long FilesSize { get; set; }
+        [JsonIgnore]
+        public bool IsSuccess { get; set; } = false;
 
-        public Dictionary<long, UpdaterFileMetadata> FilesMetadata { get; set; }
+        public int FilesCount { get; set; } = 0;
+        public long FilesSize { get; set; } = 0L;
+
+        public Dictionary<long, UpdaterFileMetadata> FilesMetadata { get; set; } = new();
 
 
         public UpdaterBatchMetadata()

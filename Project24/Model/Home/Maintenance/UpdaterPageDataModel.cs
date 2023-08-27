@@ -1,5 +1,5 @@
 /*  Home/Maintenance/UpdaterPageDataModel.cs
- *  Version: v1.0 (2023.06.28)
+ *  Version: v1.0 (2023.08.08)
  *  
  *  Contributor
  *      Arime-chan
@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using Project24.App;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
-using Project24.App.Services;
 
 namespace Project24.Model.Home.Maintenance
 {
@@ -68,7 +66,7 @@ namespace Project24.Model.Home.Maintenance
             File = new();
 
             Name = _fileInfo.Name;
-            Path = _fileInfo.Path.Replace(_maskPath, "").Replace('\\', '/').TrimStart('/');
+            Path = _fileInfo.Path.Replace(_maskPath, "").Replace('\\', '/').Trim('/');
             LastMod = Utils.FormatDateTimeString_EndsWithMinute(_fileInfo.LastModified);
             Size = _fileInfo.Size;
 

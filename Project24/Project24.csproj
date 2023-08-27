@@ -4,17 +4,22 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
+    
+    <Optimize>false</Optimize>
+    <OutputType>Exe</OutputType>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+
+    <PublishTrimmed>false</PublishTrimmed>
+    <TrimmerDefaultAction>link</TrimmerDefaultAction>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+
     <UserSecretsId>aspnet-Project24-9336a08d-3463-4551-8c43-5f720d2d633b</UserSecretsId>
+    <Authors>Arime-chan</Authors>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PublishTrimmed>true</PublishTrimmed>
-    <Optimize>false</Optimize>
+  <PropertyGroup>    
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
-    <Authors>Arime-chan</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +40,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.15" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
   </ItemGroup>
 
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v17.0\TextTemplating\Microsoft.TextTemplating.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $(IsPublish) != 'true'" />
@@ -58,10 +64,15 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AppHelper\AppHelper.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <TransformOnBuild>True</TransformOnBuild>
-    <TransformOutOfDateOnly>False</TransformOutOfDateOnly>
+    <TransformOnBuild>true</TransformOnBuild>
+
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -71,11 +82,9 @@
   <Target Name="AfterPublishEx" AfterTargets="AfterPublish">
     <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.dll $(PublishDir)AppHelper.dll" />
     <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.deps.json $(PublishDir)AppHelper.deps.json" />
-    <!-- System.Console.dll is trimmed in main app (Project24) that renders some method in AppHelper missing. Instead we takes the dll from AppHelper build. -->
-    <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\System.Console.dll $(PublishDir)System.Console.dll" />
+    
     <Exec Command="copy /v $(PublishDir)..\\version.dat $(PublishDir)version.dat" />
-    <!--Exec Command="del /f $(PublishDir)appsettings.Development.json" /-->
-    <!--Exec Command="del /f $(PublishDir)VersioningHelper*" /-->
+    <Exec Command="del /f $(PublishDir)appsettings.Development.json" />
   </Target>
 
 </Project>

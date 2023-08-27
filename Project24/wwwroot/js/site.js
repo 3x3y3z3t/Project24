@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.3 (2023.06.28)
+ *  Version: 1.3 (2023.08.26)
  *
  *  Contributor
  *      Arime-chan
@@ -12,6 +12,7 @@
 
 // Project24 allows maximum 32 MiB per upload;
 const P24_MAX_UPLOAD_SIZE = 32 * 1024 * 1024;
+const P24_MAX_UPLOAD_COUNT = 1024; // ASP.NET Core impose a limit on 1024 files per request;
 
 const P24_TEXT_COLOR_NORMAL = 1;
 const P24_TEXT_COLOR_RED = 2;
@@ -68,6 +69,12 @@ var HttpStatusCodeName = {
     '505': 'HTTP Version Not Supported',
 };
 
+
+$(document).ready(function () {
+    P24Utils.reloadAllTooltips();
+});
+
+
 // =====
 window.P24Utils = {};
 
@@ -98,6 +105,10 @@ P24Utils.getScrollbarWidth = function () {
     outer.parentNode.removeChild(outer);
 
     return scrollbarWidth;
+}
+
+P24Utils.reloadAllTooltips = function () {
+    $("[data-toggle=\"tooltip\"]").tooltip();
 }
 
 // ==================================================

@@ -1,11 +1,11 @@
 /*  Updater.js
-    Version: v1.0 (2023.06.28)
+    Version: v1.0 (2023.08.26)
 
     Contributor
         Arime-chan
  */
 
-const UPDATER_HEADER_BUFFER = 5 * 1024 * 1024; // max header size is 5 KiB;
+const UPDATER_HEADER_BUFFER = 5 * 1024 * 1024; // max header buffer size is 5 KiB;
 
 // ==================================================
 // Upload File Status Codes;
@@ -110,6 +110,23 @@ Updater.ajax_fetchPageData = function () {
         url: "Updater?handler=FetchPageData",
         success: Updater.ajax_fetchPageData_success,
         error: Updater.ajax_error
+    });
+}
+
+Updater.ajax_clearInternalError = function () {
+    if (Updater.m_AwaitingData || Updater.m_PageData.Message == "")
+        return;
+
+    Updater.m_AwaitingData = true;
+    let token = $("input[name='__RequestVerificationToken']").val();
+
+    $.ajax({
+        type: "POST",
+        url: "Updater?handler=ClearInternalError",
+        headers: { RequestVerificationToken: token },
+        cache: false,
+        success: Updater.ajax_clearInternalError_success,
+        error: Updater.ajax_error,
     });
 }
 
@@ -263,6 +280,15 @@ Updater.ajax_fetchPageData_success = function (_content, _textStatus, _xhr) {
     }
 }
 
+Updater.ajax_clearInternalError_success = function (_content, _textStatus, _xhr) {
+    Updater.m_AwaitingData = false;
+
+    if (_content.startsWith(P24_MSG_TAG_SUCCESS))
+        console.log("Internal Error cleared.");
+    else
+        console.error("Error clearing Internal Error :))");
+}
+
 Updater.ajax_uploadMetadata_success = function (_content, _textStatus, _xhr) {
     Updater.m_AwaitingData = false;
 
@@ -301,7 +327,7 @@ Updater.ajax_uploadBatch_success = function (_content, _textStatus, _xhr) {
     let obj = JSON.parse(body);
     let id = obj[0];
     if (_content.startsWith(P24_MSG_TAG_ERROR)) {
-        let msg = "<code>" + obj[1] + "</code> file upload lỗi trong batch " + id + ". Vui lòng upload lại.";
+        let msg = "<div>Có lỗi xảy ra khi upload batch " + id + ". Vui lòng upload lại.</div><div><b>Msg:</b> " + obj[1] + "</div>";
         Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_FAIL), msg, "error");
     }
     else if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
@@ -571,10 +597,18 @@ function btnPurge_onClick(_blockName) {
 function btnAbort_onClick(_blockName) {
     let content = "";
 
-    if (_blockName == UPDATER_BLOCK_NAME_PREV)
-        content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV);
-    else if (_blockName == UPDATER_BLOCK_NAME_NEXT)
-        content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT);
+    if (_blockName == UPDATER_BLOCK_NAME_PREV) {
+        if (Updater.m_PageData.Status == UPDATER_STATUS_PREV_PURGE_QUEUED)
+            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_PURGE);
+        else if (Updater.m_PageData.Status == UPDATER_STATUS_PREV_APPLY_QUEUED)
+            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_APPLY);
+    }
+    else if (_blockName == UPDATER_BLOCK_NAME_NEXT) {
+        if (Updater.m_PageData.Status == UPDATER_STATUS_NEXT_PURGE_QUEUED)
+            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_PURGE);
+        else if (Updater.m_PageData.Status == UPDATER_STATUS_NEXT_APPLY_QUEUED)
+            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_APPLY);
+    }
     else
         return;
 
@@ -634,8 +668,8 @@ Updater.constructFileItemHtml = function (_fileItem, _noColor = false) {
         hiddenAttr = "";
 
     let path = _fileItem.Path;
-    if (path != "")
-        path += "";
+    if (path != "" && !path.endsWith("/"))
+        path += "/";
 
     let html = "<div class=\"d-flex " + colorClass + "me-2\">"
         + "<div class=\"text-end me-1\" style=\"width:18ch\"" + hiddenAttr + ">" + _fileItem.HashCode + "</div>"
@@ -647,7 +681,7 @@ Updater.constructFileItemHtml = function (_fileItem, _noColor = false) {
     return html;
 }
 
-Updater.constructUploadBlockHtml = function (_blockId, _blockText, _status) {
+Updater.constructUploadBlockHtml = function (_blockId, _blockText, _status, _tooltipText = null) {
     let blockClass = "alert ";
     if (_status == UPDATER_BATCH_STATUS_NOT_STARTED) {
         blockClass += "alert-secondary";
@@ -673,7 +707,11 @@ Updater.constructUploadBlockHtml = function (_blockId, _blockText, _status) {
     }
     blockClass += " m-1 py-1 px-3";
 
-    let html = "<div id=\"" + _blockId + "\" class=\"" + blockClass + "\">"
+    let tooltipHtml = "";
+    if (_tooltipText != null)
+        tooltipHtml = " data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"" + _tooltipText + "\"";
+
+    let html = "<div id=\"" + _blockId + "\" class=\"" + blockClass + "\"" + tooltipHtml + ">"
         + Updater.constructUploadBlockSvg(_status)
         + _blockText
         + "</div>";
@@ -718,40 +756,39 @@ Updater.constructVersionPanelButton = function (_svcIcon, _subClass = "", _onCli
 }
 
 Updater.computePanelVerBtnStatus = function (_blockName) {
+    let samePQ = 0;
     let sameAQ = 0;
-    let sameAR = 0;
     let crosAQ = 0;
-    let crosAR = 0;
 
-    // If any Purge task in queued or in progress: No action is available.
-    if (Updater.m_PageData.Status == UPDATER_STATUS_PREV_PURGE_QUEUED || Updater.m_PageData.Status == UPDATER_STATUS_PREV_PURGE_RUNNING
-        || Updater.m_PageData.Status == UPDATER_STATUS_PREV_PURGE_QUEUED || Updater.m_PageData.Status == UPDATER_STATUS_PREV_PURGE_RUNNING) {
+    // If any Purge task or Apply task is in progress: No action is available.
+    if (Updater.m_PageData.Status == UPDATER_STATUS_PREV_PURGE_RUNNING || Updater.m_PageData.Status == UPDATER_STATUS_NEXT_PURGE_RUNNING
+        || Updater.m_PageData.Status == UPDATER_STATUS_PREV_APPLY_RUNNING || Updater.m_PageData.Status == UPDATER_STATUS_NEXT_APPLY_RUNNING) {
         return [false, false, false];
     }
 
     if (_blockName == UPDATER_BLOCK_NAME_PREV) {
+        samePQ = UPDATER_STATUS_PREV_PURGE_QUEUED;
         sameAQ = UPDATER_STATUS_PREV_APPLY_QUEUED;
-        sameAR = UPDATER_STATUS_PREV_APPLY_RUNNING;
         crosAQ = UPDATER_STATUS_NEXT_APPLY_QUEUED;
-        crosAR = UPDATER_STATUS_NEXT_APPLY_RUNNING;
     }
 
     if (_blockName == UPDATER_BLOCK_NAME_NEXT) {
+        samePQ = UPDATER_STATUS_NEXT_PURGE_QUEUED;
         sameAQ = UPDATER_STATUS_NEXT_APPLY_QUEUED;
-        sameAR = UPDATER_STATUS_NEXT_APPLY_RUNNING;
         crosAQ = UPDATER_STATUS_PREV_APPLY_QUEUED;
-        crosAR = UPDATER_STATUS_PREV_APPLY_RUNNING;
     }
 
-    // If opposite side's Apply task is queued or is in progress: No action on this side is available.
-    // If this side's Apply task is in progress: No action on this side is available.
-    if (Updater.m_PageData.Status == crosAQ || Updater.m_PageData.Status == crosAR
-        || Updater.m_PageData.Status == sameAR)
-        return [false, false, false];
+    // If this side's Purge task is queued: Abort is available.
+    if (Updater.m_PageData.Status == samePQ)
+        return [false, true, false];
 
     // If this side's Apply task is queued: Abort and Purge is available.
     if (Updater.m_PageData.Status == sameAQ)
         return [true, true, false];
+
+    // If opposite side's Apply task is queued: No action on this side is available.
+    if (Updater.m_PageData.Status == crosAQ)
+        return [false, false, false];
 
     // Else: Purge and Apply is available.
     return [true, false, true];
@@ -808,6 +845,9 @@ Updater.refreshPage = function () {
         $("#div-input-files").on("mouseenter dragenter", lblInputFiles_dragIn);
         $("#div-input-files").on("mouseleave dragend drop dragexit dragleave", lblInputFiles_dragOut);
     }
+
+    // open modal if there is error message;
+    Updater.tryOpenErrMsgDialog();
 }
 
 Updater.refreshUploadFilesPanel = function () {
@@ -863,10 +903,15 @@ Updater.refreshUploadStatusPanel = function () {
     html += "<div class=\"vr mx-1\"></div>";
 
     for (let i = 0; i < Updater.m_Metadata.BatchesCount; ++i) {
-        html += Updater.constructUploadBlockHtml(id_divUploadStatBatchX + i, "Batch " + i, Updater.m_Metadata.BatchesMetadata[i].Status);
+        let tooltipText = Updater.m_Metadata.BatchesMetadata[i].FilesCount + " file";
+        if (Updater.m_Metadata.BatchesMetadata[i].FilesCount > 1)
+            tooltipText += "s";
+        tooltipText += ", " + P24Utils.formatDataLength(Updater.m_Metadata.BatchesMetadata[i].FilesSize);
+        html += Updater.constructUploadBlockHtml(id_divUploadStatBatchX + i, "Batch " + i, Updater.m_Metadata.BatchesMetadata[i].Status, tooltipText);
     }
 
     Updater.Elements.m_DivUploadStatPanel.html(html);
+    P24Utils.reloadAllTooltips();
 
     Updater.Elements.m_DivUploadStatMetadata = $("#" + id_divUploadStatMetadata);
     Updater.Elements.m_DivUploadStatBatches = [];
@@ -936,6 +981,14 @@ Updater.refreshPanelVer = function (_blockName = "main") {
     }
 
     element.html(html);
+}
+
+Updater.tryOpenErrMsgDialog = function () {
+    if (Updater.m_PageData.Message == "")
+        return;
+
+    let html = Updater.m_PageData.Message;
+    Modal.Common.openTwoBtnModal("Internal Message", html, MODAL_ICON_ERROR, "Clear Message", "Updater.ajax_clearInternalError()", "Close");
 }
 
 Updater.clearUploadPanel = function () {
@@ -1010,7 +1063,7 @@ Updater.processFilesList = function () {
         if (fileItem.Status == UPDATER_FILE_STATUS_NO_CHANGE)
             continue;
 
-        if (batchFilesSize >= P24_MAX_UPLOAD_SIZE - UPDATER_HEADER_BUFFER) {
+        if (batchFilesSize >= P24_MAX_UPLOAD_SIZE - UPDATER_HEADER_BUFFER || batchFilesCount >= P24_MAX_UPLOAD_COUNT) {
             Updater.m_Batches[batchIndex] = {
                 Id: batchIndex,
                 //Status: UPDATER_BATCH_STATUS_NOT_STARTED,
@@ -1086,7 +1139,7 @@ Updater.processSingleFile = function (_file) {
         path = _file.webkitRelativePath.substring(prePos + 1, pos);
     }
 
-    if (path != "")
+    if (path != "" && !path.endsWith("/"))
         path += "/";
 
     let hashCode = computeCyrb53HashCode(path + _file.name);

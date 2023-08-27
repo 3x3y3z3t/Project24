@@ -1,9 +1,11 @@
 /*  App/Constants.cs
- *  Version: v1.0 (2023.06.28)
+ *  Version: v1.0 (2023.08.24)
  *  
  *  Contributor
  *      Arime-chan
  */
+
+using Project24.App;
 
 namespace Project24.App
 {
@@ -28,9 +30,10 @@ namespace Project24.App
 
     public static class Constants
     {
-        public const string AppNextDir = "../next";
-        public const string AppPrevDir = "../prev";
-        public const string AppLogDir = "../log";
+        public const string AppMainDir = "/main";
+        public const string AppNextDir = "/next";
+        public const string AppPrevDir = "/prev";
+        public const string AppLogDir = "/log";
 
         public const string DataRootDir = "../../appData/data";
         public const string DbRootDir = "../../appData/db";
@@ -44,7 +47,18 @@ namespace Project24.App
 
     public static class ErrCode
     {
-        public const string NotImplemented = "<c>NOT_IMPLEMENTED</c>";
-        public const string InvalidBlockName = "<c>INVALID_BLOCK_NAME</c>";
+        public const string NotImplemented = "<code>NOT_IMPLEMENTED</code>";
+        public const string InvalidBlockName = "<code>INVALID_BLOCK_NAME</code>";
+
+        public const string Updater_BatchOversize = "<code>UPDATER_BATCH_OVERSIZE</code>";
+        public const string Updater_BatchCountMismatch = "<code>UPDATER_BATCH_COUNT_MÍMATCH</code>";
+        public const string Updater_BatchSizeMismatch = "<code>UPDATER_BATCH_SIZE_MISMATCH</code>";
+
+    }
+
+    public static class DbInternalStateKey
+    {
+        public const string UPDATER_STATUS = nameof(UPDATER_STATUS);
+        public const string UPDATER_DUE_TIME = nameof(UPDATER_DUE_TIME);
     }
 }

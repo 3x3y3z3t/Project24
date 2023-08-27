@@ -1,11 +1,12 @@
 /*  App/Utils/MiscUtils.cs
- *  Version: v1.1 (2023.06.28)
+ *  Version: v1.1 (2023.08.09)
  *  
  *  Contributor
  *      Arime-chan
  */
 
 using System;
+using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -15,7 +16,7 @@ namespace Project24.App
 {
     public static class Utils
     {
-        public static string WebRootPath = null;
+        public static string WebRootPath { get; set; } = null;
 
         public static readonly JavaScriptEncoder FullUnicodeRangeJsonEncoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         public static readonly JsonSerializerOptions JsonSerializerOptions = new()
@@ -82,6 +83,10 @@ namespace Project24.App
                 Revision = revision
             };
         }
+        #endregion
+
+        #region App Location
+        public static string WhereAmI() => Directory.GetCurrentDirectory();
         #endregion
 
 
