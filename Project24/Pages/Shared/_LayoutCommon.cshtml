@@ -1,11 +1,14 @@
 @*  _LayoutCommon.cshtml
- *  Version: v1.1 (2023.06.13)
+ *  Version: v1.3 (2023.09.02)
  *
- *  Contributor
+ *  Author
  *      Arime-chan
  *@
 
 @using Project24.App;
+@using Project24.App.Services;
+
+@inject LocalizationSvc m_LocalizationSvc
 
 <!DOCTYPE html>
 <html lang="en">
@@ -42,13 +45,30 @@
         </main>
     </div>
 
-    <partial name="_FooterCommon" />
+    <footer class="border-top footer text-muted">
+        <partial name="_FooterCommon" />
+    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/p24-localization.js" asp-append-version="true"></script>
+    <script src="~/js/locale/p24-localization-keys.js" asp-append-version="true"></script>
+
+    @if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.EN_US)
+    {
+        <script src="~/js/locale/p24-localization-en-us.js" asp-append-version="true"></script>
+    }
+    else if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.JA_JP)
+    {
+        <script src="~/js/locale/p24-localization-ja-jp.js" asp-append-version="true"></script>
+    }
+    else if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.VI_VN)
+    {
+        <script src="~/js/locale/p24-localization-vi-vn.js" asp-append-version="true"></script>
+    }
+
     <script src="~/js/svgs.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

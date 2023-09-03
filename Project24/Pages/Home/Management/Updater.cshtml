@@ -1,18 +1,23 @@
-@*  Home/Maintenance/Updater.cshtml
- *  Version: v1.0 (2023.06.28)
+@*  Home/Management/Updater.cshtml
+ *  Version: v1.1 (2023.09.02)
  *
- *  Contributor
+ *  Author
  *      Arime-chan
 *@
 
 @page
+
 @using Microsoft.AspNetCore.Html;
-@using Project24.App;
 @using System.Reflection;
+@using Project24.App;
+@using Project24.App.Services;
+
+@inject LocalizationSvc m_LocalizationSvc
+
 @model Project24.Pages.Home.Maintenance.UpdaterModel
 @{
     Layout = "_NoScrollLayout";
-    ViewData[ViewDataKeys.Title] = P24Localization.Active[LOCL.PAGE_UPDATER];
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_UPDATER];
     ViewData[ViewDataKeys.Flags] = (ViewDataFlags)ViewData[ViewDataKeys.Flags] | ViewDataFlags.NoTitle;
 
     const string classPanelTopCommon = "col-12 col-sm-10 col-md-12 col-lg-10";
@@ -37,21 +42,21 @@
             <div class="d-flex flex-wrap @classPanelTopCommon col-xl-8">
                 <div class="@classLblGroup">
                     <div class="@classLblGroupInner">
-                        <div class="@classLblTitle">@P24Localization.Active[LOCL.STR_UPDATER_PREV_VER]</div>
+                        <div class="@classLblTitle">@m_LocalizationSvc[LOCL.STR_UPDATER_PREV_VER]</div>
                         <div id="div-lbl-prev" class="@classLblValue text-warning"></div>
                     </div>
                 </div>
 
                 <div class="@classLblGroup">
                     <div class="@classLblGroupInner">
-                        <div class="@classLblTitle">@P24Localization.Active[LOCL.STR_UPDATER_MAIN_VER]</div>
+                        <div class="@classLblTitle">@m_LocalizationSvc[LOCL.STR_UPDATER_MAIN_VER]</div>
                         <div id="div-lbl-main" class="@classLblValue text-primary"></div>
                     </div>
                 </div>
 
                 <div class="@classLblGroup">
                     <div class="@classLblGroupInner">
-                        <div class="@classLblTitle">@P24Localization.Active[LOCL.STR_UPDATER_NEXT_VER]</div>
+                        <div class="@classLblTitle">@m_LocalizationSvc[LOCL.STR_UPDATER_NEXT_VER]</div>
                         <div id="div-lbl-next" class="@classLblValue text-success"></div>
                     </div>
                 </div>
@@ -92,10 +97,10 @@
     <div id="div-files-table" class="d-flex flex-column h-100" style="min-height:0">
         <div id="div-files-table-head" class="d-flex flex-nowrap" style="">
             <div class="@classFilesTableTitle">
-                <div id="div-svr-title" class="@classFilesTableTitleInner">@P24Localization.Active[LOCL.STR_UPDATER_FILES_ON_SVR]</div>
+                <div id="div-svr-title" class="@classFilesTableTitleInner">@m_LocalizationSvc[LOCL.STR_UPDATER_FILES_ON_SVR]</div>
             </div>
             <div class="@classFilesTableTitle">
-                <div id="div-upl-title" class="@classFilesTableTitleInner">@P24Localization.Active[LOCL.STR_UPDATER_FILES_TO_UPL]</div>
+                <div id="div-upl-title" class="@classFilesTableTitleInner">@m_LocalizationSvc[LOCL.STR_UPDATER_FILES_TO_UPL]</div>
             </div>
         </div>
 

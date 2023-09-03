@@ -1,0 +1,52 @@
+@*  Home/Management/ConfigPanel.cshtml
+ *  Version: v1.0 (2023.09.02)
+ *
+ *  Author
+ *      Arime-chan
+*@
+
+@page
+
+@using Project24.App;
+@using Project24.App.Services;
+
+@inject LocalizationSvc m_LocalizationSvc
+
+@model Project24.Pages.Home.Management.ConfigPanelModel
+@{
+    Layout = P24PageLayout.CommonLayout;
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_CONFIG_PANEL];
+}
+
+<div class="mb-2">
+    <button class="btn btn-outline-secondary mx-1" onclick="ConfigPanelPage.btnReload_onclick()">
+        @m_LocalizationSvc[LOCL.BTN_RELOAD]
+        <svg width="16" height="16" fill="currentColor">
+            <use xlink:href="/lib/bootstrap-icons/bootstrap-icons.svg#arrow-clockwise" />
+        </svg>
+    </button>
+
+    <button id="btn-save" class="btn btn-outline-primary mx-1" onclick="ConfigPanelPage.btnSave_onclick()" disabled>
+        @m_LocalizationSvc[LOCL.BTN_SAVE]
+        <svg width="16" height="16" fill="currentColor">
+            <use xlink:href="/lib/bootstrap-icons/bootstrap-icons.svg#check-lg" />
+        </svg>
+    </button>
+</div>
+
+<div id="div-reload-status" class="mx-2"></div>
+<hr />
+
+<div id="div-main" class="d-flex flex-wrap">
+</div>
+
+@Html.AntiForgeryToken()
+
+<partial name="Shared/Modal/_ModalCommon" />
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/js/cyrb53.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/modals.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/home/management/config-panel.js" asp-append-version="false"></script>
+}

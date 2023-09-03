@@ -1,7 +1,7 @@
 /*  App/Enums.cs
- *  Version: v1.2 (2023.08.26)
+ *  Version: v1.3 (2023.09.01)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -68,8 +68,11 @@ namespace Project24.App
     public enum ErrorFlagBit : short
     {
         Error = 0,
-        NoError = 1,
+        NoError = 1
     }
+
+
+    
 
     public static class AppSide_
     {
@@ -86,5 +89,12 @@ namespace Project24.App
 
         public const string Exception = "<excp>";
     }
+
+    public static class P24PageLayout
+    {
+        public const string CommonLayout = "_LayoutCommon";
+        public const string NoScrollLayout = "_NoScrollLayout";
+    }
+
 
 }

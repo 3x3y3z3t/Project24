@@ -1,7 +1,7 @@
 /*  App/Services/UpdaterSvc.cs
- *  Version: v1.0 (2023.08.27)
+ *  Version: v1.1 (2023.08.31)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -64,25 +64,7 @@ namespace Project24.App.Services
 
         public override void StartService()
         {
-            if (m_FileSystemSvc.AppRoot.Contains(AppSide_.PREV))
-                m_AppSide = AppSide_.PREV;
-            else if (m_FileSystemSvc.AppRoot.Contains(AppSide_.MAIN))
-                m_AppSide = AppSide_.MAIN;
-            else
-            {
-                m_Logger.LogCritical("Invalid AppSide (app is running from invalid location: {AppRoot})", m_FileSystemSvc.AppRoot);
-                if (Program.IsDevelopment)
-                {
-                    m_Logger.LogWarning("App will continue since this is Development Mode.");
-                }
-                else
-                {
-                    m_Logger.LogError("App will now exit due to invalid AppSide.");
-                    Environment.Exit(0);
-                    // TODO: Exit Code;
-                }
-            }
-            m_Logger.LogDebug("AppSide = {_appSide}", m_AppSide);
+            m_Logger.LogDebug("AppSide = {_appSide}", Program.AppSide);
 
             // ==================================================;
 
@@ -170,8 +152,6 @@ namespace Project24.App.Services
 
         public void StartPurgeNext()
         {
-            //FileSystemSvc.CopyFiles(m_FileSystemSvc.AppNextRoot, m_FileSystemSvc.AppPrevRoot, s_ExcludeFilesList);
-            //return;
             InvokeSvc();
 
             Status = UpdaterStatus.NextPurgeQueued;
@@ -312,7 +292,7 @@ namespace Project24.App.Services
             if (QueuedAction == UpdaterQueuedAction.SwitchExecutableToPrev)
             {
                 m_Logger.LogDebug("  QueuedAction = {_action}", QueuedAction.ToString());
-                if (m_AppSide != AppSide_.PREV)
+                if (Program.AppSide != AppSide_.PREV)
                 {
                     SwitchAppExecutableToPrev();
                     return;
@@ -377,7 +357,7 @@ namespace Project24.App.Services
             if (QueuedAction == UpdaterQueuedAction.SwitchExecutableToMain)
             {
                 m_Logger.LogDebug("  QueuedAction = {_action}", QueuedAction.ToString());
-                if (m_AppSide != AppSide_.MAIN)
+                if (Program.AppSide != AppSide_.MAIN)
                 {
                     SwitchAppExecutableToMain();
                     return;
@@ -477,7 +457,7 @@ namespace Project24.App.Services
             if (QueuedAction == UpdaterQueuedAction.SwitchExecutableToPrev)
             {
                 m_Logger.LogDebug("  QueuedAction = {_action}", QueuedAction.ToString());
-                if (m_AppSide != AppSide_.PREV)
+                if (Program.AppSide != AppSide_.PREV)
                 {
                     SwitchAppExecutableToPrev();
                     return;
@@ -516,7 +496,7 @@ namespace Project24.App.Services
             if (QueuedAction == UpdaterQueuedAction.SwitchExecutableToMain)
             {
                 m_Logger.LogDebug("  QueuedAction = {_action}", QueuedAction.ToString());
-                if (m_AppSide != AppSide_.MAIN)
+                if (Program.AppSide != AppSide_.MAIN)
                 {
                     SwitchAppExecutableToMain();
                     return;
@@ -732,36 +712,25 @@ namespace Project24.App.Services
         //    await SaveChangesAsync();
         //}
 
-        private void ComputeUpdaterActionDueTime() => QueuedActionDueTime = DateTime.Now.AddMilliseconds(c_ActionDueTimeMillis);
+        private void ComputeUpdaterActionDueTime() => QueuedActionDueTime = DateTime.Now.AddMinutes(int.Parse(m_TrackerSvc[InternalTrackedKeys.CONFIG_UPDATER_WAIT_TIME]));
         private void InvokeSvc() => m_LastActivitiesTick = Environment.TickCount64;
 
 
-        private UpdaterStatus m_Status = UpdaterStatus.None;
-        private UpdaterQueuedAction m_QueuedAction = UpdaterQueuedAction.None;
-        //private UpdaterInternalState m_InternalState = UpdaterInternalState.None;
-        private DateTime m_QueuedActionDueTime = DateTime.MaxValue;
-
-
-
-
-
-
-
-
-
         // TODO: move this to AppConfigSvc;
-        public const int c_ActionDueTimeMillis = 2 * 60 * 1000;
-
+        //public const int c_ActionDueTimeMillis = 2 * 60 * 1000;
         private const int c_IdleTimeMillis = 5 * 60 * 1000; // 5 minutes idle time;
 
         private static readonly List<string> s_ExcludeFilesList = new() { "appsettings.Production.json" };
 
         private UpdaterMetadata m_Metadata = null;
 
+        private UpdaterStatus m_Status = UpdaterStatus.None;
+        private UpdaterQueuedAction m_QueuedAction = UpdaterQueuedAction.None;
+        private DateTime m_QueuedActionDueTime = DateTime.MaxValue;
         private long m_LastActivitiesTick = 0;
         private readonly Timer m_Timer = null;
 
-        private string m_AppSide = null;
+        //private string m_AppSide = null;
 
         private readonly FileSystemSvc m_FileSystemSvc;
     }

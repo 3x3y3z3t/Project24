@@ -1,19 +1,32 @@
 /*  Data/ApplicationDbContext.cs
- *  Version: v1.1 (2023.06.29)
+ *  Version: v1.2 (2023.08.31)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Project24.Model;
 using Project24.Model.Home;
 
 namespace Project24.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
-        public DbSet<InternalState> InternalStates { get; set; }
+
+
+
+
+
+        public DbSet<Trackable> Trackables { get; set; }
+        public DbSet<TrackableMetadata> InternalTrackableMetadatas { get; set; }
+
+
+
+
+
+        public DbSet<UserUploadData> UserUploadDatas { get; set; }
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

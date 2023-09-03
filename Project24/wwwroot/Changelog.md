@@ -1,5 +1,16 @@
 
-#### v-core6-0.4.0 (2023.08.27)
+### v-core6-0.5.0 (2023.09.02)
+- Added Config Panel.
+- Added User upload data logger.
+- Added Localization support (both front-end and back-end), currently supports Global (app-wide) localization only.
+- Added `Trackable` (to be used in place of `InternalState`).
+- Added `TrackableMetadata`.
+- Updated Updater function to use User upload data logger.
+- Updated `InternalTrackerSvc`: Added init function.
+- Removed `InternalState`.
+- Fixed Updater front-end bug in which batches info tag should not display when there is no file to be upload.
+
+### v-core6-0.4.0 (2023.08.27)
 - Added MySQL Database.
 - Added Updater function (for updating without manually copying files to server).
 - Added Rollback function (for rolling back *one* previous version).
@@ -16,7 +27,7 @@
 - Minor fixes for `FileSystemSvc`.
 - Minor fixes for Updater front-end script (js).
 
-#### v-core6-0.3.0 (2023.06.28)
+### v-core6-0.3.0 (2023.06.28)
 - Added Updater page.
 - Added Localization.
 - Added FileSystem service.
@@ -28,7 +39,7 @@
 - Added Modal icons.
 - Fixed unhandled exception in Changelog page.
 
-#### v-core6-0.2.0 (2023.05.16)
+### v-core6-0.2.0 (2023.05.16)
 - Added License.
 - Added `Markdig.Signed` package for Markdown parser (unused).
 - Added Changelog page.
@@ -36,5 +47,5 @@
 - Renamed "Release Note.md" file to "Changelog.md".
 - Updated Layout.
 
-#### v-core6-0.1.0 (2023.04.09)
+### v-core6-0.1.0 (2023.04.09)
 - Initialize .NET Core 6 project.

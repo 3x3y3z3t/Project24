@@ -1,7 +1,7 @@
-/*  Updater.js
-    Version: v1.0 (2023.08.26)
+/*  home/management/updater.js
+    Version: v1.1 (2023.09.02)
 
-    Contributor
+    Author
         Arime-chan
  */
 
@@ -328,13 +328,13 @@ Updater.ajax_uploadBatch_success = function (_content, _textStatus, _xhr) {
     let id = obj[0];
     if (_content.startsWith(P24_MSG_TAG_ERROR)) {
         let msg = "<div>Có lỗi xảy ra khi upload batch " + id + ". Vui lòng upload lại.</div><div><b>Msg:</b> " + obj[1] + "</div>";
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_FAIL), msg, "error");
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_FAIL], msg, "error");
     }
     else if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_EXCEPTION), "<pre>" + body + "</pre>");
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + body + "</pre>");
     }
     else {
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_UNKNOWN_ERR), "<pre>" + _content + "</pre>", "error");
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_UNKNOWN_ERR], "<pre>" + _content + "</pre>", "error");
     }
 
     Updater.m_Metadata.BatchesMetadata[id].Status = UPDATER_BATCH_STATUS_ERROR;
@@ -385,7 +385,7 @@ Updater.ajax_purgeCommon_success = function (_content, _textStatus, _xhr, _block
     else {
         let html = "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code>.</div>"
             + "<div>fn: <code>" + fname + "Common</code></div>";
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_WARN), html, MODAL_ICON_WARNING);
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
         return;
     }
 
@@ -405,13 +405,13 @@ Updater.ajax_purgeCommon_success = function (_content, _textStatus, _xhr, _block
         }
 
         if (err) {
-            let html = "<div>" + P24Localization.get(LOCL_DESC_MALFORMED) + ".</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_ERR), html, MODAL_ICON_WARNING);
+            let html = "<div>" + P24Localization[LOCL_DESC_MALFORMED] + ".</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], html, MODAL_ICON_WARNING);
             return;
         }
 
         if (status == statusCode && body[0] != '0') {
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_SUCCESS), P24Localization.get(descKey) + ".", MODAL_ICON_SUCCESS, "OK", "location.reload()");
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], P24Localization[descKey] + ".", MODAL_ICON_SUCCESS, "OK", "location.reload()");
             return;
         }
 
@@ -420,7 +420,7 @@ Updater.ajax_purgeCommon_success = function (_content, _textStatus, _xhr, _block
                 + "<div>fn: <code>" + fname + "</code></div>"
                 + "<div>body: <code>" + body + "</code></div>"
                 + "<div>pageData.Status: <code>" + Updater.m_PageData.Status + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_WARN), html, MODAL_ICON_WARNING);
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
         }
     }
 }
@@ -445,7 +445,7 @@ Updater.ajax_applyCommon_success = function (_content, _textStatus, _xhr, _block
     else {
         let html = "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code>.</div>"
             + "<div>fn: <code>" + fname + "Common</code></div>";
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_WARN), html, MODAL_ICON_WARNING);
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
         return;
     }
 
@@ -465,13 +465,13 @@ Updater.ajax_applyCommon_success = function (_content, _textStatus, _xhr, _block
         }
 
         if (err) {
-            let html = "<div>" + P24Localization.get(LOCL_DESC_MALFORMED) + ".</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_ERR), html, MODAL_ICON_WARNING);
+            let html = "<div>" + P24Localization[LOCL_DESC_MALFORMED] + ".</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], html, MODAL_ICON_WARNING);
             return;
         }
 
         if (status == statusCode && body[0] != '0') {
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_SUCCESS), P24Localization.get(descKey) + ".", MODAL_ICON_SUCCESS, "OK", "location.reload()");
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], P24Localization[descKey] + ".", MODAL_ICON_SUCCESS, "OK", "location.reload()");
             return;
         }
 
@@ -480,7 +480,7 @@ Updater.ajax_applyCommon_success = function (_content, _textStatus, _xhr, _block
                 + "<div>fn: <code>" + fname + "</code></div>"
                 + "<div>body: <code>" + body + "</code></div>"
                 + "<div>pageData.Status: <code>" + Updater.m_PageData.Status + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_WARN), html, MODAL_ICON_WARNING);
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
         }
     }
 }
@@ -499,7 +499,7 @@ Updater.ajax_abortCommon_success = function (_content, _textStatus, _xhr, _block
     else {
         let html = "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code>.</div>"
             + "<div>fn: <code>" + fname + "Common</code></div>";
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_WARN), html, MODAL_ICON_WARNING);
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
         return;
     }
 
@@ -519,18 +519,18 @@ Updater.ajax_abortCommon_success = function (_content, _textStatus, _xhr, _block
         }
 
         if (err) {
-            let html = "<div>" + P24Localization.get(LOCL_DESC_MALFORMED) + ".</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_ERR), html, MODAL_ICON_WARNING);
+            let html = "<div>" + P24Localization[LOCL_DESC_MALFORMED] + ".</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], html, MODAL_ICON_WARNING);
             return;
         }
 
         if (status == UPDATER_STATUS_PREV_PURGE_RUNNING || status == UPDATER_STATUS_NEXT_PURGE_RUNNING) {
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_WARN), P24Localization.get(LOCL_DESC_UPDATER_PURGE_CANNOT_ABORT), MODAL_ICON_WARNING);
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], P24Localization[LOCL_DESC_UPDATER_PURGE_CANNOT_ABORT], MODAL_ICON_WARNING);
             return;
         }
 
         if (status == UPDATER_STATUS_NONE && body[0] != '0') {
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_SUCCESS), P24Localization.get(LOCL_DESC_UPDATER_ABORT_SUCCESS) + ".", MODAL_ICON_SUCCESS, "OK", "location.reload()");
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], P24Localization[LOCL_DESC_UPDATER_ABORT_SUCCESS] + ".", MODAL_ICON_SUCCESS, "OK", "location.reload()");
             return;
         }
 
@@ -539,24 +539,24 @@ Updater.ajax_abortCommon_success = function (_content, _textStatus, _xhr, _block
                 + "<div>fn: <code>" + fname + "</code></div>"
                 + "<div>body: <code>" + body + "</code></div>"
                 + "<div>pageData.Status: <code>" + Updater.m_PageData.Status + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_WARN), html, MODAL_ICON_WARNING);
+            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
         }
     }
 }
 
 Updater.ajaxSuccessContentCheckCommon = function (_content, _body) {
     if (_content.startsWith(P24_MSG_TAG_ERROR)) {
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_FAIL), _body, MODAL_ICON_ERROR);
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_FAIL], _body, MODAL_ICON_ERROR);
         return false;
     }
 
     if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_EXCEPTION), "<pre>" + HtmlUtils.escape(_body) + "</pre>");
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + HtmlUtils.escape(_body) + "</pre>");
         return false;
     }
 
     if (!_content.startsWith(P24_MSG_TAG_SUCCESS)) {
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_UNKNOWN_ERR), "<pre>" + HtmlUtils.escape(_content) + "</pre>", MODAL_ICON_ERROR);
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_UNKNOWN_ERR], "<pre>" + HtmlUtils.escape(_content) + "</pre>", MODAL_ICON_ERROR);
         return false;
     }
 
@@ -585,9 +585,9 @@ function btnPurge_onClick(_blockName) {
     let content = "";
 
     if (_blockName == UPDATER_BLOCK_NAME_PREV)
-        content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_PURGE_PREV);
+        content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_PURGE_PREV];
     else if (_blockName == UPDATER_BLOCK_NAME_NEXT)
-        content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_PURGE_NEXT);
+        content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_PURGE_NEXT];
     else
         return;
 
@@ -599,15 +599,15 @@ function btnAbort_onClick(_blockName) {
 
     if (_blockName == UPDATER_BLOCK_NAME_PREV) {
         if (Updater.m_PageData.Status == UPDATER_STATUS_PREV_PURGE_QUEUED)
-            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_PURGE);
+            content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_PURGE];
         else if (Updater.m_PageData.Status == UPDATER_STATUS_PREV_APPLY_QUEUED)
-            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_APPLY);
+            content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_ABORT_PREV_APPLY];
     }
     else if (_blockName == UPDATER_BLOCK_NAME_NEXT) {
         if (Updater.m_PageData.Status == UPDATER_STATUS_NEXT_PURGE_QUEUED)
-            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_PURGE);
+            content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_PURGE];
         else if (Updater.m_PageData.Status == UPDATER_STATUS_NEXT_APPLY_QUEUED)
-            content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_APPLY);
+            content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_ABORT_NEXT_APPLY];
     }
     else
         return;
@@ -619,9 +619,9 @@ function btnApply_onClick(_blockName) {
     let content = "";
 
     if (_blockName == UPDATER_BLOCK_NAME_PREV)
-        content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_APPLY_PREV);
+        content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_APPLY_PREV];
     else if (_blockName == UPDATER_BLOCK_NAME_NEXT)
-        content = P24Localization.get(LOCL_DESC_UPDATER_CONFIRM_APPLY_NEXT);
+        content = P24Localization[LOCL_DESC_UPDATER_CONFIRM_APPLY_NEXT];
     else
         return;
 
@@ -796,11 +796,11 @@ Updater.computePanelVerBtnStatus = function (_blockName) {
 
 Updater.openConfirmationModal = function (_content, _actionName0, _actionName1) {
     Modal.Common.openTwoBtnModal(
-        P24Localization.get(LOCL_STR_CONFIRM),
+        P24Localization[LOCL_STR_CONFIRM],
         _content,
         MODAL_ICON_QUESTION,
-        P24Localization.get(LOCL_STR_ACCEPT), _actionName0,
-        P24Localization.get(LOCL_STR_CANCEL), _actionName1,
+        P24Localization[LOCL_STR_CONFIRM], _actionName0,
+        P24Localization[LOCL_STR_CANCEL], _actionName1,
         false);
 }
 
@@ -888,10 +888,16 @@ Updater.refreshUploadFilesPanel = function () {
         elm.html(html);
     }
 
-    Updater.refreshUploadStatusPanel();
+    if (Updater.m_Metadata.BatchesCount > 0) {
+        Updater.refreshUploadStatusPanel();
 
-    Updater.Elements.m_BtnClear.removeAttr("disabled");
-    Updater.Elements.m_BtnUpload.removeAttr("disabled");
+        Updater.Elements.m_BtnClear.removeAttr("disabled");
+        Updater.Elements.m_BtnUpload.removeAttr("disabled");
+    } else {
+        Updater.Elements.m_BtnClear.attr("disabled", true);
+        Updater.Elements.m_BtnUpload.attr("disabled", true);
+    }
+
 }
 
 Updater.refreshUploadStatusPanel = function () {
@@ -992,7 +998,7 @@ Updater.tryOpenErrMsgDialog = function () {
 }
 
 Updater.clearUploadPanel = function () {
-    Updater.Elements.m_LblInputFiles.html(P24Localization.get(LOCL_DESC_UPDATER_INPUTFILES_INITIAL));
+    Updater.Elements.m_LblInputFiles.html(P24Localization[LOCL_DESC_UPDATER_INPUTFILES_INITIAL]);
     Updater.Elements.m_DivLstFilesUpl.html("");
     Updater.Elements.m_DivUploadStatPanel.html("");
 
@@ -1009,7 +1015,7 @@ Updater.processPageData = function (_jsonData) {
     let data = JSON.parse(_jsonData);
 
     if (data.Main == null) {
-        Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_ERR), P24Localization.get(LOCL_DESC_UPDATER_NOMAIN) + ".", MODAL_ICON_ERROR);
+        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], P24Localization[LOCL_DESC_UPDATER_NOMAIN] + ".", MODAL_ICON_ERROR);
         return;
     }
 
@@ -1098,6 +1104,7 @@ Updater.processFilesList = function () {
         ++batchFilesCount;
     }
 
+    if (batchFilesCount > 0)
     {
         Updater.m_Batches[batchIndex] = {
             Id: batchIndex,
@@ -1172,8 +1179,8 @@ Updater.tryFinalizeUpload = function () {
             return;
     }
 
-    let content = P24Localization.get(LOCL_DESC_UPDATER_UPLOAD_SUCCESS) + ".";
-    Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_SUCCESS), content, MODAL_ICON_SUCCESS, "OK", "Updater.ajax_fetchPageData()");
+    let content = P24Localization[LOCL_DESC_UPDATER_UPLOAD_SUCCESS] + ".";
+    Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], content, MODAL_ICON_SUCCESS, "OK", "Updater.ajax_fetchPageData()");
 }
 
 // ==================================================

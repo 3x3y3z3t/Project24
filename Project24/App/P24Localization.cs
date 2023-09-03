@@ -1,5 +1,5 @@
 /*  App/Utils/P24Localization.cs
- *  Version: v1.1 (2023.06.28)
+ *  Version: v1.2 (2023.08.31)
  *  
  *  Contributor
  *      Arime-chan
@@ -11,6 +11,10 @@ namespace Project24.App
 {
     public class P24Localization
     {
+        public const string EN_US = "en-US";
+        public const string JA_JP = "ja-JP";
+        public const string VI_VN = "vi-VN";
+
         public const string Page_Changelog = "Changelog";
 
         public const string String_Changelog = "Changelog";
@@ -39,6 +43,7 @@ namespace Project24.App
             var dict = m_Vie;
 
             dict[LOCL.PAGE_UPDATER] = "Cập nhật";
+            dict[LOCL.PAGE_CONFIG_PANEL] = "Cài đặt";
 
             dict[LOCL.STR_UPDATER_MAIN_VER] = "Phiên bản hiện tại";
             dict[LOCL.STR_UPDATER_PREV_VER] = "Phiên bản trước";
@@ -67,6 +72,7 @@ namespace Project24.App
             var dict = m_Eng;
 
             dict[LOCL.PAGE_UPDATER] = "Update";
+            dict[LOCL.PAGE_CONFIG_PANEL] = "Config"; 
 
             dict[LOCL.STR_UPDATER_FILES_ON_SVR] = "File on server";
         }
@@ -76,6 +82,7 @@ namespace Project24.App
             var dict = m_Jap;
 
             dict[LOCL.PAGE_UPDATER] = "アップデート";
+            dict[LOCL.PAGE_CONFIG_PANEL] = "設定";
 
             dict[LOCL.STR_UPDATER_MAIN_VER] = "現在のバージョン";
             dict[LOCL.STR_UPDATER_PREV_VER] = "前のバージョン";
@@ -96,7 +103,11 @@ namespace Project24.App
 
     public static class LOCL
     {
+        public const string BTN_RELOAD = nameof(BTN_RELOAD);
+        public const string BTN_SAVE = nameof(BTN_SAVE);
+
         public const string PAGE_UPDATER = nameof(PAGE_UPDATER);
+        public const string PAGE_CONFIG_PANEL = nameof(PAGE_CONFIG_PANEL);
 
         public const string STR_UPDATER_MAIN_VER = nameof(STR_UPDATER_MAIN_VER);
         public const string STR_UPDATER_PREV_VER = nameof(STR_UPDATER_PREV_VER);

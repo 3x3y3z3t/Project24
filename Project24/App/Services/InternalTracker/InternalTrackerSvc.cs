@@ -1,13 +1,12 @@
-/*  App/Services/InternalTrackerSvc.cs
- *  Version: v1.0 (2023.08.27)
+/*  App/Services/InternalTracker/InternalTrackerSvc.cs
+ *  Version: v1.1 (2023.09.02)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +15,7 @@ using Project24.Model.Home;
 
 namespace Project24.App.Services
 {
-    public sealed class InternalTrackerSvc
+    public sealed partial class InternalTrackerSvc
     {
         public string this[string _key]
         {
@@ -25,7 +24,7 @@ namespace Project24.App.Services
                 if (!m_TrackedValues.ContainsKey(_key))
                 {
                     m_TrackedValues[_key] = "";
-                    m_ChangedValues[_key] = "";
+                    m_AddedValues[_key] = "";
                 }
 
                 return m_TrackedValues[_key];
@@ -33,14 +32,27 @@ namespace Project24.App.Services
 
             set
             {
-                if (m_TrackedValues.ContainsKey(_key) && m_TrackedValues[_key] != value)
+                if (!m_TrackedValues.ContainsKey(_key))
                 {
-                    m_ChangedValues[_key] = value;
+                    m_AddedValues[_key] = value;
+                }
+                else if (m_TrackedValues[_key] != value)
+                {
+                    if (m_AddedValues.ContainsKey(_key))
+                    {
+                        m_AddedValues[_key] = value;
+                    }
+                    else
+                    {
+                        m_ChangedValues[_key] = value;
+                    }
                 }
 
                 m_TrackedValues[_key] = value;
             }
         }
+
+        public Dictionary<string, string> TrackedValues { get { return new(m_TrackedValues); } }
 
 
         public InternalTrackerSvc(IServiceProvider _serviceProvider)
@@ -54,18 +66,16 @@ namespace Project24.App.Services
             using var scope = m_ServiceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            var values = (from _state in dbContext.InternalStates
-                          group _state by _state.Key into _grStates
-                          select new { _grStates.Key, _grStates.OrderByDescending(_x => _x.Id).Last().Value })
-                         .ToDictionary(_x => _x.Key, _x => _x.Value);
+            bool hasNewTrackables = InitializeTrackables(dbContext);
+            bool hasNewMetadatas = InitializeTrackableMetadatas(dbContext);
 
-            foreach (var pair in values)
-                m_TrackedValues[pair.Key] = pair.Value;
+            if (hasNewTrackables || hasNewMetadatas)
+                SaveChangesAsync(dbContext).Wait();
         }
 
         public async Task<int> SaveChangesAsync(CancellationToken _cancellationToken = default)
         {
-            if (m_ChangedValues.Count <= 0)
+            if (!IsDirty())
                 return 0;
 
             using var scope = m_ServiceProvider.CreateScope();
@@ -74,30 +84,57 @@ namespace Project24.App.Services
             return await SaveChangesAsync(dbContext, _cancellationToken);
         }
 
+        /// <summary>
+        /// NOTE: User is responsible to check if there is a need to invoke database save.
+        /// </summary>
+        /// <param name="_dbContext"></param>
+        /// <param name="_cancellationToken"></param>
+        /// <returns></returns>
         public async Task<int> SaveChangesAsync(ApplicationDbContext _dbContext, CancellationToken _cancellationToken = default)
         {
             if (_dbContext == null)
                 return 0;
-            if (m_ChangedValues.Count <= 0)
-                return 0;
 
-            List<InternalState> trackedStates = new();
-            foreach (var pair in m_ChangedValues)
+            if (m_AddedValues.Count > 0)
             {
-                trackedStates.Add(new(pair.Key, pair.Value));
+                List<Trackable> addedValue = new();
+                lock (this)
+                {
+                    foreach (var pair in m_AddedValues)
+                        addedValue.Add(new(pair.Key, pair.Value));
+
+                    m_ChangedValues.Clear();
+                }
+                _dbContext.AddRange(addedValue);
             }
 
-            _dbContext.UpdateRange(trackedStates);
-            int changesCount = await _dbContext.SaveChangesAsync(_cancellationToken);
+            if (m_ChangedValues.Count > 0)
+            {
+                List<Trackable> changedValue = new();
+                lock (this)
+                {
+                    foreach (var pair in m_ChangedValues)
+                        changedValue.Add(new(pair.Key, pair.Value));
 
-            m_ChangedValues.Clear();
+                    m_AddedValues.Clear();
+                }
+                _dbContext.UpdateRange(changedValue);
+            }
+
+            int changesCount = await _dbContext.SaveChangesAsync(_cancellationToken);
 
             return changesCount;
         }
 
+        public bool ContainsKey(string _key) => m_TrackedValues.ContainsKey(_key);
+
+
+        private bool IsDirty() => m_ChangedValues.Count > 0 || m_AddedValues.Count > 0;
+
 
         private readonly Dictionary<string, string> m_TrackedValues = new();
         private readonly Dictionary<string, string> m_ChangedValues = new();
+        private readonly Dictionary<string, string> m_AddedValues = new();
 
         private readonly IServiceProvider m_ServiceProvider;
     }

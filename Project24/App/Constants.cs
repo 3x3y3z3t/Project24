@@ -1,7 +1,7 @@
 /*  App/Constants.cs
- *  Version: v1.0 (2023.08.24)
+ *  Version: v1.1 (2023.09.01)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -47,12 +47,12 @@ namespace Project24.App
 
     public static class ErrCode
     {
-        public const string NotImplemented = "<code>NOT_IMPLEMENTED</code>";
-        public const string InvalidBlockName = "<code>INVALID_BLOCK_NAME</code>";
+        public const string NotImplemented = "NOT_IMPLEMENTED";
+        public const string InvalidBlockName = "INVALID_BLOCK_NAME";
 
-        public const string Updater_BatchOversize = "<code>UPDATER_BATCH_OVERSIZE</code>";
-        public const string Updater_BatchCountMismatch = "<code>UPDATER_BATCH_COUNT_MÍMATCH</code>";
-        public const string Updater_BatchSizeMismatch = "<code>UPDATER_BATCH_SIZE_MISMATCH</code>";
+        public const string Updater_BatchOversize = "UPDATER_BATCH_OVERSIZE";
+        public const string Updater_BatchCountMismatch = "UPDATER_BATCH_COUNT_MÍMATCH";
+        public const string Updater_BatchSizeMismatch = "UPDATER_BATCH_SIZE_MISMATCH";
 
     }
 

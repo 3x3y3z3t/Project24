@@ -1,13 +1,12 @@
-/*  Home/Maintenance/Updater.cshtml.cs
- *  Version: v1.1 (2023.08.25)
+/*  Home/Management/Updater.cshtml.cs
+ *  Version: v1.2 (2023.09.02)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Net.Mime;
 using System.Reflection;
@@ -15,11 +14,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.BackendData;
 using Project24.App.Services;
+using Project24.Data;
 using Project24.Model;
 using Project24.Model.Home.Maintenance;
 using Project24.SerializerContext;
@@ -28,8 +27,24 @@ namespace Project24.Pages.Home.Maintenance
 {
     public class UpdaterModel : ServerAnnouncementIncludedPageModel
     {
-        public UpdaterModel(UpdaterSvc _updaterSvc, FileSystemSvc _fileSystemSvc, ILogger<UpdaterModel> _logger)
+        private class UploadedFileInfo
         {
+            public string FullName { get; set; }
+            public long Length { get; set; }
+
+
+            public UploadedFileInfo(string _fullName, long _length)
+            {
+                FullName = _fullName;
+                Length = _length;
+            }
+        }
+
+
+        public UpdaterModel(ApplicationDbContext _dbContext, UpdaterSvc _updaterSvc, FileSystemSvc _fileSystemSvc, ILogger<UpdaterModel> _logger)
+        {
+            m_DbContext = _dbContext;
+
             m_UpdaterSvc = _updaterSvc;
             m_FileSystemSvc = _fileSystemSvc;
             m_Logger = _logger;
@@ -148,7 +163,7 @@ namespace Project24.Pages.Home.Maintenance
             if (requestLength > Constants.MaxRequestSize)
             {
                 string msg = "[" + batchId + ", \""
-                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_OVERSIZE], Constants.MaxRequestSize)
+                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_OVERSIZE], Constants.MaxRequestSize, ErrCode.Updater_BatchOversize)
                     + "\"]";
                 return Content(MessageTag.Error + msg, MediaTypeNames.Text.Plain);
             }
@@ -167,7 +182,7 @@ namespace Project24.Pages.Home.Maintenance
             if (_files.Count != batchCount)
             {
                 string msg = "[" + batchId + ", \""
-                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_COUNT_MISMATCH], _files.Count, batchCount)
+                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_COUNT_MISMATCH], _files.Count, batchCount, ErrCode.Updater_BatchCountMismatch)
                     + "\"]";
                 return Content(MessageTag.Error + msg, MediaTypeNames.Text.Plain);
             }
@@ -179,7 +194,7 @@ namespace Project24.Pages.Home.Maintenance
             if (totalSize != batchSize)
             {
                 string msg = "[" + batchId + ", \""
-                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_SIZE_MISMATCH], totalSize, batchSize)
+                    + string.Format(P24Localization.Active[LOCL.DESC_UPDATER_ERR_BATCH_SIZE_MISMATCH], totalSize, batchSize, ErrCode.Updater_BatchSizeMismatch)
                     + "\"]";
                 return Content(MessageTag.Error + msg, MediaTypeNames.Text.Plain);
             }
@@ -188,6 +203,8 @@ namespace Project24.Pages.Home.Maintenance
 
             DateTime epoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             List<long> errors = new();
+            List<string> successFileNames = new();
+            int successFileLength = 0;
 
             foreach (var file in _files)
             {
@@ -208,12 +225,28 @@ namespace Project24.Pages.Home.Maintenance
                 }
 
                 // TODO: async this;
-
                 if (await SaveFile(file, fi.Item1, fi.Item2, dt) < 0)
                 {
                     errors.Add(fi.Item3);
                 }
+                else
+                {
+                    successFileNames.Add(fi.Item1 + fi.Item2);
+                    successFileLength += (int)file.Length;
+                }
             }
+
+            if (successFileNames.Count > 0)
+            {
+                string jsonData = JsonSerializer.Serialize(successFileNames);
+                UserUploadData uploadData = new("power", (short)successFileNames.Count, successFileLength, jsonData);
+
+                await m_DbContext.UserUploadDatas.AddAsync(uploadData);
+                await m_DbContext.SaveChangesAsync();
+            }
+            
+                    // TODO: add into user upload list;
+
 
             if (errors.Count > 0)
                 return Content(MessageTag.Error + "[" + batchId + "," + errors.Count + "]", MediaTypeNames.Text.Plain);
@@ -433,7 +466,7 @@ namespace Project24.Pages.Home.Maintenance
             int pos = _file.FileName.LastIndexOf('/');
             if (pos > prefixPos)
             {
-                path = _file.FileName[prefixPos..(pos + 1)];
+                path = _file.FileName[(prefixPos + 1)..(pos + 1)];
                 name = _file.FileName[(pos + 1)..];
             }
             else
@@ -447,9 +480,10 @@ namespace Project24.Pages.Home.Maintenance
         }
 
 
-        private readonly UpdaterSvc m_UpdaterSvc = null;
-        private readonly FileSystemSvc m_FileSystemSvc = null;
-        private readonly ILogger<UpdaterModel> m_Logger = null;
+        private readonly ApplicationDbContext m_DbContext;
+        private readonly UpdaterSvc m_UpdaterSvc;
+        private readonly FileSystemSvc m_FileSystemSvc;
+        private readonly ILogger<UpdaterModel> m_Logger;
     }
 
 }

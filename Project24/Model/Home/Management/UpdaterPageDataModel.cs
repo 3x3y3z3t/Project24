@@ -1,7 +1,7 @@
-/*  Home/Maintenance/UpdaterPageDataModel.cs
+/*  Home/Management/UpdaterPageDataModel.cs
  *  Version: v1.0 (2023.08.08)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
