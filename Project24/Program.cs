@@ -130,10 +130,7 @@ namespace Project24
             #endregion
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddRazorPages().AddDataAnnotationsLocalization(_option =>
-            {
-                _option.DataAnnotationLocalizerProvider = (type, _factory) => _factory.Create(typeof(SharedLocalizationResource));
-            });
+            services.AddRazorPages();
 
             #region Misc
             #endregion
