@@ -67,13 +67,13 @@ namespace Project24.Model.Home.Maintenance
 
             Name = _fileInfo.Name;
             Path = _fileInfo.Path.Replace(_maskPath, "").Replace('\\', '/').Trim('/');
-            LastMod = Utils.FormatDateTimeString_EndsWithMinute(_fileInfo.LastModified);
+            LastMod = MiscUtils.FormatDateTimeString_EndsWithMinute(_fileInfo.LastModified);
             Size = _fileInfo.Size;
 
             if (Path == "")
-                HashCode = Utils.ComputeCyrb53HashCode(_fileInfo.Name);
+                HashCode = MiscUtils.ComputeCyrb53HashCode(_fileInfo.Name);
             else
-                HashCode = Utils.ComputeCyrb53HashCode(Path + "/" + _fileInfo.Name);
+                HashCode = MiscUtils.ComputeCyrb53HashCode(Path + "/" + _fileInfo.Name);
 
         }
     }

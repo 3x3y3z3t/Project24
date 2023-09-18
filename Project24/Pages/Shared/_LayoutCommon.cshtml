@@ -1,5 +1,5 @@
 @*  _LayoutCommon.cshtml
- *  Version: v1.3 (2023.09.02)
+ *  Version: v1.4 (2023.09.18)
  *
  *  Author
  *      Arime-chan
@@ -30,15 +30,16 @@
 
     <div class="container">
         <main role="main" class="pb-3">
-            @if (!Utils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoTitle))
+
+            @if (!MiscUtils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoAnnouncement))
+            {
+                <partial name="_ServerAnnouncement" />
+            }
+
+            @if (!MiscUtils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoTitle))
             {
                 <h1>@ViewData[ViewDataKeys.Title]</h1>
                 <hr />
-            }
-
-            @if (!Utils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoAnnouncement))
-            {
-                <partial name="_ServerAnnouncement" />
             }
 
             @RenderBody()
@@ -51,6 +52,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/dotnet.js" asp-append-version="true"></script>
     <script src="~/js/locale/p24-localization-keys.js" asp-append-version="true"></script>
 
     @if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.EN_US)
@@ -68,6 +70,8 @@
 
     <script src="~/js/svgs.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script type="text/javascript" src="~/js/server-announcement.js" asp-append-version="true"></script>
 
 
     @await RenderSectionAsync("Scripts", required: false)

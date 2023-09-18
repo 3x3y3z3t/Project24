@@ -84,9 +84,9 @@ namespace Project24.Pages.Home.Maintenance
                 if (System.IO.File.Exists(versionFilePath))
                 {
                     string nextVer = System.IO.File.ReadAllText(versionFilePath);
-                    var nextVerInfo = Utils.ParseVersionInfo(nextVer);
+                    var nextVerInfo = MiscUtils.ParseVersionInfo(nextVer);
 
-                    if (nextVerInfo != null && Utils.CompareVersion(curVerInfo, nextVerInfo) < 0)
+                    if (nextVerInfo != null && MiscUtils.CompareVersion(curVerInfo, nextVerInfo) < 0)
                     {
                         data.Next = nextVer;
                         //data.Files = GetAllFilesInNext();
@@ -97,9 +97,9 @@ namespace Project24.Pages.Home.Maintenance
                 if (System.IO.File.Exists(versionFilePath))
                 {
                     string prevVer = System.IO.File.ReadAllText(versionFilePath);
-                    var prevVerInfo = Utils.ParseVersionInfo(prevVer);
+                    var prevVerInfo = MiscUtils.ParseVersionInfo(prevVer);
 
-                    if (prevVerInfo != null && Utils.CompareVersion(curVerInfo, prevVerInfo) > 0)
+                    if (prevVerInfo != null && MiscUtils.CompareVersion(curVerInfo, prevVerInfo) > 0)
                     {
                         data.Prev = prevVer;
                     }
@@ -474,7 +474,7 @@ namespace Project24.Pages.Home.Maintenance
                 name = _file.FileName[(prefixPos + 1)..];
             }
 
-            long hashCode = Utils.ComputeCyrb53HashCode(path + name);
+            long hashCode = MiscUtils.ComputeCyrb53HashCode(path + name);
 
             return Tuple.Create(path, name, hashCode);
         }

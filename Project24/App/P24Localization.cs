@@ -1,5 +1,5 @@
 /*  App/Utils/P24Localization.cs
- *  Version: v1.2 (2023.08.31)
+ *  Version: v1.3 (2023.09.12)
  *  
  *  Contributor
  *      Arime-chan
@@ -122,6 +122,9 @@ namespace Project24.App
         public const string DESC_UPDATER_ERR_BATCH_OVERSIZE = nameof(DESC_UPDATER_ERR_BATCH_OVERSIZE);
         public const string DESC_UPDATER_ERR_BATCH_COUNT_MISMATCH = nameof(DESC_UPDATER_ERR_BATCH_COUNT_MISMATCH);
         public const string DESC_UPDATER_ERR_BATCH_SIZE_MISMATCH = nameof(DESC_UPDATER_ERR_BATCH_SIZE_MISMATCH);
+
+        public const string SVRMSG_UPDATER_COUNTDOWN = nameof(SVRMSG_UPDATER_COUNTDOWN);
+        public const string SVRMSG_UPDATER_IN_PROGRESS = nameof(SVRMSG_UPDATER_IN_PROGRESS);
     }
 
 }

@@ -1,5 +1,5 @@
 /*  App/Services/InternalTracker/TrackableService.cs
- *  Version: v1.1 (2023.08.31)
+ *  Version: v1.2 (2023.09.07)
  *  
  *  Author
  *      Arime-chan
@@ -13,7 +13,7 @@ using Project24.Data;
 
 namespace Project24.App.Services
 {
-    public abstract class TrackableSvc
+    public abstract class TrackableSvc : IProject24HostedService
     {
         protected TrackableSvc(InternalTrackerSvc _trackerSvc, IServiceProvider _serviceProvider, ILogger<TrackableSvc> _logger)
         {
@@ -23,7 +23,7 @@ namespace Project24.App.Services
         }
 
 
-        public abstract void StartService();
+        public abstract Task StartAsync(CancellationToken _cancellationToken = default);
 
         protected async Task<int> SaveChangesAsync(CancellationToken _cancellationToken = default)
             => await m_TrackerSvc.SaveChangesAsync(_cancellationToken);

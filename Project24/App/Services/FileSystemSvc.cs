@@ -1,5 +1,5 @@
 /*  App/Service/FileSystemSvc.cs
- *  Version: v1.0 (2023.08.27)
+ *  Version: v1.1 (2023.09.12)
  *  
  *  Contributor
  *      Arime-chan
@@ -24,7 +24,7 @@ namespace Project24.App.Services
         public FileSystemSvc()
         {
             // HACK: temporary patch;
-            AppRoot = Path.GetFullPath(Utils.WhereAmI() + "/");
+            AppRoot = Path.GetFullPath(MiscUtils.WhereAmI() + "/");
 
             AppMainRoot = Path.GetFullPath(AppRoot + "/.." + Constants.AppMainDir);
             AppNextRoot = Path.GetFullPath(AppRoot + "/.." + Constants.AppNextDir);
@@ -122,9 +122,9 @@ namespace Project24.App.Services
             }
         }
 
-        public List<P24FileInfo> GetFilesInMain() => GetFiles(AppRoot);
+        //public List<P24FileInfo> GetFilesInMain() => GetFiles(AppRoot);
         public List<P24FileInfo> GetFilesInNext() => GetFiles(AppNextRoot);
-        public List<P24FileInfo> GetFilesInPrev() => GetFiles(AppPrevRoot);
+        //public List<P24FileInfo> GetFilesInPrev() => GetFiles(AppPrevRoot);
 
 
         private bool IsPathValid(string _path)

@@ -1,5 +1,5 @@
 /*  App/Services/UpdaterSvc.cs
- *  Version: v1.1 (2023.08.31)
+ *  Version: v1.2 (2023.09.19)
  *  
  *  Author
  *      Arime-chan
@@ -15,6 +15,10 @@ using Project24.App.BackendData;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using AppHelper;
+using Project24.Model;
+using Project24.App.Services.ServerAnnouncement;
+using Microsoft.Extensions.DependencyInjection;
+using Project24.Data;
 
 namespace Project24.App.Services
 {
@@ -53,16 +57,17 @@ namespace Project24.App.Services
         public string LastErrorMessage { get; private set; } = "";
 
 
-        public UpdaterSvc(InternalTrackerSvc _trackerSvc, IServiceProvider _serviceProvider, FileSystemSvc _fileSystemSvc, ILogger<UpdaterSvc> _logger)
+        public UpdaterSvc(InternalTrackerSvc _trackerSvc, ServerAnnouncementSvc _announcementSvc, FileSystemSvc _fileSystemSvc, IServiceProvider _serviceProvider, ILogger<UpdaterSvc> _logger)
             : base(_trackerSvc, _serviceProvider, _logger)
         {
+            m_AnnouncementSvc = _announcementSvc;
             m_FileSystemSvc = _fileSystemSvc;
 
             m_Timer = new Timer(Update, null, Timeout.Infinite, Timeout.Infinite);
         }
 
 
-        public override void StartService()
+        public override async Task StartAsync(CancellationToken _cancellationToken = default)
         {
             m_Logger.LogDebug("AppSide = {_appSide}", Program.AppSide);
 
@@ -80,7 +85,7 @@ namespace Project24.App.Services
             if (m_Status == UpdaterStatus.None && m_QueuedAction != UpdaterQueuedAction.None)
             {
                 QueuedAction = UpdaterQueuedAction.None;
-                SaveChangesAsync().Wait();
+                await SaveChangesAsync(_cancellationToken);
             }
 
             // ==================================================;
@@ -116,6 +121,7 @@ namespace Project24.App.Services
 
         }
 
+
         public void StartMonitoringFileUpload(UpdaterMetadata _metadata)
         {
             InvokeSvc();
@@ -145,7 +151,9 @@ namespace Project24.App.Services
             Status = UpdaterStatus.PrevPurgeQueued;
             QueuedAction = UpdaterQueuedAction.Countdown;
             ComputeUpdaterActionDueTime();
-            SaveChangesAsync().Wait();
+            AddCountdownAnnouncement();
+
+            SaveAllChanges();
 
             m_Timer.Change(0, 200);
         }
@@ -157,7 +165,9 @@ namespace Project24.App.Services
             Status = UpdaterStatus.NextPurgeQueued;
             QueuedAction = UpdaterQueuedAction.Countdown;
             ComputeUpdaterActionDueTime();
-            SaveChangesAsync().Wait();
+            AddCountdownAnnouncement();
+
+            SaveAllChanges();
 
             m_Timer.Change(0, 200);
         }
@@ -169,7 +179,9 @@ namespace Project24.App.Services
             Status = UpdaterStatus.None;
             QueuedAction = UpdaterQueuedAction.None;
             QueuedActionDueTime = DateTime.MaxValue;
-            SaveChangesAsync().Wait();
+            ExpireCountdownAnnouncement();
+
+            SaveAllChanges();
         }
 
         public void StartApplyPrev()
@@ -179,7 +191,9 @@ namespace Project24.App.Services
             Status = UpdaterStatus.PrevApplyQueued;
             QueuedAction = UpdaterQueuedAction.Countdown;
             ComputeUpdaterActionDueTime();
-            SaveChangesAsync().Wait();
+            AddCountdownAnnouncement();
+
+            SaveAllChanges();
 
             m_Timer.Change(0, 200);
         }
@@ -191,7 +205,9 @@ namespace Project24.App.Services
             Status = UpdaterStatus.NextApplyQueued;
             QueuedAction = UpdaterQueuedAction.Countdown;
             ComputeUpdaterActionDueTime();
-            SaveChangesAsync().Wait();
+            AddCountdownAnnouncement();
+
+            SaveAllChanges();
 
             m_Timer.Change(0, 200);
         }
@@ -228,12 +244,16 @@ namespace Project24.App.Services
 
                 Status = UpdaterStatus.None;
                 QueuedAction = UpdaterQueuedAction.None;
-                await SaveChangesAsync();
+                ExpireInProgressAnnouncement();
+
+                SaveAllChanges();
                 return;
             }
 
             Status = UpdaterStatus.None;
             QueuedAction = UpdaterQueuedAction.None;
+            ExpireInProgressAnnouncement();
+
             await SaveChangesAsync();
 
             m_Logger.LogInformation("Purge Prev done.");
@@ -255,13 +275,18 @@ namespace Project24.App.Services
 
                 Status = UpdaterStatus.None;
                 QueuedAction = UpdaterQueuedAction.None;
-                await SaveChangesAsync();
+                ExpireInProgressAnnouncement();
+
+                SaveAllChanges();
                 return;
             }
 
             Status = UpdaterStatus.None;
             QueuedAction = UpdaterQueuedAction.None;
-            await SaveChangesAsync();
+
+            ExpireInProgressAnnouncement();
+
+            SaveAllChanges();
 
             m_Logger.LogInformation("Purge Next done.");
         }
@@ -276,7 +301,9 @@ namespace Project24.App.Services
                 LastErrorMessage += "<div>ApplyPrevAsync(): QueuedAction is <code>None</code>, resetting all state.</div>";
 
                 Status = UpdaterStatus.None;
-                await SaveChangesAsync();
+                ExpireInProgressAnnouncement();
+
+                SaveAllChanges();
                 return;
             }
 
@@ -367,7 +394,9 @@ namespace Project24.App.Services
 
                 QueuedAction = UpdaterQueuedAction.None;
                 Status = UpdaterStatus.None;
-                await SaveChangesAsync();
+                ExpireInProgressAnnouncement();
+
+                SaveAllChanges();
 
                 m_Logger.LogDebug("  QueuedAction = {_action} (saved)", QueuedAction.ToString());
 
@@ -387,7 +416,9 @@ namespace Project24.App.Services
                 LastErrorMessage += "<div>ApplyNextAsync(): QueuedAction is <code>None</code>, resetting all state.</div>";
 
                 Status = UpdaterStatus.None;
-                await SaveChangesAsync();
+                ExpireInProgressAnnouncement();
+
+                SaveAllChanges();
                 return;
             }
 
@@ -506,7 +537,9 @@ namespace Project24.App.Services
 
                 QueuedAction = UpdaterQueuedAction.None;
                 Status = UpdaterStatus.None;
-                await SaveChangesAsync();
+                ExpireInProgressAnnouncement();
+
+                SaveAllChanges();
 
                 m_Logger.LogDebug("  QueuedAction = {_action} (saved)", QueuedAction.ToString());
 
@@ -618,6 +651,9 @@ namespace Project24.App.Services
                     Status = UpdaterStatus.PrevPurgeRunning;
                     QueuedAction = UpdaterQueuedAction.DeleteFilesInPrev;
                     QueuedActionDueTime = DateTime.MaxValue;
+                    ExpireCountdownAnnouncement();
+                    AddInProgressAnnouncement();
+
                     SaveChangesAsync().Wait();
 
                     PurgePrevAsync().Wait();
@@ -628,6 +664,9 @@ namespace Project24.App.Services
                     Status = UpdaterStatus.NextPurgeRunning;
                     QueuedAction = UpdaterQueuedAction.DeleteFilesInNext;
                     QueuedActionDueTime = DateTime.MaxValue;
+                    ExpireCountdownAnnouncement();
+                    AddInProgressAnnouncement();
+
                     SaveChangesAsync().Wait();
 
                     PurgeNextAsync().Wait();
@@ -638,6 +677,9 @@ namespace Project24.App.Services
                     Status = UpdaterStatus.PrevApplyRunning;
                     QueuedAction = UpdaterQueuedAction.SwitchExecutableToPrev;
                     QueuedActionDueTime = DateTime.MaxValue;
+                    ExpireCountdownAnnouncement();
+                    AddInProgressAnnouncement();
+
                     SaveChangesAsync().Wait();
 
                     ApplyPrevAsync().Wait();
@@ -648,6 +690,9 @@ namespace Project24.App.Services
                     Status = UpdaterStatus.NextApplyRunning;
                     QueuedAction = UpdaterQueuedAction.DeleteFilesInPrev;
                     QueuedActionDueTime = DateTime.MaxValue;
+                    ExpireCountdownAnnouncement();
+                    AddInProgressAnnouncement();
+
                     SaveChangesAsync().Wait();
 
                     ApplyNextAsync().Wait();
@@ -712,12 +757,78 @@ namespace Project24.App.Services
         //    await SaveChangesAsync();
         //}
 
+        private void AddCountdownAnnouncement()
+        {
+            if (m_AnnouncementSvc.ContainsTag(c_TagUpdaterCountdown))
+                return;
+
+            Announcement announcement = new(
+                "{" + LOCL.SVRMSG_UPDATER_COUNTDOWN + "}",
+                new AnnouncementArgDataTimeSpan(
+                    _value: new TimeSpan(0, int.Parse(m_TrackerSvc[InternalTrackedKeys.CONFIG_UPDATER_WAIT_TIME]), 0),
+                    _countDirection: AnnouncementArgData.CountDirection.Down,
+                    _shouldUpdate: true
+                ),
+                Announcement.Severity_.WARNING,
+                Announcement.ExpirationRule_.BY_DATE,
+                QueuedActionDueTime
+            )
+            { Tag = c_TagUpdaterCountdown };
+
+            m_AnnouncementSvc.Add(announcement);
+        }
+
+        private void AddInProgressAnnouncement()
+        {
+            if (m_AnnouncementSvc.ContainsTag(c_TagUpdaterInProgress))
+                return;
+
+            Announcement announcement = new(
+                "{" + LOCL.SVRMSG_UPDATER_IN_PROGRESS + "}",
+                new AnnouncementArgDataTimeSpan(
+                    _value: TimeSpan.Zero,
+                    _countDirection: AnnouncementArgData.CountDirection.Up,
+                    _infiniteCount: true,
+                    _shouldUpdate: true
+                ),
+                Announcement.Severity_.WARNING
+            )
+            { Tag = c_TagUpdaterInProgress };
+
+            m_AnnouncementSvc.Add(announcement);
+        }
+
+        /// <summary>
+        /// A wrapper method for saving all changes to database, which includes:<br />
+        ///     - Changes in Tracked Value (updater's states)
+        ///     - Changes in Server Announcement
+        /// </summary>
+        private void SaveAllChanges()
+        {
+            using var scope = m_ServiceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            //Task.Run(async () => await TaskExt.WhenAll(
+            //    m_AnnouncementSvc.SaveChangesAsync(dbContext),
+            //    SaveChangesAsync()
+            //));
+
+            //Task.Run(async () => await m_AnnouncementSvc.SaveChangesAsync(dbContext));
+            //Task.Run(async () => await SaveChangesAsync(dbContext));
+
+            _ = m_AnnouncementSvc.SaveChangesAsync(dbContext).Result;
+            _ = SaveChangesAsync(dbContext).Result;
+        }
+
+        private void ExpireCountdownAnnouncement() => _ = m_AnnouncementSvc.ForceExpireAnnouncement(c_TagUpdaterCountdown);
+        private void ExpireInProgressAnnouncement() => _ = m_AnnouncementSvc.ForceExpireAnnouncement(c_TagUpdaterInProgress);
+
         private void ComputeUpdaterActionDueTime() => QueuedActionDueTime = DateTime.Now.AddMinutes(int.Parse(m_TrackerSvc[InternalTrackedKeys.CONFIG_UPDATER_WAIT_TIME]));
         private void InvokeSvc() => m_LastActivitiesTick = Environment.TickCount64;
 
 
-        // TODO: move this to AppConfigSvc;
-        //public const int c_ActionDueTimeMillis = 2 * 60 * 1000;
+        private const string c_TagUpdaterCountdown = "TAG_UPDATER_COUNTDOWN";
+        private const string c_TagUpdaterInProgress = "TAG_UPDATER_IN_PROGRESS";
         private const int c_IdleTimeMillis = 5 * 60 * 1000; // 5 minutes idle time;
 
         private static readonly List<string> s_ExcludeFilesList = new() { "appsettings.Production.json" };
@@ -732,6 +843,7 @@ namespace Project24.App.Services
 
         //private string m_AppSide = null;
 
+        private readonly ServerAnnouncementSvc m_AnnouncementSvc;
         private readonly FileSystemSvc m_FileSystemSvc;
     }
 

@@ -1,7 +1,7 @@
 /*  site.js
- *  Version: 1.3 (2023.08.26)
+ *  Version: 1.4 (2023.09.18)
  *
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -24,6 +24,14 @@ const P24_MSG_TAG_SUCCESS = "<done>";
 const P24_MSG_TAG_WARNING = "<warn>";
 const P24_MSG_TAG_ERROR = "<fail>";
 const P24_MSG_TAG_EXCEPTION = "<excp>";
+
+// ==================================================
+
+const P24_ARG_DATA_TYPE_STRING = "AnnouncementArgDataString";
+const P24_ARG_DATA_TYPE_DATETIME = "AnnouncementArgDataDateTime";
+const P24_ARG_DATA_TYPE_TIMESPAN = "AnnouncementArgDataTimeSpan";
+
+// ==================================================
 
 var HttpStatusCodeName = {
     '200': 'OK',
@@ -78,6 +86,59 @@ $(document).ready(function () {
 // =====
 window.P24Utils = {};
 
+P24Utils.Ajax = {
+    error: function (_xhr, _textStatus, _errorThrown) {
+        if (window.Modal == null) {
+            let msg = "Ajax request error:\n"
+                + "    Status Code:    " + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "\n"
+                + "    jq Status:      " + _textStatus + "\n"
+                + "    Message:        " + _errorThrown.message;
+
+            console.error(msg);
+        } else {
+            let body = "<div>Status Code: <code>" + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "</code></div>"
+                + "<div>jq Status: <code>" + _textStatus + "</code></div>"
+                + "<div>Message: " + _errorThrown.message + "</div>";
+
+            Modal.Common.openOneBtnModal("Ajax request error", body, MODAL_ICON_ERROR);
+        }
+    },
+
+    successContentCheckCommon: function (_content, _body) {
+        if (_content.startsWith(P24_MSG_TAG_ERROR)) {
+            if (window.Modal == null) {
+                console.error(P24Localization[LOCL_STR_FAIL] + ":\n" + _body);
+            } else {
+                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_FAIL], _body, MODAL_ICON_ERROR);
+            }
+
+            return false;
+        }
+
+        if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
+            if (window.Modal == null) {
+                console.error(P24Localization[LOCL_STR_EXCEPTION] + ":\n" + HtmlUtils.escape(_body));
+            } else {
+                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + _body + "</pre>");
+            }
+
+            return false;
+        }
+
+        if (!_content.startsWith(P24_MSG_TAG_SUCCESS)) {
+            if (window.Modal == null) {
+                console.error(P24Localization[LOCL_STR_UNKNOWN_ERR] + ":\n" + _content);
+            } else {
+                Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_UNKNOWN_ERR), "<pre>" + HtmlUtils.escape(_content) + "</pre>", MODAL_ICON_ERROR);
+            }
+
+            return false;
+        }
+
+        return true;
+    },
+};
+
 P24Utils.ajax_error = function (_xhr, _textStatus, _errorThrown) {
     let body = "<div>Status Code: <code>" + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "</code></div>"
         + "<div>jq Status: <code>" + _textStatus + "</code></div>"
@@ -116,11 +177,11 @@ P24Utils.reloadAllTooltips = function () {
 
 P24Utils.formatDateString_endsAtMinute = function (_date) {
     let year = _date.getFullYear();
-    let month = String(_date.getMonth() + 1).padStart(2, "0");
-    let date = String(_date.getDate()).padStart(2, "0");
-    let hour = String(_date.getHours()).padStart(2, "0");
-    let minute = String(_date.getMinutes()).padStart(2, "0");
-    let second = String(_date.getSeconds()).padStart(2, "0");
+    let month = DotNetString.padZeroesBefore(_date.getMonth() + 1, 2);
+    let date = DotNetString.padZeroesBefore(_date.getDate(), 2);
+    let hour = DotNetString.padZeroesBefore(_date.getHours(), 2);
+    let minute = DotNetString.padZeroesBefore(_date.getMinutes(), 2);
+    let second = DotNetString.padZeroesBefore(_date.getSeconds(), 2);
 
     return year + "/" + month + "/" + date + " " + hour + ":" + minute;
 }
@@ -132,11 +193,11 @@ P24Utils.formatDateString_endsAtSecond = function (_date) {
 
 P24Utils.formatDateString = function (_date) {
     let year = _date.getFullYear();
-    let month = String(_date.getMonth() + 1).padStart(2, "0");
-    let date = String(_date.getDate()).padStart(2, "0");
-    let hour = String(_date.getHours()).padStart(2, "0");
-    let minute = String(_date.getMinutes()).padStart(2, "0");
-    let second = String(_date.getSeconds()).padStart(2, "0");
+    let month = DotNetString.padZeroesBefore(_date.getMonth() + 1, 2);
+    let date = DotNetString.padZeroesBefore(_date.getDate(), 2);
+    let hour = DotNetString.padZeroesBefore(_date.getHours(), 2);
+    let minute = DotNetString.padZeroesBefore(_date.getMinutes(), 2);
+    let second = DotNetString.padZeroesBefore(_date.getSeconds(), 2);
 
     return year + "/" + month + "/" + date + " " + hour + ":" + minute + ":" + second;
 }
@@ -197,3 +258,21 @@ class HtmlUtils {
 
 // END: html
 // ==================================================
+
+/*
+    cyrb53 (c) 2018 bryc (github.com/bryc)
+    A fast and simple hash function with decent collision resistance.
+    Largely inspired by MurmurHash2/3, but with a focus on speed/simplicity.
+    Public domain. Attribution appreciated.
+*/
+const cyrb53 = function (str, seed = 0) {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};

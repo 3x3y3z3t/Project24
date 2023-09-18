@@ -1,5 +1,5 @@
 /*  App/Utils/MiscUtils.cs
- *  Version: v1.1 (2023.08.09)
+ *  Version: v1.2 (2023.09.07)
  *  
  *  Contributor
  *      Arime-chan
@@ -14,7 +14,7 @@ using Project24.App.BackendData;
 
 namespace Project24.App
 {
-    public static class Utils
+    public static class MiscUtils
     {
         public static string WebRootPath { get; set; } = null;
 

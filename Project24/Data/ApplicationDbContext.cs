@@ -1,10 +1,12 @@
 /*  Data/ApplicationDbContext.cs
- *  Version: v1.2 (2023.08.31)
+ *  Version: v1.3 (2023.09.12)
  *  
  *  Author
  *      Arime-chan
  */
 
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Project24.Model;
@@ -14,7 +16,7 @@ namespace Project24.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
-
+        public DbSet<Announcement> Announcements { get; set; }
 
 
 

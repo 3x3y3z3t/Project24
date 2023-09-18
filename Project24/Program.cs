@@ -1,7 +1,7 @@
 /*  Project24
  *  
  *  Program.cs
- *  Version: v1.2 (2023.09.02)
+ *  Version: v1.3 (2023.09.14)
  *  
  *  Author
  *      Arime-chan
@@ -10,6 +10,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -20,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Project24.App;
 using Project24.App.Services;
+using Project24.App.Utils;
 using Project24.Data;
 
 namespace Project24
@@ -36,7 +39,7 @@ namespace Project24
         public static bool IsDevelopment { get; private set; }
 
 
-        public static void Main(string[] _args)
+        public static async Task Main(string[] _args)
         {
             var builder = WebApplication.CreateBuilder(_args);
             var configuration = builder.Configuration;
@@ -124,8 +127,8 @@ namespace Project24
             /* Hosted Services & Background Tasks */
             services.AddSingleton<LocalizationSvc>();
             services.AddSingleton<InternalTrackerSvc>();
-            //services.AddSingleton<DBMaintenanceSvc>();
             services.AddSingleton<FileSystemSvc>();
+            services.AddSingleton<ServerAnnouncementSvc>();
             services.AddSingleton<UpdaterSvc>();
             #endregion
 
@@ -160,14 +163,33 @@ namespace Project24
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 dbContext.Database.Migrate();
 
-                //var maintenanceSvc = scope.ServiceProvider.GetRequiredService<DBMaintenanceSvc>();
-                //maintenanceSvc.StartService();
-
                 var localizationSvc = scope.ServiceProvider.GetRequiredService<LocalizationSvc>();
-                localizationSvc.StartService();
+                var svrAnnouncementSvc = scope.ServiceProvider.GetRequiredService<ServerAnnouncementSvc>();
+
 
                 var trackerSvc = scope.ServiceProvider.GetRequiredService<InternalTrackerSvc>();
                 trackerSvc.StartService();
+
+                var start = DateTime.Now;
+
+                await TaskExt.WhenAll(
+                    localizationSvc.StartAsync(),
+                    svrAnnouncementSvc.StartAsync()
+                );
+
+                var elapsed = DateTime.Now - start;
+                Console.WriteLine("elapsed = " + elapsed);
+
+
+
+                //var ts = new TimeSpan(-1, 25, 59, 59,  9);
+                var ts = new TimeSpan(1, 0, 0, 0);
+
+                string tss = JsonSerializer.Serialize(ts);
+
+
+
+
 
 
 
@@ -186,7 +208,7 @@ namespace Project24
 
 
                 var updaterSvc = scope.ServiceProvider.GetRequiredService<UpdaterSvc>();
-                updaterSvc.StartService();
+                await updaterSvc.StartAsync();
 
                 //logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 

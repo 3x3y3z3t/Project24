@@ -1,4 +1,11 @@
 
+### v-core6-0.6.0 (2023.09.18)
+- Added Server Announcement.
+- Added various .NET object clone in Javascript.
+- Added `IProject24HostedService` interface.
+- Updated Updater Service to make used of Server Announcement.
+- Moved cyrb53 hashing function to `site.js` to reduce the amount of script files sent to client.
+
 ### v-core6-0.5.0 (2023.09.02)
 - Added Config Panel.
 - Added User upload data logger.

@@ -1,5 +1,5 @@
 /*  App/Services/LocalizationSvc.cs
- *  Version: v1.0 (2023.09.02)
+ *  Version: v1.2 (2023.09.15)
  *  
  *  Author
  *      Arime-chan
@@ -8,13 +8,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Humanizer;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Project24.App.Services
 {
-    public class LocalizationSvc
+    public class LocalizationSvc : IProject24HostedService
     {
         public static class SupportedLocale
         {
@@ -22,13 +22,13 @@ namespace Project24.App.Services
             public const string JA_JP = "ja-JP";
             public const string VI_VN = "vi-VN";
         }
-
+ 
 
         public string this[string _key]
         {
             get
             {
-                if (!m_Locales[CurrentLocale].ContainsKey(_key))
+                if (!ContainsKey(_key))
                     return "<code>" + _key + "</code>";
 
                 return m_Locales[CurrentLocale][_key];
@@ -48,26 +48,18 @@ namespace Project24.App.Services
         }
 
 
-        public void StartService()
+        public async Task StartAsync(CancellationToken _cancellationToken = default)
         {
-            LoadEN_US();
-            LoadJA_JP();
-            LoadVI_VN();
-
-            // TODO: load from file;
+            m_Locales[SupportedLocale.EN_US] = await LoadLocalizedStringAsync(SupportedLocale.EN_US, _cancellationToken);
+            m_Locales[SupportedLocale.JA_JP] = await LoadLocalizedStringAsync(SupportedLocale.JA_JP, _cancellationToken);
+            m_Locales[SupportedLocale.VI_VN] = await LoadLocalizedStringAsync(SupportedLocale.VI_VN, _cancellationToken);
 
         }
 
-
-        private void LoadEN_US() => m_Locales[SupportedLocale.EN_US] = LoadLocalizedString(SupportedLocale.EN_US);
-
-
-        private void LoadJA_JP() => m_Locales[SupportedLocale.JA_JP] = LoadLocalizedString(SupportedLocale.JA_JP);
+        public bool ContainsKey(string _key) => m_Locales[CurrentLocale].ContainsKey(_key);
 
 
-        private void LoadVI_VN() => m_Locales[SupportedLocale.VI_VN] = LoadLocalizedString(SupportedLocale.VI_VN);
-
-        private Dictionary<string, string> LoadLocalizedString(string _locale)
+        private async Task<Dictionary<string, string>> LoadLocalizedStringAsync(string _locale, CancellationToken _cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_locale))
                 return new();
@@ -86,7 +78,7 @@ namespace Project24.App.Services
             string[] lines;
             try
             {
-                lines = File.ReadAllLines(path);
+                lines = await File.ReadAllLinesAsync(path);
             }
             catch (Exception _ex)
             {
@@ -107,23 +99,11 @@ namespace Project24.App.Services
                 if (string.IsNullOrWhiteSpace(line) || line.StartsWith(';'))
                     continue;
 
-                int pos = line.IndexOf('=');
-                if (pos < 0)
-                {
-                    m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, i + 1, line);
+                var pair = ParseSingleLine(_locale, line, i);
+                if (pair == null)
                     continue;
-                }
 
-                string key = line[..pos].Trim();
-                string value = line[(pos + 1)..].Trim();
-
-                if (key == "" || value == "")
-                {
-                    m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, i + 1, line);
-                    continue;
-                }
-
-                dict[key] = value;
+                dict[pair.Value.Key] = pair.Value.Value;
             }
 
             if (dict.Count <= 0)
@@ -133,6 +113,27 @@ namespace Project24.App.Services
             }
 
             return dict;
+        }
+
+        private KeyValuePair<string, string>? ParseSingleLine(string _locale, string _line, int _index)
+        {
+            int pos = _line.IndexOf('=');
+            if (pos < 0)
+            {
+                m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, _index + 1, _line);
+                return null;
+            }
+
+            string key = _line[..pos].Trim();
+            string value = _line[(pos + 1)..].Trim();
+
+            if (key == "" || value == "")
+            {
+                m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, _index + 1, _line);
+                return null;
+            }
+
+            return new(key, value);
         }
 
 

@@ -10,7 +10,7 @@ Program will crash and data will be lose when using interchangeably.
 When this branch is stable enough, it will replace replace the stable branch.
 
 ## Version
-- Project24: v.core6-0.5.0
+- Project24: v.core6-0.6.0
 - AppHelper: v.core6-1.1.0
 
 
@@ -85,3 +85,13 @@ When you are done with `appsettings` configuration, Project24 should be able to 
 ### Troubleshoot
 If Project24 still can not start up in more than 10s after you have done with `appsettings`, first make sure that your configured database credential is correct.
 Then, restart the systemd service using the command above.
+
+## Known Issues
+#### Issues (intentional, won't fix)
+These issues are in internal logic, so on normal working condition there is no way fo them to go wrong.
+- `Updater` accepts all files uploaded without verify their purpose.
+- `ServerAnnouncementSvc` will crash if json string or ini string loading from database is malformatted.
+
+#### Issues (will fix)
+These issues are being investigated and will be fixed in a future patch.
+- `UpdaterSvc` doesn't kill `prev` app instance after finishing updating (Linux).

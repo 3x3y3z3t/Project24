@@ -33,7 +33,7 @@ namespace Project24.App
             if (_fileInfo == null)
                 throw new ArgumentNullException(nameof(_fileInfo));
 
-            if (Utils.IsFlagSet((int)_fileInfo.Attributes, (int)FileAttributes.Directory))
+            if (MiscUtils.IsFlagSet((int)_fileInfo.Attributes, (int)FileAttributes.Directory))
                 FileType = FileType.Directory;
             else
                 FileType = FileType.Files;
