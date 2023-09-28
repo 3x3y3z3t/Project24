@@ -1,5 +1,5 @@
 /*  dotmet.js
- *  Version: 1.0 (2023.09.19)
+ *  Version: 1.2 (2023.09.27)
  *
  *  This file contains implementation of .NET's various classses.
  * 
@@ -46,7 +46,7 @@ class TimeSpan {
         }
 
         if (timeSpan == null)
-            return 0;
+            return null;
 
         let totalMillis =
             timeSpan.Days * this.#s_MillisPerDay +
@@ -86,7 +86,7 @@ class TimeSpan {
         if (_elm1.length == 7) {
             // case hh:mm:ss.fffffff;
             timeSpan = TimeSpan.#parseInnerCase1(_elm0);
-            timeSpan.Millis = int(_elm1 / TimeSpan.#s_TicksPerMilli);
+            timeSpan.Millis = int(+_elm1 / TimeSpan.#s_TicksPerMilli);
         } else {
             // case ddd.hh:mm:ss;
             timeSpan = TimeSpan.#parseInnerCase1(_elm1);
@@ -162,12 +162,12 @@ class DotNetString {
                 case P24_ARG_DATA_TYPE_TIMESPAN:
                     //value = new TimeSpan(arg.Value);
                     if (match[2] != null)
-                        value = DotNetString.#formatCustomTimeSpan(match[2].substring(1), value);
+                        value = DotNetString.formatCustomTimeSpan(match[2].substring(1), arg.Value);
                     break;
 
                 case P24_ARG_DATA_TYPE_DATETIME:
                     if (match[2] != null)
-                        value = DotNetString.#formatCustomDateTime(match[2].substring(1), arg);
+                        value = DotNetString.formatCustomDateTime(match[2].substring(1), arg.Value);
                     break;
 
             }
@@ -183,9 +183,7 @@ class DotNetString {
     /*
         https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings
     */
-    static #formatCustomDateTime(_formatString, _arg) {
-        let date = _arg.Value;
-
+    static formatCustomDateTime(_formatString, _dateTime) {
         const regex = /([dfHMmsy]{1,4})/g;
         const matches = _formatString.matchAll(regex);
 
@@ -199,31 +197,31 @@ class DotNetString {
             str += _formatString.substring(lastMatchIndex, match.index);
 
             switch (formatChar) {
-                case "d": str += DotNetString.padZeroesBefore(date.getDate(), matchLength); break;
+                case "d": str += DotNetString.padZeroesBefore(_dateTime.getDate(), matchLength); break;
 
                 case "f":
                     switch (matchLength) {
-                        case 1: str += DotNetString.padZeroesBefore(date.getMilliseconds() / 100, 1); break;
-                        case 2: str += DotNetString.padZeroesBefore(date.getMilliseconds() / 10, 2); break;
-                        default: str += DotNetString.padZeroesBefore(date.getMilliseconds(), 3); break;
+                        case 1: str += DotNetString.padZeroesBefore(_dateTime.getMilliseconds() / 100, 1); break;
+                        case 2: str += DotNetString.padZeroesBefore(_dateTime.getMilliseconds() / 10, 2); break;
+                        default: str += DotNetString.padZeroesBefore(_dateTime.getMilliseconds(), 3); break;
                     }
                     break;
 
-                case "H": str += DotNetString.padZeroesBefore(date.getHours(), matchLength); break;
+                case "H": str += DotNetString.padZeroesBefore(_dateTime.getHours(), matchLength); break;
 
-                case "m": str += DotNetString.padZeroesBefore(date.getMinutes(), matchLength); break;
+                case "m": str += DotNetString.padZeroesBefore(_dateTime.getMinutes(), matchLength); break;
 
-                case "M": str += DotNetString.padZeroesBefore(date.getMonth() + 1, matchLength); break;
+                case "M": str += DotNetString.padZeroesBefore(_dateTime.getMonth() + 1, matchLength); break;
 
-                case "s": str += DotNetString.padZeroesBefore(date.getSeconds(), matchLength); break;
+                case "s": str += DotNetString.padZeroesBefore(_dateTime.getSeconds(), matchLength); break;
 
                 case "y":
                     switch (matchLength) {
-                        case 1: str += (date.getFullYear() % 100); break;
-                        case 2: str += DotNetString.padZeroesBefore(date.getFullYear() % 100, 2); break;
-                        case 3: str += DotNetString.padZeroesBefore(date.getFullYear(), 3); break;
-                        case 4: str += DotNetString.padZeroesBefore(date.getFullYear(), 4); break;
-                        default: str += DotNetString.padZeroesBefore(date.getFullYear(), matchLength); break;
+                        case 1: str += (_dateTime.getFullYear() % 100); break;
+                        case 2: str += DotNetString.padZeroesBefore(_dateTime.getFullYear() % 100, 2); break;
+                        case 3: str += DotNetString.padZeroesBefore(_dateTime.getFullYear(), 3); break;
+                        case 4: str += DotNetString.padZeroesBefore(_dateTime.getFullYear(), 4); break;
+                        default: str += DotNetString.padZeroesBefore(_dateTime.getFullYear(), matchLength); break;
                     }
                     break;
 
@@ -242,9 +240,7 @@ class DotNetString {
     /*
         https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-timespan-format-strings
     */
-    static #formatCustomTimeSpan(_formatString, _arg) {
-        let timeSpan = _arg;
-
+    static formatCustomTimeSpan(_formatString, _timeSpan) {
         const regex = /([dfhms]{1,4})/g;
         const matches = _formatString.matchAll(regex);
 
@@ -258,19 +254,19 @@ class DotNetString {
             str += _formatString.substring(lastMatchIndex, match.index);
 
             switch (formatChar) {
-                case "d": str += DotNetString.padZeroesBefore(timeSpan.Days, matchLength); break;
+                case "d": str += DotNetString.padZeroesBefore(_timeSpan.Days, matchLength); break;
 
-                case "h": str += DotNetString.padZeroesBefore(timeSpan.Hours, matchLength); break;
+                case "h": str += DotNetString.padZeroesBefore(_timeSpan.Hours, matchLength); break;
 
-                case "m": str += DotNetString.padZeroesBefore(timeSpan.Minutes, matchLength); break;
+                case "m": str += DotNetString.padZeroesBefore(_timeSpan.Minutes, matchLength); break;
 
-                case "s": str += DotNetString.padZeroesBefore(timeSpan.Seconds, matchLength); break;
+                case "s": str += DotNetString.padZeroesBefore(_timeSpan.Seconds, matchLength); break;
 
                 case "f":
                     switch (matchLength) {
-                        case 1: str += DotNetString.padZeroesBefore(timeSpan.Milliseconds / 100, 1); break;
-                        case 2: str += DotNetString.padZeroesBefore(timeSpan.Milliseconds / 10, 2); break;
-                        default: str += DotNetString.padZeroesBefore(timeSpan.Milliseconds, 3); break;
+                        case 1: str += DotNetString.padZeroesBefore(_timeSpan.Milliseconds / 100, 1); break;
+                        case 2: str += DotNetString.padZeroesBefore(_timeSpan.Milliseconds / 10, 2); break;
+                        default: str += DotNetString.padZeroesBefore(_timeSpan.Milliseconds, 3); break;
                     }
                     break;
 
@@ -287,7 +283,7 @@ class DotNetString {
     }
 }
 
-function int(_number) { return +_number.toFixed(0); }
+function int(_number) { return Math.floor(_number); }
 
 window.DotNet = {};
 

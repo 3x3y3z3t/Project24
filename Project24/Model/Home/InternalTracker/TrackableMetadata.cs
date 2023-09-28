@@ -1,5 +1,5 @@
 /*  Model/Home/InternalTracker/InternalTrackedValueMetadata.cs
- *  Version: v1.0 (2023.09.02)
+ *  Version: v1.1 (2023.09.23)
  *  
  *  Author
  *      Arime-chan
@@ -38,6 +38,7 @@ namespace Project24.Model.Home
         public TrackableMetadata(string _valueKey)
         {
             ValueKey = _valueKey;
+            ValueType = Trackable_ValueType.TRACKABLE_VALUE_TYPE_UNSET;
         }
     }
 

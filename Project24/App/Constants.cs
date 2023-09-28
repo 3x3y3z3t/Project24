@@ -1,11 +1,11 @@
 /*  App/Constants.cs
- *  Version: v1.1 (2023.09.01)
+ *  Version: v1.3 (2023.09.27)
  *  
  *  Author
  *      Arime-chan
  */
 
-using Project24.App;
+using System;
 
 namespace Project24.App
 {
@@ -43,6 +43,9 @@ namespace Project24.App
         public const string NasRootDir = "../../../wwwNas/nasRoot";
 
         public const int MaxRequestSize = 32 * 1024 * 1024;
+        public const long MaxLogFileSize = 50 * 1024 * 1024;
+
+        public static DateTime Epoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
     }
 
     public static class ErrCode

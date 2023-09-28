@@ -1,5 +1,5 @@
 /*  App/Services/ServerAnnouncement/ServerAnnouncementSvc.cs
- *  Version: v1.1 (2023.09.19)
+ *  Version: v1.2 (2023.09.27)
  *  
  *  Author
  *      Arime-chan
@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Project24.App.Services.ServerAnnouncement;
 using Project24.Data;
 using Project24.Model;
 
@@ -97,6 +96,8 @@ namespace Project24.App.Services
 
             m_LastUpdateTick = Environment.TickCount64;
             m_Timer.Change(0, c_UpdateIntervalMillis);
+
+            m_Logger.LogInformation("Server Announcement Service initialized.");
         }
 
         public void Add(Announcement _announcememt)
@@ -165,10 +166,14 @@ namespace Project24.App.Services
                 foreach (Announcement announcement in m_Announcements)
                 {
                     if (announcement.Tag == _tag)
+                    {
+                        //Console.WriteLine(">>>>> Tag " + _tag + " exist");
                         return true;
+                    }
                 }
             }
 
+            //Console.WriteLine(">>>>> Tag " + _tag + " not exist");
             return false;
         }
 
@@ -278,9 +283,7 @@ namespace Project24.App.Services
 
         private bool m_IsUpdating = false;
         private long m_LastUpdateTick = 0;
-
         private readonly Timer m_Timer = null;
-
         private readonly object m_Lock = new();
 
         private readonly LocalizationSvc m_LocalizationSvc;

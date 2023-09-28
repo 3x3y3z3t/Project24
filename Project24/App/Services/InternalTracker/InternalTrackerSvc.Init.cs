@@ -1,5 +1,5 @@
 /*  App/Services/InternalTracker/InternalTrackerSvc.Init.cs
- *  Version: v1.0 (2023.09.02)
+ *  Version: v1.1 (2023.09.23)
  *  
  *  Author
  *      Arime-chan
@@ -31,6 +31,8 @@ namespace Project24.App.Services
             TryAddTrackable(InternalTrackedKeys.CONFIG_GLOBAL_LOCALIZATION, P24Localization.VI_VN);
             TryAddTrackable(InternalTrackedKeys.CONFIG_UPDATER_WAIT_TIME, 2);
 
+            TryAddTrackable(InternalTrackedKeys.SIM_FIN_MAN_IS_DIRTY, true);
+
             return m_AddedValues.Count > 0;
         }
 
@@ -47,8 +49,7 @@ namespace Project24.App.Services
             {
                 addedMetadata.Add(new(InternalTrackedKeys.STATE_UPDATER_STATUS)
                 {
-                    ValueDisplayTab = TrackableTabName.TAB_UPDATER,
-                    ValueType = Trackable_ValueType.TRACKABLE_VALUE_TYPE_UNSET
+                    ValueDisplayTab = TrackableTabName.TAB_UPDATER
                 });
             }
 
@@ -56,8 +57,7 @@ namespace Project24.App.Services
             {
                 addedMetadata.Add(new(InternalTrackedKeys.STATE_UPDATER_QUEUED_ACTION)
                 {
-                    ValueDisplayTab = TrackableTabName.TAB_UPDATER,
-                    ValueType = Trackable_ValueType.TRACKABLE_VALUE_TYPE_UNSET
+                    ValueDisplayTab = TrackableTabName.TAB_UPDATER
                 });
             }
 
@@ -65,8 +65,7 @@ namespace Project24.App.Services
             {
                 addedMetadata.Add(new(InternalTrackedKeys.STATE_UPDATER_QUEUED_ACTION_DUE_TIME)
                 {
-                    ValueDisplayTab = TrackableTabName.TAB_UPDATER,
-                    ValueType = Trackable_ValueType.TRACKABLE_VALUE_TYPE_UNSET
+                    ValueDisplayTab = TrackableTabName.TAB_UPDATER
                 });
             }
             #endregion
@@ -79,7 +78,6 @@ namespace Project24.App.Services
                     ValueDisplayTab = TrackableTabName.TAB_CONFIG,
                     ValueType = Trackable_ValueType.TRACKABLE_VALUE_TYPE_INT32,
                     ValueRangeType = Trackable_ValueRangeType.TRACKABLE_VALUE_RANGE_TYPE_RANGE,
-                    //ValueRangeAsString = JsonSerializer.Serialize(new string[] { "1", "30" }, P24JsonSerializerContext.Default.Array)
                     ValueRangeAsString = "[\"1\", \"30\"]"
                 });
             }
@@ -95,6 +93,14 @@ namespace Project24.App.Services
                 });
             }
             #endregion
+
+            if (!metadatas.ContainsKey(InternalTrackedKeys.SIM_FIN_MAN_IS_DIRTY))
+            {
+                addedMetadata.Add(new(InternalTrackedKeys.SIM_FIN_MAN_IS_DIRTY)
+                {
+                    ValueDisplayTab = TrackableTabName.TAB_SIMULATOR
+                });
+            }
 
             if (addedMetadata.Count > 0)
             {

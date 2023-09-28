@@ -1,14 +1,12 @@
 /*  AppsettingsHelperClasses.cs
- *  Version: v1.0 (2023.08.25)
+ *  Version: v1.1 (2023.09.21)
  *  
  *  Contributor
  *      Arime-chan
  */
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Logging;
 
 namespace AppHelper
 {
@@ -84,7 +82,7 @@ namespace Microsoft.Extensions.Logging
     //
     // Summary:
     //     Defines logging severity levels.
-    public enum LogLevel
+    internal enum LogLevel
     {
         //
         // Summary:

@@ -1,4 +1,15 @@
 
+### v-core6-0.7.0 (2023.09.21)
+- Added file logger.
+- Added Simulator > FinancialManagement simulator.
+- Updated Updater's front-end script and back-end services.
+- Removed `ServerAnnouncementIncludePageModel` due to obsolete (replaced with Server Announcement hosted service).
+- Removed `svgs.js` due to obsolete (replaced with `P24Utils.svg()` in `site.js`.
+- Updated `modal.js` to make use of new svg construction.
+- Fixed crashes on `FileSystemSvc`'s `DeleteFiles()` and `CopyFiles()` when supplied File path instead of Directory path.
+- Fixed racing issue on `UpdaterSvc`'s `Update()`.
+- Fixed various parsing and formatting bugs in `dotnet.js`.
+
 ### v-core6-0.6.0 (2023.09.18)
 - Added Server Announcement.
 - Added various .NET object clone in Javascript.

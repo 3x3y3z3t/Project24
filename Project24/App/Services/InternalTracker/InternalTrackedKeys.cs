@@ -1,5 +1,5 @@
 /*  App/Services/InternalTracker/InternalTrackedKeys.cs
- *  Version: v1.1 (2023.09.01)
+ *  Version: v1.2 (2023.09.23)
  *  
  *  Author
  *      Arime-chan
@@ -21,15 +21,17 @@ namespace Project24.App.Services
         public const string CONFIG_GLOBAL_LOCALIZATION = nameof(CONFIG_GLOBAL_LOCALIZATION);
         public const string CONFIG_UPDATER_WAIT_TIME = nameof(CONFIG_UPDATER_WAIT_TIME);
 
+        public const string SIM_FIN_MAN_IS_DIRTY = nameof(SIM_FIN_MAN_IS_DIRTY);
 
-        public static List<string> AllKeys = new()
-        {
-            STATE_UPDATER_STATUS,
-            STATE_UPDATER_QUEUED_ACTION,
-            STATE_UPDATER_QUEUED_ACTION_DUE_TIME,
 
-            CONFIG_UPDATER_WAIT_TIME,
-        };
+        //public static List<string> AllKeys = new()
+        //{
+        //    STATE_UPDATER_STATUS,
+        //    STATE_UPDATER_QUEUED_ACTION,
+        //    STATE_UPDATER_QUEUED_ACTION_DUE_TIME,
+
+        //    CONFIG_UPDATER_WAIT_TIME,
+        //};
     }
 
     public static class TrackableTabName
@@ -38,6 +40,8 @@ namespace Project24.App.Services
 
         public const string TAB_UPDATER = nameof(TAB_UPDATER);
         public const string TAB_CONFIG = nameof(TAB_CONFIG);
+
+        public const string TAB_SIMULATOR = nameof(TAB_SIMULATOR);
     }
 
 }

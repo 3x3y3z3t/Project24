@@ -1,5 +1,5 @@
 /*  App/Services/UpdaterSvc.cs
- *  Version: v1.2 (2023.09.19)
+ *  Version: v1.3 (2023.09.27)
  *  
  *  Author
  *      Arime-chan
@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using AppHelper;
 using Project24.Model;
-using Project24.App.Services.ServerAnnouncement;
 using Microsoft.Extensions.DependencyInjection;
 using Project24.Data;
 
@@ -119,6 +118,7 @@ namespace Project24.App.Services
 #pragma warning restore CS4014
             }
 
+            m_Logger.LogInformation("Updater Service initialized.");
         }
 
 
@@ -236,7 +236,7 @@ namespace Project24.App.Services
 
             try
             {
-                FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppPrevRoot, s_ExcludeFilesList);
+                _ = FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppPrevRoot, s_ExcludeFilesList);
             }
             catch (Exception _ex)
             {
@@ -267,7 +267,7 @@ namespace Project24.App.Services
 
             try
             {
-                FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppNextRoot, s_ExcludeFilesList);
+                _ = FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppNextRoot, s_ExcludeFilesList);
             }
             catch (Exception _ex)
             {
@@ -338,7 +338,7 @@ namespace Project24.App.Services
                 m_Logger.LogDebug("  QueuedAction = {_action}", QueuedAction.ToString());
                 try
                 {
-                    FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppMainRoot, s_ExcludeFilesList);
+                    _ = FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppMainRoot, s_ExcludeFilesList);
 
                     QueuedAction = UpdaterQueuedAction.CopyFilesFromPrevToMain;
                     await SaveChangesAsync();
@@ -437,7 +437,7 @@ namespace Project24.App.Services
                 m_Logger.LogDebug("  QueuedAction = {_action}", QueuedAction.ToString());
                 try
                 {
-                    FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppPrevRoot, s_ExcludeFilesList);
+                    _ = FileSystemSvc.DeleteFiles(m_FileSystemSvc.AppPrevRoot, s_ExcludeFilesList);
 
                     QueuedAction = UpdaterQueuedAction.CopyFilesFromMainToPrev;
                     await SaveChangesAsync();
@@ -627,96 +627,123 @@ namespace Project24.App.Services
 
         private void Update(object? _state)
         {
-            // put svc to sleep if needed;
-            if (Environment.TickCount64 - m_LastActivitiesTick > c_IdleTimeMillis)
-                m_Timer.Change(0, Timeout.Infinite);
-
-            if (QueuedActionDueTime == DateTime.MaxValue || QueueActionRemainingTime.Ticks > 0)
+            lock (m_Lock)
             {
-                if (QueuedAction == UpdaterQueuedAction.None && Status != UpdaterStatus.None)
-                {
-                    m_Logger.LogWarning("UpdaterSvc.Update(): QueuedAction is None but Status is {_status}, resetting all state.", Status);
-                    LastErrorMessage += "<div>UpdaterSvc.Update(): QueuedAction is <code>None</code>, Status is <code>" + Status + "</code>, resetting all state.</div>";
+                if (m_IsUpdating)
+                    return;
 
-                    Status = UpdaterStatus.None;
-                    SaveChangesAsync().Wait();
+                m_IsUpdating = true;
+
+                // put svc to sleep if needed;
+                if (Environment.TickCount64 - m_LastUpdateTick > c_IdleTimeMillis)
+                    m_Timer.Change(0, Timeout.Infinite);
+
+                if (QueuedActionDueTime == DateTime.MaxValue || QueueActionRemainingTime.Ticks > 0)
+                {
+                    if (QueuedAction == UpdaterQueuedAction.None && Status != UpdaterStatus.None)
+                    {
+                        m_Logger.LogWarning("UpdaterSvc.Update(): QueuedAction is None but Status is {_status}, resetting all state.", Status);
+                        LastErrorMessage += "<div>UpdaterSvc.Update(): QueuedAction is <code>None</code>, Status is <code>" + Status + "</code>, resetting all state.</div>";
+
+                        Status = UpdaterStatus.None;
+                        SaveChangesAsync().Wait();
+                    }
+                    m_IsUpdating = false;
+                    return;
                 }
-                return;
+
+                switch (Status)
+                {
+                    case UpdaterStatus.PrevPurgeQueued:
+                    {
+                        Status = UpdaterStatus.PrevPurgeRunning;
+                        QueuedAction = UpdaterQueuedAction.DeleteFilesInPrev;
+                        QueuedActionDueTime = DateTime.MaxValue;
+                        ExpireCountdownAnnouncement();
+                        AddInProgressAnnouncement();
+
+                        SaveChangesAsync().Wait();
+
+                        PurgePrevAsync().Wait();
+                        m_IsUpdating = false;
+                        return;
+                    }
+
+                    case UpdaterStatus.NextPurgeQueued:
+                    {
+                        Status = UpdaterStatus.NextPurgeRunning;
+                        QueuedAction = UpdaterQueuedAction.DeleteFilesInNext;
+                        QueuedActionDueTime = DateTime.MaxValue;
+                        ExpireCountdownAnnouncement();
+                        AddInProgressAnnouncement();
+
+                        SaveChangesAsync().Wait();
+
+                        PurgeNextAsync().Wait();
+                        m_IsUpdating = false;
+                        return;
+                    }
+
+                    case UpdaterStatus.PrevApplyQueued:
+                    {
+                        Status = UpdaterStatus.PrevApplyRunning;
+                        QueuedAction = UpdaterQueuedAction.SwitchExecutableToPrev;
+                        QueuedActionDueTime = DateTime.MaxValue;
+                        ExpireCountdownAnnouncement();
+                        AddInProgressAnnouncement();
+
+                        SaveChangesAsync().Wait();
+
+                        ApplyPrevAsync().Wait();
+                        m_IsUpdating = false;
+                        return;
+                    }
+
+                    case UpdaterStatus.NextApplyQueued:
+                    {
+                        Status = UpdaterStatus.NextApplyRunning;
+                        QueuedAction = UpdaterQueuedAction.DeleteFilesInPrev;
+                        QueuedActionDueTime = DateTime.MaxValue;
+                        ExpireCountdownAnnouncement();
+                        AddInProgressAnnouncement();
+
+                        SaveChangesAsync().Wait();
+
+                        ApplyNextAsync().Wait();
+                        m_IsUpdating = false;
+                        return;
+                    }
+
+                    case UpdaterStatus.PrevPurgeRunning:
+                        HandleInvalidStatusCaseRunning();
+                        m_IsUpdating = false;
+                        return;
+
+                    case UpdaterStatus.NextPurgeRunning:
+                        HandleInvalidStatusCaseRunning();
+                        m_IsUpdating = false;
+                        return;
+
+                    case UpdaterStatus.PrevApplyRunning:
+                        HandleInvalidStatusCaseRunning();
+                        m_IsUpdating = false;
+                        return;
+
+                    case UpdaterStatus.NextApplyRunning:
+                        HandleInvalidStatusCaseRunning();
+                        m_IsUpdating = false;
+                        return;
+
+                    case UpdaterStatus.None:
+                        HandleInvalidStatusCaseNone();
+                        m_IsUpdating = false;
+                        return;
+                }
+
+                HandleInvalidStatus();
+
+                m_IsUpdating = false;
             }
-
-            switch (Status)
-            {
-                case UpdaterStatus.PrevPurgeQueued:
-                {
-                    Status = UpdaterStatus.PrevPurgeRunning;
-                    QueuedAction = UpdaterQueuedAction.DeleteFilesInPrev;
-                    QueuedActionDueTime = DateTime.MaxValue;
-                    ExpireCountdownAnnouncement();
-                    AddInProgressAnnouncement();
-
-                    SaveChangesAsync().Wait();
-
-                    PurgePrevAsync().Wait();
-                    return;
-                }
-                case UpdaterStatus.NextPurgeQueued:
-                {
-                    Status = UpdaterStatus.NextPurgeRunning;
-                    QueuedAction = UpdaterQueuedAction.DeleteFilesInNext;
-                    QueuedActionDueTime = DateTime.MaxValue;
-                    ExpireCountdownAnnouncement();
-                    AddInProgressAnnouncement();
-
-                    SaveChangesAsync().Wait();
-
-                    PurgeNextAsync().Wait();
-                    return;
-                }
-                case UpdaterStatus.PrevApplyQueued:
-                {
-                    Status = UpdaterStatus.PrevApplyRunning;
-                    QueuedAction = UpdaterQueuedAction.SwitchExecutableToPrev;
-                    QueuedActionDueTime = DateTime.MaxValue;
-                    ExpireCountdownAnnouncement();
-                    AddInProgressAnnouncement();
-
-                    SaveChangesAsync().Wait();
-
-                    ApplyPrevAsync().Wait();
-                    return;
-                }
-                case UpdaterStatus.NextApplyQueued:
-                {
-                    Status = UpdaterStatus.NextApplyRunning;
-                    QueuedAction = UpdaterQueuedAction.DeleteFilesInPrev;
-                    QueuedActionDueTime = DateTime.MaxValue;
-                    ExpireCountdownAnnouncement();
-                    AddInProgressAnnouncement();
-
-                    SaveChangesAsync().Wait();
-
-                    ApplyNextAsync().Wait();
-                    return;
-                }
-                case UpdaterStatus.PrevPurgeRunning:
-                    HandleInvalidStatusCaseRunning();
-                    return;
-                case UpdaterStatus.NextPurgeRunning:
-                    HandleInvalidStatusCaseRunning();
-                    return;
-                case UpdaterStatus.PrevApplyRunning:
-                    HandleInvalidStatusCaseRunning();
-                    return;
-                case UpdaterStatus.NextApplyRunning:
-                    HandleInvalidStatusCaseRunning();
-                    return;
-                case UpdaterStatus.None:
-                    HandleInvalidStatusCaseNone();
-                    return;
-            }
-
-            HandleInvalidStatus();
-
         }
 
         private void HandleInvalidStatus()
@@ -824,12 +851,12 @@ namespace Project24.App.Services
         private void ExpireInProgressAnnouncement() => _ = m_AnnouncementSvc.ForceExpireAnnouncement(c_TagUpdaterInProgress);
 
         private void ComputeUpdaterActionDueTime() => QueuedActionDueTime = DateTime.Now.AddMinutes(int.Parse(m_TrackerSvc[InternalTrackedKeys.CONFIG_UPDATER_WAIT_TIME]));
-        private void InvokeSvc() => m_LastActivitiesTick = Environment.TickCount64;
+        private void InvokeSvc() => m_LastUpdateTick = Environment.TickCount64;
 
 
         private const string c_TagUpdaterCountdown = "TAG_UPDATER_COUNTDOWN";
         private const string c_TagUpdaterInProgress = "TAG_UPDATER_IN_PROGRESS";
-        private const int c_IdleTimeMillis = 5 * 60 * 1000; // 5 minutes idle time;
+        private const int c_IdleTimeMillis = 1 * 60 * 1000; // 1 minutes idle time;
 
         private static readonly List<string> s_ExcludeFilesList = new() { "appsettings.Production.json" };
 
@@ -838,10 +865,12 @@ namespace Project24.App.Services
         private UpdaterStatus m_Status = UpdaterStatus.None;
         private UpdaterQueuedAction m_QueuedAction = UpdaterQueuedAction.None;
         private DateTime m_QueuedActionDueTime = DateTime.MaxValue;
-        private long m_LastActivitiesTick = 0;
-        private readonly Timer m_Timer = null;
 
-        //private string m_AppSide = null;
+
+        private bool m_IsUpdating = false;
+        private long m_LastUpdateTick = 0;
+        private readonly Timer m_Timer = null;
+        private readonly object m_Lock = new();
 
         private readonly ServerAnnouncementSvc m_AnnouncementSvc;
         private readonly FileSystemSvc m_FileSystemSvc;

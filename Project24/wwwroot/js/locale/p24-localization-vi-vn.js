@@ -1,5 +1,5 @@
 /*  locale/p24-localization-vi-vn.js
-    Version: v1.0 (2023.09.02)
+    Version: v1.1 (2023.09.23)
 
     Author
         Arime-chan
@@ -21,8 +21,10 @@ window.P24Localization = {
     LOCL_STR_UNKNOWN_ERR: "Lỗi không xác định",
     LOCL_STR_EXCEPTION: "Exception (lỗi ngoại lệ)",
 
-    LOCL_DESC_MALFORMED: "Dữ liệu không đúng định dạng",
-    LOCL_DESC_UPDATER_NOMAIN: "Không có thông tin phiên bản hiện tại",
+    LOCL_STR_MULTIPLE_MSG: "Nhiều thông báo",
+
+    LOCL_DESC_MALFORMED: "Dữ liệu không đúng định dạng.",
+    LOCL_DESC_UPDATER_NOMAIN: "Không có thông tin phiên bản hiện tại.",
     LOCL_DESC_UPDATER_PURGE_CANNOT_ABORT: "Tác vụ Xóa file đang chạy, không thể hủy tác vụ.",
     LOCL_DESC_UPDATER_PREV_PURGE_QUEUED: "Tác vụ Xóa file phiên bản trước đã được khởi chạy.",
     LOCL_DESC_UPDATER_NEXT_PURGE_QUEUED: "Tác vụ Xóa file phiên bản mới đã được khởi chạy.",

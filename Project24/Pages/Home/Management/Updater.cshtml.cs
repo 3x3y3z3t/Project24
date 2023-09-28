@@ -1,5 +1,5 @@
 /*  Home/Management/Updater.cshtml.cs
- *  Version: v1.2 (2023.09.02)
+ *  Version: v1.3 (2023.09.27)
  *  
  *  Author
  *      Arime-chan
@@ -7,38 +7,107 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Mime;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.BackendData;
 using Project24.App.Services;
 using Project24.Data;
 using Project24.Model;
-using Project24.Model.Home.Maintenance;
-using Project24.SerializerContext;
 
 namespace Project24.Pages.Home.Maintenance
 {
-    public class UpdaterModel : ServerAnnouncementIncludedPageModel
+    public class UpdaterModel : PageModel
     {
-        private class UploadedFileInfo
+        #region View Model
+        // ==================================================
+        // View Model
+
+        public class UpdaterPageDataModel
         {
-            public string FullName { get; set; }
-            public long Length { get; set; }
+            [JsonConverter(typeof(JsonStringEnumConverter))]
+            public UpdaterStatus Status { get; set; } = UpdaterStatus.None;
+            [JsonConverter(typeof(JsonStringEnumConverter))]
+            public UpdaterQueuedAction QueuedAction { get; set; } = UpdaterQueuedAction.None;
+            public DateTime DueTime { get; set; } = DateTime.Now;
+            public TimeSpan Remaining { get; set; } = TimeSpan.Zero;
+            public string AppSide { get; private set; } = Program.AppSide;
+
+            public string MainVer { get; set; } = null;
+            public string PrevVer { get; set; } = null;
+            public string NextVer { get; set; } = null;
+
+            public List<FileInfoPageDataModel> Files { get; set; } = null;
+
+            public string Message { get; set; } = "";
 
 
-            public UploadedFileInfo(string _fullName, long _length)
+            public UpdaterPageDataModel()
+            { }
+        }
+
+        public class FileInfoPageDataModel
+        {
+            public string Path { get; set; }
+            public string LastMod { get; set; }
+            public JavascriptFile File { get; set; }
+            public long HashCode { get; set; }
+
+            [JsonIgnore]
+            public string Name { get => File.name; set => File.name = value; }
+            [JsonIgnore]
+            public long Size { get => File.size; set => File.size = value; }
+
+
+            public FileInfoPageDataModel(P24FileInfo _fileInfo, string _maskPath = "")
             {
-                FullName = _fullName;
-                Length = _length;
+                File = new();
+
+                Name = _fileInfo.Name;
+                Path = _fileInfo.Path.Replace(_maskPath, "").Replace('\\', '/').Trim('/');
+                LastMod = MiscUtils.FormatDateTimeString_EndsWithMinute(_fileInfo.LastModified);
+                Size = _fileInfo.Size;
+
+                if (Path == "")
+                    HashCode = MiscUtils.ComputeCyrb53HashCode(_fileInfo.Name);
+                else
+                    HashCode = MiscUtils.ComputeCyrb53HashCode(Path + "/" + _fileInfo.Name);
+                
             }
         }
+
+        public class JavascriptFile
+        {
+            [JsonInclude] public string name;
+            [JsonInclude] public long size;
+        }
+
+        // End: View Model
+        // ==================================================
+        #endregion
+
+        //private class UploadedFileInfo
+        //{
+        //    public string FullName { get; set; }
+        //    public long Length { get; set; }
+
+
+        //    public UploadedFileInfo(string _fullName, long _length)
+        //    {
+        //        FullName = _fullName;
+        //        Length = _length;
+        //    }
+        //}
 
 
         public UpdaterModel(ApplicationDbContext _dbContext, UpdaterSvc _updaterSvc, FileSystemSvc _fileSystemSvc, ILogger<UpdaterModel> _logger)
@@ -52,24 +121,21 @@ namespace Project24.Pages.Home.Maintenance
 
 
         public void OnGet()
-        {
+        { }
 
-            ServerMessage = "" +
-                " | Status: " + m_UpdaterSvc.Status.ToString() +
-                " | QueuedAction: " + m_UpdaterSvc.QueuedAction +
-                " | DueTime: "+ m_UpdaterSvc.QueuedActionDueTime.ToString() +
-                " | Remaining: " + m_UpdaterSvc.QueueActionRemainingTime.ToString() +
-                " | AppSide: " + Program.AppSide;
+        #region AJAX Handler
+        // ==================================================
+        // AJAX Handler
 
-
-        }
-
-        // ajax call only;
+        // ajax handler;
         public IActionResult OnGetFetchPageData()
         {
             UpdaterPageDataModel data = new()
             {
                 Status = m_UpdaterSvc.Status,
+                QueuedAction = m_UpdaterSvc.QueuedAction,
+                DueTime = m_UpdaterSvc.QueuedActionDueTime,
+                Remaining = m_UpdaterSvc.QueueActionRemainingTime,
             };
 
             if (m_UpdaterSvc.LastErrorMessage != null)
@@ -78,7 +144,7 @@ namespace Project24.Pages.Home.Maintenance
             try
             {
                 VersionInfo curVerInfo = new(Assembly.GetEntryAssembly().GetName().Version);
-                data.Main = curVerInfo.ToString();
+                data.MainVer = curVerInfo.ToString();
 
                 string versionFilePath = m_FileSystemSvc.AppNextRoot + "/version.dat";
                 if (System.IO.File.Exists(versionFilePath))
@@ -86,10 +152,15 @@ namespace Project24.Pages.Home.Maintenance
                     string nextVer = System.IO.File.ReadAllText(versionFilePath);
                     var nextVerInfo = MiscUtils.ParseVersionInfo(nextVer);
 
-                    if (nextVerInfo != null && MiscUtils.CompareVersion(curVerInfo, nextVerInfo) < 0)
+                    if (nextVerInfo != null)
                     {
-                        data.Next = nextVer;
-                        //data.Files = GetAllFilesInNext();
+                        int compare = MiscUtils.CompareVersion(curVerInfo, nextVerInfo);
+                        if (compare > 0)
+                            nextVer += " (outdated)";
+                        else if (compare == 0)
+                            nextVer += " (same)";
+
+                        data.NextVer = nextVer;
                     }
                 }
 
@@ -99,37 +170,46 @@ namespace Project24.Pages.Home.Maintenance
                     string prevVer = System.IO.File.ReadAllText(versionFilePath);
                     var prevVerInfo = MiscUtils.ParseVersionInfo(prevVer);
 
-                    if (prevVerInfo != null && MiscUtils.CompareVersion(curVerInfo, prevVerInfo) > 0)
+                    if (prevVerInfo != null)
                     {
-                        data.Prev = prevVer;
+                        int compare = MiscUtils.CompareVersion(curVerInfo, prevVerInfo);
+                        if (compare == 0)
+                            prevVer += " (same)";
+
+                        data.PrevVer = prevVer;
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception _ex)
+            {
+                m_Logger.LogError("Exception during reading avaiable prev/next version: {_ex}", _ex);
+            }
 
             try
             {
                 // TODO: change this to Main on release;
                 var fileinfos = m_FileSystemSvc.GetFilesInNext();
-                List<FileInfoModel> list = new(fileinfos.Count);
+                List<FileInfoPageDataModel> list = new(fileinfos.Count);
 
                 foreach (var file in fileinfos)
                 {
-                    list.Add(new FileInfoModel(file, m_FileSystemSvc.AppNextRoot));
+                    list.Add(new FileInfoPageDataModel(file, m_FileSystemSvc.AppNextRoot));
                 }
 
                 data.Files = list;
             }
             catch (Exception _ex)
             {
+                m_Logger.LogError("Exception during reading next version file list: {_ex}", _ex);
                 return Content(MessageTag.Exception + _ex, MediaTypeNames.Text.Plain);
             }
 
-            string dataJson = JsonSerializer.Serialize(data, P24JsonSerializerContext.Default.UpdaterPageDataModel);
+            //string dataJson = JsonSerializer.Serialize(data, P24JsonSerializerContext.Default.UpdaterPageDataModel);
+            string dataJson = JsonSerializer.Serialize(data);
             return Content(MessageTag.Success + dataJson, MediaTypeNames.Text.Plain);
         }
 
-        // ajax call only;
+        // ajax handler;
         public IActionResult OnPostClearInternalError()
         {
             if (!ModelState.IsValid)
@@ -139,7 +219,7 @@ namespace Project24.Pages.Home.Maintenance
             return Content(MessageTag.Success, MediaTypeNames.Text.Plain);
         }
 
-        // ajax call only;
+        // ajax handler;
         public IActionResult OnPostUploadMetadataAsync([FromBody] UpdaterMetadata _data)
         {
             if (!ModelState.IsValid)
@@ -152,8 +232,8 @@ namespace Project24.Pages.Home.Maintenance
             return Content(MessageTag.Success, MediaTypeNames.Text.Plain);
         }
 
-        // ajax call only;
-        public async Task<IActionResult> OnPostUploadBatchAsync(IList<IFormFile> _files)
+        // ajax handler;
+        public async Task<IActionResult> OnPostUploadBatchAsync(IList<IFormFile> _files, CancellationToken _cancellationToken)
         {
             int batchId = int.Parse(Request.Headers["Id"]);
             long batchSize = long.Parse(Request.Headers["Size"]);
@@ -201,7 +281,6 @@ namespace Project24.Pages.Home.Maintenance
 
             // ==================================================
 
-            DateTime epoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             List<long> errors = new();
             List<string> successFileNames = new();
             int successFileLength = 0;
@@ -217,15 +296,14 @@ namespace Project24.Pages.Home.Maintenance
                 if (m_UpdaterSvc.IsFileLastModTracked(fi.Item3))
                 {
                     long millis = m_UpdaterSvc.GetFileLastMod(fi.Item3);
-                    dt = epoch.AddMilliseconds(millis).ToLocalTime();
+                    dt = Constants.Epoch.AddMilliseconds(millis).ToLocalTime();
                 }
                 else
                 {
                     dt = DateTime.Now;
                 }
 
-                // TODO: async this;
-                if (await SaveFile(file, fi.Item1, fi.Item2, dt) < 0)
+                if (SaveFile(file, fi.Item1, fi.Item2, dt) < 0)
                 {
                     errors.Add(fi.Item3);
                 }
@@ -238,15 +316,14 @@ namespace Project24.Pages.Home.Maintenance
 
             if (successFileNames.Count > 0)
             {
+                // TODO: add into user upload list;
+
                 string jsonData = JsonSerializer.Serialize(successFileNames);
                 UserUploadData uploadData = new("power", (short)successFileNames.Count, successFileLength, jsonData);
 
-                await m_DbContext.UserUploadDatas.AddAsync(uploadData);
-                await m_DbContext.SaveChangesAsync();
+                m_DbContext.UserUploadDatas.Add(uploadData);
+                await m_DbContext.SaveChangesAsync(_cancellationToken);
             }
-            
-                    // TODO: add into user upload list;
-
 
             if (errors.Count > 0)
                 return Content(MessageTag.Error + "[" + batchId + "," + errors.Count + "]", MediaTypeNames.Text.Plain);
@@ -260,35 +337,27 @@ namespace Project24.Pages.Home.Maintenance
             return Content(MessageTag.Success + batchId, MediaTypeNames.Text.Plain);
         }
 
-        public IActionResult OnPostPurgePrev()
-        {
-            return PurgeCommon(UpdaterSide.Prev);
-        }
+        // ajax handler;
+        public IActionResult OnPostPurgePrev() => PurgeCommon(UpdaterSide.Prev);
 
-        public IActionResult OnPostPurgeNext()
-        {
-            return PurgeCommon(UpdaterSide.Next);
-        }
+        // ajax handler;
+        public IActionResult OnPostPurgeNext() => PurgeCommon(UpdaterSide.Next);
 
-        public IActionResult OnPostAbortPrev()
-        {
-            return AbortCommon(UpdaterSide.Prev);
-        }
+        // ajax handler;
+        public IActionResult OnPostAbortPrev() => AbortCommon(UpdaterSide.Prev);
 
-        public IActionResult OnPostAbortNext()
-        {
-            return AbortCommon(UpdaterSide.Next);
-        }
+        // ajax handler;
+        public IActionResult OnPostAbortNext() => AbortCommon(UpdaterSide.Next);
 
-        public IActionResult OnPostApplyPrev()
-        {
-            return ApplyCommon(UpdaterSide.Prev);
-        }
+        // ajax handler;
+        public IActionResult OnPostApplyPrev() => ApplyCommon(UpdaterSide.Prev);
 
-        public IActionResult OnPostApplyNext()
-        {
-            return ApplyCommon(UpdaterSide.Next);
-        }
+        // ajax handler;
+        public IActionResult OnPostApplyNext() => ApplyCommon(UpdaterSide.Next);
+
+        // End: AJAX Handler
+        // ==================================================
+        #endregion
 
 
         private IActionResult PurgeCommon(UpdaterSide _side)
@@ -395,7 +464,7 @@ namespace Project24.Pages.Home.Maintenance
         /// <param name="_name">The file's name</param>
         /// <param name="_lastModified">The file's last modified timestamp</param>
         /// <returns>The length of saved file, or -1 if error occures.</returns>
-        private async Task<long> SaveFile(IFormFile _file, string _path, string _name, DateTime _lastModified)
+        private long SaveFile(IFormFile _file, string _path, string _name, DateTime _lastModified)
         {
             if (_path != "")
                 Directory.CreateDirectory(m_FileSystemSvc.AppNextRoot + "/" + _path);
@@ -403,8 +472,8 @@ namespace Project24.Pages.Home.Maintenance
             string fileFullname = m_FileSystemSvc.AppNextRoot + "/" + _path + _name;    // again, _path contains a trailing slash;
             try
             {
-                Stream stream = System.IO.File.Create(fileFullname, 8 * 1024);
-                await _file.CopyToAsync(stream);
+                Stream stream = System.IO.File.Create(fileFullname, 4 * 1024 * 1024);
+                _file.CopyTo(stream);
                 stream.Close();
 
                 System.IO.File.SetLastWriteTime(fileFullname, _lastModified);
@@ -417,35 +486,6 @@ namespace Project24.Pages.Home.Maintenance
 
             return _file.Length;
         }
-
-#if false
-        private List<FileInfoModel> GetAllFilesInNext()
-        {
-            var fileinfos = m_FileSystemSvc.GetFilesInNext();
-            List<FileInfoModel> result = new(fileinfos.Count);
-
-            foreach (var file in fileinfos)
-            {
-                //    FileInfoModel fm = new()
-                //    {
-                //        Name = file.Name,
-                //        Path = file.Path.Replace(m_FileSystemSvc.AppNextRoot, "").Replace('\\', '/').TrimStart('/'),
-                //        LastMod = Utils.FormatDateTimeString_EndsWithMinute(file.LastModified),
-                //        Size = file.Size
-                //    };
-
-                //    if (file.Path == "")
-                //        fm.HashCode = Utils.ComputeCyrb53HashCode(file.Name);
-                //    else
-                //        fm.HashCode = Utils.ComputeCyrb53HashCode(file.Path + "/" + file.Name);
-
-                //    result.Add(fm);
-                result.Add(new FileInfoModel(file, m_FileSystemSvc.AppNextRoot));
-            }
-
-            return result;
-        }
-#endif
 
         /// <summary>
         /// Extracts the file's metadata consists of its path, file name, and hash code.<br />

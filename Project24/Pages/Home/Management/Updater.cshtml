@@ -1,5 +1,5 @@
 @*  Home/Management/Updater.cshtml
- *  Version: v1.2 (2023.09.19)
+ *  Version: v1.3 (2023.09.22)
  *
  *  Author
  *      Arime-chan
@@ -16,9 +16,11 @@
 
 @model Project24.Pages.Home.Maintenance.UpdaterModel
 @{
-    Layout = "_NoScrollLayout";
+    Layout = P24PageLayout.NoScrollLayout;
     ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_UPDATER];
     ViewData[ViewDataKeys.Flags] = (ViewDataFlags)ViewData[ViewDataKeys.Flags] | ViewDataFlags.NoTitle;
+
+    const string classPanelTopWraper = "col-12 col-sm-10";
 
     const string classPanelTopCommon = "col-12 col-sm-10 col-md-12 col-lg-10";
     const string classLblGroup = "col-12 col-md-4";
@@ -32,12 +34,12 @@
 
 <div class="d-flex flex-column h-100 pb-2">
     <div class="d-flex flex-wrap justify-content-center">
-        <div class="col-10">
+        <div class="@classPanelTopWraper">
             <h1>@ViewData[ViewDataKeys.Title]</h1>
             <hr />
         </div>
 
-        <div class="d-flex flex-wrap col-10">
+        <div class="d-flex flex-wrap @classPanelTopWraper">
 
             <div class="d-flex flex-wrap @classPanelTopCommon col-xl-8">
                 <div class="@classLblGroup">
@@ -65,7 +67,7 @@
             <div class="@classPanelTopCommon col-xl-4">
                 <div class="d-flex m-1">
                     <div class="input-group">
-                        <button id="btn-clear" type="button" class="btn btn-outline-danger" onclick="btnClear_onClick()" disabled w3-include-html="">
+                        <button id="btn-clear" type="button" class="btn btn-outline-danger" onclick="UpdaterPage.UI.btnClear_onClick()" disabled w3-include-html="">
                             <svg width="16" height="16" fill="currentColor">
                                 <use xlink:href="/lib/bootstrap-icons/bootstrap-icons.svg#x-lg" />
                             </svg>
@@ -73,11 +75,11 @@
 
                         <div id="div-input-files" class="flex-grow-1 position-relative">
                             <label for="input-files" id="lbl-input-files" class="form-control text-truncate position-absolute">&nbsp;</label>
-                            <input id="input-files" type="file" class="form-control position-absolute" style="opacity:0" onchange="inputFiles_onChange()" webkitdirectory disabled />
+                            <input id="input-files" type="file" class="form-control position-absolute" style="opacity:0" onchange="UpdaterPage.UI.inputFiles_onChange()" webkitdirectory disabled />
                         </div>
                     </div>
 
-                    <button type="button" id="btn-upload" class="btn btn-outline-success ms-2" onclick="btnUpload_onClick()" disabled>
+                    <button type="button" id="btn-upload" class="btn btn-outline-success ms-2" onclick="UpdaterPage.UI.btnUpload_onClick()" disabled>
                         <svg width="16" height="16" fill="currentColor">
                             <use xlink:href="/lib/bootstrap-icons/bootstrap-icons.svg#upload" />
                         </svg>
@@ -89,7 +91,7 @@
 
         </div>
 
-        <div class="fw-bold fs-4">>>> @Model.ServerMessage <<<</div>
+        <div id="div-lbl-updater-status" class="d-flex flex-wrap justify-content-center @classPanelTopWraper mt-2"></div>
 
         <div class="col-10"><hr /></div>
     </div>

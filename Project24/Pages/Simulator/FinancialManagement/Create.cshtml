@@ -1,0 +1,100 @@
+@*  Home/Simulator/FinancialManagement/Create.cshtml
+ *  Version: v1.0 (2023.09.23)
+ *
+ *  Author
+ *      Arime-chan
+*@
+
+@page
+@using Project24.App;
+
+@model Project24.Pages.Simulator.FinancialManagement.CreateModel
+@{
+    Layout = P24PageLayout.CommonLayout;
+    ViewData[ViewDataKeys.Title] = "Create Transaction";
+
+
+
+
+    string dateTimeNow = string.Format("{0:yyyy/MM/dd HH:mm}", DateTime.Now);
+    string dateTimeMin = "2023-04-00";
+
+    string classFormInput = "form-floating my-1";
+}
+
+<div class="d-flex">
+
+    <div class="col-4">
+        <form class="needs-validation" novalidate>
+            <div class="@classFormInput">
+                <input id="input-add-date" type="datetime-local" class="form-control" value="@dateTimeNow" min="@dateTimeMin" required />
+                <label for="input-add-date">Added Date</label>
+            </div>
+            <div id="div-invalid-date" class="text-danger fs-6 ms-2" hidden>Invalid Date</div>
+
+            <div class="@classFormInput">
+                <input id="input-category" list="datalist-categories" class="form-control" placeholder="" required />
+                <datalist id="datalist-categories"></datalist>
+                <label for="input-category">Category</label>
+            </div>
+
+            <div class="@classFormInput">
+                <input id="input-amount" type="number" class="form-control" placeholder="" required />
+                <label for="input-amount">Amount</label>
+            </div>
+
+            <div class="@classFormInput">
+                <textarea id="input-details" class="form-control" placeholder="" style="height:100px"></textarea>
+                <label for="input-details">Details (optional)</label>
+            </div>
+        </form>
+
+        <br />
+        <div class="d-flex flex-nowrap">
+            <div>
+                <button id="btn-add" type="button" class="btn btn-primary" onclick="FinManCreatePage.UI.btnAdd_onclick()">Add</button>
+                <button id="btn-clear" type="button" class="btn btn-secondary mx-1" onclick="FinManCreatePage.UI.btnClear_onclick()">Clear</button>
+            </div>
+
+            <div class="ms-auto">
+                <a asp-page="List" class="btn btn-secondary mx-1">
+                    <svg width="16" height="16" fill="currentColor">
+                        <use xlink:href="/lib/bootstrap-icons/bootstrap-icons.svg#arrow-left" />
+                    </svg>
+                    Back to List
+                </a>
+                <button id="btn-submit" type="button" class="btn btn-primary" onclick="FinManCreatePage.UI.btnSubmit_onclick()" disabled>
+                    Submit
+                    <svg width="16" height="16" fill="currentColor">
+                        <use xlink:href="/lib/bootstrap-icons/bootstrap-icons.svg#arrow-right" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-8 ps-4">
+        <div class="border-top border-1">
+            <div class="d-flex flex-nowrap fw-bold border-bottom border-2 py-1">
+                <div id="tr0" class="px-2">Added Date</div>
+                <div id="tr1" class="px-2">Category</div>
+                <div id="tr2" class="px-2 text-end">Amount</div>
+                <div id="tr3" class="px-2">Details</div>
+                <div id="tr4"><svg width="16" height="16"></svg></div>
+            </div>
+        </div>
+
+        <div id="div-add-list" class="border-bottom"></div>
+    </div>
+
+</div>
+
+@Html.AntiForgeryToken()
+
+<partial name="Shared/Modal/_ModalCommon" />
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/js/modals.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/simulator/financial-management/create.js" asp-append-version="true"></script>
+}

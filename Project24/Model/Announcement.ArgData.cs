@@ -1,5 +1,5 @@
-/*  App/Services/ServerAnnouncement/AnnouncementArgsData.cs
- *  Version: v1.0 (2023.09.15)
+/*  Model/Announcement.ArgData.cs
+ *  Version: v1.0 (2023.09.28)
  *  
  *  Author
  *      Arime-chan
@@ -7,7 +7,7 @@
 
 using System;
 
-namespace Project24.App.Services.ServerAnnouncement
+namespace Project24.Model
 {
     internal class AnnouncementArgDataJson
     {
@@ -112,7 +112,7 @@ namespace Project24.App.Services.ServerAnnouncement
 
             return IsValueSurpassedThreshold();
         }
-            
+
         protected override object GetValue() => m_Value;
 
         protected override object GetCountToward() => m_CountToward;
@@ -183,8 +183,13 @@ namespace Project24.App.Services.ServerAnnouncement
 
         protected override void UpdateInternal(TimeSpan _deltaTime)
         {
-            _deltaTime.Multiply(m_CountsPerMillis);
-            m_Value = m_Value.Add(_deltaTime);
+            if (m_CountsPerMillis == 0)
+                return;
+
+            if (m_CountsPerMillis > 0)
+                m_Value = m_Value.Add(_deltaTime);
+            else
+                m_Value = m_Value.Subtract(_deltaTime);
         }
 
         protected override string GetTypeNameStatic() => nameof(AnnouncementArgDataTimeSpan);

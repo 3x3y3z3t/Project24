@@ -1,13 +1,15 @@
 /*  Project24
  *  
  *  Program.cs
- *  Version: v1.3 (2023.09.14)
+ *  Version: v1.4 (2023.09.21)
  *  
  *  Author
  *      Arime-chan
  */
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -17,9 +19,11 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.Services;
 using Project24.App.Utils;
@@ -32,6 +36,7 @@ namespace Project24
         public static string WorkingDir { get; private set; }
         public static string AppSide { get; private set; }
         public static string LaunchUsername { get; private set; }
+        public static string CurrentSessionName { get; private set; }
 
         public static string AppsettingsVersion { get; private set; }
 
@@ -41,6 +46,8 @@ namespace Project24
 
         public static async Task Main(string[] _args)
         {
+            Console.WriteLine("\r\n" + LINE + "\r\n==    Project24 Started                         ==\r\n" + LINE + "\r\n");
+
             var builder = WebApplication.CreateBuilder(_args);
             var configuration = builder.Configuration;
             var services = builder.Services;
@@ -61,10 +68,10 @@ namespace Project24
                 AppSide = AppSide_.MAIN;
             else
             {
-                AppSide = null;
                 Console.WriteLine("Invalid App Side (app location: " + WorkingDir + ")");
                 if (isDev)
                 {
+                    AppSide = "dev";
                     Console.WriteLine("Development mode (soft), app may continue.");
                 }
                 else
@@ -75,6 +82,7 @@ namespace Project24
             }
 
             LaunchUsername = Environment.UserName;
+            CurrentSessionName = string.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
 
             AppsettingsVersion = configuration["AppsettingsVersion"] ?? string.Empty;
 
@@ -136,6 +144,7 @@ namespace Project24
             services.AddRazorPages();
 
             #region Misc
+            services.AddLogging(LoggerConfig.ConfigureLogger);
             #endregion
 
             // Add services to the container.
@@ -151,6 +160,14 @@ namespace Project24
             // STARTUP INITIALIZATION
             //
             // ==================================================
+
+            app.Lifetime.ApplicationStarted.Register(() => app.Logger.LogInformation(LINE + "\r\n==    Application Started                       ==\r\n" + LINE));
+            app.Lifetime.ApplicationStopping.Register(() => app.Logger.LogInformation(LINE + "\r\n==    Application Stopping                      ==\r\n" + LINE));
+            app.Lifetime.ApplicationStopped.Register(() =>
+            {
+                app.Logger.LogInformation(LINE + "\r\n==    Application Stopped                       ==\r\n" + LINE);
+                Console.WriteLine("\r\n" + LINE + "\r\n==    Project24 Stopped                         ==\r\n" + LINE + "\r\n");
+            });
 
             IsDevelopment = app.Environment.IsDevelopment();
 
@@ -170,17 +187,19 @@ namespace Project24
                 var trackerSvc = scope.ServiceProvider.GetRequiredService<InternalTrackerSvc>();
                 trackerSvc.StartService();
 
-                var start = DateTime.Now;
+                Stopwatch sw = Stopwatch.StartNew();
 
                 await TaskExt.WhenAll(
                     localizationSvc.StartAsync(),
                     svrAnnouncementSvc.StartAsync()
                 );
 
-                var elapsed = DateTime.Now - start;
+                var elapsed = sw.Elapsed;
+                sw.Stop();
                 Console.WriteLine("elapsed = " + elapsed);
 
-
+                string s = JsonSerializer.Serialize(DateTime.Now);
+                DateTime dt = JsonSerializer.Deserialize<DateTime>("\"2023-09-24T03:32:16.238Z\"").ToLocalTime();
 
                 //var ts = new TimeSpan(-1, 25, 59, 59,  9);
                 var ts = new TimeSpan(1, 0, 0, 0);
@@ -188,12 +207,7 @@ namespace Project24
                 string tss = JsonSerializer.Serialize(ts);
 
 
-
-
-
-
-
-
+                int x = 0;
 
 
 
@@ -264,9 +278,10 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
             // ==================================================
             //logger.LogInformation("==================\r\n= App is running =\r\n==================");
             app.Run();
-
-
         }
+
+
+        private const string LINE = "==================================================";
     }
 
 }

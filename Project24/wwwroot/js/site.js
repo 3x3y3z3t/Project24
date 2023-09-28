@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.4 (2023.09.18)
+ *  Version: 1.5 (2023.09.23)
  *
  *  Author
  *      Arime-chan
@@ -85,6 +85,15 @@ $(document).ready(function () {
 
 // =====
 window.P24Utils = {};
+
+P24Utils.svg = function (_name, _colorClass = null) {
+    let html = "<svg width=\"16\" height=\"16\" fill=\"currentColor\"";
+    if (_colorClass != null)
+        html += " class=\"" + _colorClass + "\"";
+    html += "><use xlink:href=\"/lib/bootstrap-icons/bootstrap-icons.svg#" + _name + "\" /></svg>";
+
+    return html;
+};
 
 P24Utils.Ajax = {
     error: function (_xhr, _textStatus, _errorThrown) {
@@ -204,6 +213,37 @@ P24Utils.formatDateString = function (_date) {
 
 // END: datetime
 // ==================================================
+
+P24Utils.formatNumberWithSeparator = function (_number) {
+    if (_number == null)
+        return "";
+
+    let numberString = "" + _number;
+    let result = "";
+
+    if (numberString.startsWith("-")) {
+        result += "-";
+        numberString = numberString.substring(1);
+    }
+
+    if (numberString.length <= 3)
+        return result + numberString;
+        
+    let pos = numberString.length % 3;
+    let index = 0;
+    while (index < numberString.length) {
+        if (pos != 0) {
+            result += numberString.substring(index, pos);
+            if (pos < numberString.length)
+                result += ",";
+        }
+
+        index = pos;
+        pos += 3;
+    }
+
+    return result;
+};
 
 P24Utils.formatDataLength = function (_length) {
     const oneKiB = 1024;

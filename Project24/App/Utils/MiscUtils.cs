@@ -1,5 +1,5 @@
 /*  App/Utils/MiscUtils.cs
- *  Version: v1.2 (2023.09.07)
+ *  Version: v1.3 (2023.09.27)
  *  
  *  Contributor
  *      Arime-chan
@@ -25,6 +25,7 @@ namespace Project24.App
         };
 
         public static bool IsFlagSet(int _flags, int _flag) => (_flags & _flag) != 0;
+        public static bool IsFlagSet(Enum _flags, Enum _flag) => IsFlagSet(Convert.ToInt32(_flags), Convert.ToInt32(_flag));
 
         #region DateTime
         public static string FormatDateTimeString_EndsWithMinute(DateTime _dateTime) => string.Format("{0:yyyy}/{0:MM}/{0:dd} {0:HH}:{0:mm}", _dateTime);

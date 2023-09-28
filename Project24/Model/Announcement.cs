@@ -1,5 +1,5 @@
 /*  Model/Announcement.cs
- *  Version: v1.0 (2023.09.18)
+ *  Version: v1.1 (2023.09.27)
  *  
  *  Author
  *      Arime-chan
@@ -12,7 +12,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Project24.App.Services;
-using Project24.App.Services.ServerAnnouncement;
 
 namespace Project24.Model
 {

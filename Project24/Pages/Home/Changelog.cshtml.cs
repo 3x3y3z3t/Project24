@@ -25,7 +25,7 @@ namespace Project24.Pages.Home
         }
 
 
-        // ajax call only;
+        // ajax handler;
         public async Task<IActionResult> OnGetChangelogAsync()
         {
             string webRootPath = m_WebHostEnv.WebRootPath;
@@ -42,7 +42,7 @@ namespace Project24.Pages.Home
             }
         }
 
-        // ajax call only;
+        // ajax handler;
         /// <summary> Returns all Update notes. </summary>
         public async Task<IActionResult> OnGetFullUpdateNotesAsync()
         {
@@ -50,7 +50,7 @@ namespace Project24.Pages.Home
 
         }
 
-        // ajax call only;
+        // ajax handler;
         /// <summary> Returns the Update Note with the specified tag, or latest Update Notes starting from the specified tag. </summary>
         /// <param name="_tag">The tag of the Update Note to retrieve</param>
         /// <param name="_latest">If false, retrieve the Note with the tag. If true, retrieve all lattest Notes starting from the tag</param>

@@ -1,15 +1,12 @@
 /*  App/Service/FileSystemSvc.cs
- *  Version: v1.1 (2023.09.12)
+ *  Version: v1.2 (2023.09.27)
  *  
  *  Contributor
  *      Arime-chan
  */
 
-
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.ExceptionServices;
 
 namespace Project24.App.Services
 {
@@ -66,59 +63,103 @@ namespace Project24.App.Services
             return result;
         }
 
-        public static void DeleteFiles(string _fullPath, List<string> _excludedFiles = null)
+        public static bool DeleteFiles(string _fullPath, List<string> _excludedFiles = null)
         {
+            DirectoryInfo srcDirInfo = new(_fullPath);
+            bool isDirectory = MiscUtils.IsFlagSet(srcDirInfo.Attributes, FileAttributes.Directory);
+
+            // ==================================================;
+            // case: delete all (no exclude files);
+
             if (_excludedFiles == null || _excludedFiles.Count <= 0)
             {
-                Directory.Delete(_fullPath, true);
-                return;
+                if (isDirectory)
+                    Directory.Delete(_fullPath, true);
+                else
+                    File.Delete(_fullPath);
+
+                return true;
             }
 
-            DirectoryInfo srcDirInfo = new(_fullPath);
+            // ==================================================;
+            // case: file;
+
+            if (!isDirectory)
+            {
+                FileInfo fi = new(_fullPath);
+                if (!_excludedFiles.Contains(fi.Name))
+                    fi.Delete();
+
+                return true;
+            }
+
+            // ==================================================;
+            // case: directory;
+
+            bool isEmpty = true;
 
             DirectoryInfo[] dirInfos = srcDirInfo.GetDirectories();
-            FileInfo[] fileInfos = srcDirInfo.GetFiles();
+            foreach (DirectoryInfo di in dirInfos)
+            {
+                DeleteFiles(di.FullName, _excludedFiles);
+                di.Delete();
+            }
 
+            FileInfo[] fileInfos = srcDirInfo.GetFiles();
             foreach (FileInfo fi in fileInfos)
             {
                 if (_excludedFiles.Contains(fi.Name))
+                {
+                    isEmpty = false;
                     continue;
+                }
 
                 fi.Delete();
             }
 
-            foreach (DirectoryInfo di in dirInfos)
-            {
-                DeleteFiles(di.FullName, _excludedFiles);
-            }
+            return isEmpty;
         }
 
         public static void CopyFiles(string _srcPath, string _dstPath, List<string> _excludedFiles = null)
         {
             DirectoryInfo srcDirInfo = new(_srcPath);
-
-            DirectoryInfo[] dirInfos = srcDirInfo.GetDirectories();
-            FileInfo[] fileInfos = srcDirInfo.GetFiles();
+            bool isDirectory = MiscUtils.IsFlagSet(srcDirInfo.Attributes, FileAttributes.Directory);
             bool hasExclusion = _excludedFiles != null && _excludedFiles.Count > 0;
 
-            Directory.CreateDirectory(_dstPath);
+            // ==================================================;
+            // case: file;
 
-            foreach (FileInfo fi in fileInfos)
+            if (!isDirectory)
             {
-                if (hasExclusion)
-                {
-                    if (_excludedFiles.Contains(fi.Name))
-                        continue;
-                }
+                FileInfo fi = new(_srcPath);
+                if (hasExclusion && _excludedFiles.Contains(fi.Name))
+                    return;
 
                 string dst = _dstPath + "/" + fi.Name;
                 fi.CopyTo(dst, true);
+
+                return;
             }
 
+            // ==================================================;
+            // case: directory;
+
+            Directory.CreateDirectory(_dstPath);
+            DirectoryInfo[] dirInfos = srcDirInfo.GetDirectories();
             foreach (DirectoryInfo di in dirInfos)
             {
                 string dst = _dstPath + "/" + di.Name;
                 CopyFiles(di.FullName, dst, _excludedFiles);
+            }
+
+            FileInfo[] fileInfos = srcDirInfo.GetFiles();
+            foreach (FileInfo fi in fileInfos)
+            {
+                if (hasExclusion && _excludedFiles.Contains(fi.Name))
+                    continue;
+
+                string dst = _dstPath + "/" + fi.Name;
+                fi.CopyTo(dst, true);
             }
         }
 

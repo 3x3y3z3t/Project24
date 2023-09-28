@@ -1,5 +1,5 @@
 /*  App/Services/LocalizationSvc.cs
- *  Version: v1.2 (2023.09.15)
+ *  Version: v1.3 (2023.09.27)
  *  
  *  Author
  *      Arime-chan
@@ -54,6 +54,7 @@ namespace Project24.App.Services
             m_Locales[SupportedLocale.JA_JP] = await LoadLocalizedStringAsync(SupportedLocale.JA_JP, _cancellationToken);
             m_Locales[SupportedLocale.VI_VN] = await LoadLocalizedStringAsync(SupportedLocale.VI_VN, _cancellationToken);
 
+            m_Logger.LogInformation("Localization Service initialized.");
         }
 
         public bool ContainsKey(string _key) => m_Locales[CurrentLocale].ContainsKey(_key);

@@ -1,0 +1,88 @@
+@*  Home/Simulator/FinancialManagement/List.cshtml
+ *  Version: v1.0 (2023.09.24)
+ *
+ *  Author
+ *      Arime-chan
+*@
+
+@page
+
+@using Project24.App;
+@using System.Globalization;
+
+@model Project24.Pages.Simulator.FinancialManagement.ListModel
+@{
+    Layout = P24PageLayout.CommonLayout;
+
+    ViewData[ViewDataKeys.Title] = "Transaction Listing";
+
+
+
+
+
+    string[] months = DateTimeFormatInfo.CurrentInfo.MonthNames;
+
+    DateTime now = DateTime.Now;
+}
+
+
+@{
+    // TODO: add button to extract and import;
+
+}
+
+
+<div class="d-flex flex-wrap">
+    <div class="col-12 col-lg-2 col-xl-1">
+        @*<div class="form-floating col-12 col-sm-4 col-md-3 col-lg-2 mb-2">*@
+        <div class="form-floating">
+            <select id="select-year" class="form-select" onchange="FinManListPage.UI.selectYear_onchange()"></select>
+            <label for="select-year">Year</label>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-12 col-xl-11 mt-3 ps-2">
+        <ul class="nav nav-tabs">
+            @for (int i = 0; i < 12; ++i)
+            {
+                <li class="nav-item">
+                    <button id="btn-month-@i" class="nav-link" data-bs-toggle="tab" data-bs-target="#div-tab-content" onclick="FinManListPage.UI.btnMonth_onclick(@i)">@months[i]</button>
+                </li>
+            }
+        </ul>
+    </div>
+
+</div>
+
+<div class="tab-content mt-2">
+    <div id="div-tab-content" class="tab-pane d-flex flex-wrap">
+
+        <div class="d-flex flex-wrap col-12 col-lg-4 col-xl-3 px-2">
+            <div id="div-report-info" class="col-8 col-lg-12 mb-2"></div>
+            <div class="col-4 col-lg-12"><a class="btn btn-primary" asp-page="Create">Add</a></div>
+        </div>
+
+        <div class="col-12 col-lg-8 col-xl-9 border-start border-primary border-2 px-2">
+            <div class="border-top border-1">
+                <div class="d-flex flex-nowrap fw-bold border-bottom border-2 py-1">
+                    <div id="tr0" class="px-2">Added Date</div>
+                    <div id="tr1" class="px-2">Category</div>
+                    <div id="tr2" class="px-2 text-end">Amount</div>
+                    <div id="tr3" class="px-2">Details</div>
+                    <div id="tr4"><svg width="16" height="16"></svg></div>
+                </div>
+            </div>
+
+            <div id="div-transaction-list" class="border-bottom"></div>
+        </div>
+
+    </div>
+</div>
+
+<partial name="Shared/Modal/_ModalCommon" />
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/js/modals.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/simulator/financial-management/list.js" asp-append-version="true"></script>
+}

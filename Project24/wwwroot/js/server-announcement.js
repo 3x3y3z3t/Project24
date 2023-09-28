@@ -1,5 +1,5 @@
 /*  server-announcement.js
-    Version: v1.0 (2023.09.18)
+    Version: v1.1 (2023.09.22)
 
     Author
         Arime-chan
@@ -29,8 +29,6 @@ window.ServerAnnouncementPage = {
     reload: function () {
         this.ajax_fetchAnnouncementData();
     },
-
-    // ==================================================
 
     update: function () {
         if (this.m_IsUpdating)
@@ -68,7 +66,7 @@ window.ServerAnnouncementPage = {
         });
     },
 
-    ajax_error(_xhr, _textStatus, _errorThrown) {
+    ajax_error: function(_xhr, _textStatus, _errorThrown) {
         this.m_AwaitingData = false;
         P24Utils.Ajax.error(_xhr, _textStatus, _errorThrown);
     },
@@ -79,7 +77,7 @@ window.ServerAnnouncementPage = {
         let body = _content.substring(6);
 
         if (P24Utils.Ajax.successContentCheckCommon(_content, body)) {
-            let processedData = this.Data.loadPageData(body);
+            let processedData = this.Data.processPageData(body);
             if (processedData == null)
                 return;
 
@@ -88,7 +86,6 @@ window.ServerAnnouncementPage = {
             return;
         }
     },
-
 };
 
 /*
@@ -102,11 +99,9 @@ ServerAnnouncementPage.Data = {
 
     },
 
-    loadPageData: function (_json) {
+    processPageData: function (_json) {
 
         let parsedData = JSON.parse(_json);
-
-        this.init();
 
         this.Announcements = parsedData;
 
@@ -116,7 +111,7 @@ ServerAnnouncementPage.Data = {
         // =====
         // TODO: remove this;
             //console.log(_json);
-            console.log(this.Announcements);
+            //console.log(this.Announcements);
         // =====
 
         if (false) {
