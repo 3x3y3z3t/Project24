@@ -1,5 +1,5 @@
 @*  Home/Simulator/FinancialManagement/List.cshtml
- *  Version: v1.0 (2023.09.24)
+ *  Version: v1.1 (2023.09.30)
  *
  *  Author
  *      Arime-chan
@@ -13,24 +13,10 @@
 @model Project24.Pages.Simulator.FinancialManagement.ListModel
 @{
     Layout = P24PageLayout.CommonLayout;
-
     ViewData[ViewDataKeys.Title] = "Transaction Listing";
 
-
-
-
-
     string[] months = DateTimeFormatInfo.CurrentInfo.MonthNames;
-
-    DateTime now = DateTime.Now;
 }
-
-
-@{
-    // TODO: add button to extract and import;
-
-}
-
 
 <div class="d-flex flex-wrap">
     <div class="col-12 col-lg-2 col-xl-1">
@@ -46,22 +32,29 @@
             @for (int i = 0; i < 12; ++i)
             {
                 <li class="nav-item">
-                    <button id="btn-month-@i" class="nav-link" data-bs-toggle="tab" data-bs-target="#div-tab-content" onclick="FinManListPage.UI.btnMonth_onclick(@i)">@months[i]</button>
+                    <button id="btn-month-@i" class="nav-link">@months[i]</button>
                 </li>
             }
         </ul>
     </div>
-
 </div>
 
 <div class="tab-content mt-2">
     <div id="div-tab-content" class="tab-pane d-flex flex-wrap">
 
-        <div class="d-flex flex-wrap col-12 col-lg-4 col-xl-3 px-2">
+        <div class="d-flex flex-wrap align-content-start col-12 col-lg-4 col-xl-3 px-2">
             <div id="div-report-info" class="col-8 col-lg-12 mb-2"></div>
-            <div class="col-4 col-lg-12"><a class="btn btn-primary" asp-page="Create">Add</a></div>
-        </div>
 
+            <div class="d-flex flex-wrap col-4 col-lg-12">
+                <div><a id="link-add" class="btn btn-primary disabled" asp-page="Create">Add</a></div>
+                <div class="ms-auto">
+                    <a id="link-export" class="btn btn-secondary disabled" asp-page-handler="Export">Export</a>
+                    <a id="link-import" href="#" class="btn btn-info text-light disabled" onclick="$('#input-file')[0].click()">Import</a>
+                    <input id="input-file" type="file" accept=".json" onchange="FinManListPage.UI.inputFile_onchange()" hidden disabled />
+                </div>
+            </div>
+        </div>
+        
         <div class="col-12 col-lg-8 col-xl-9 border-start border-primary border-2 px-2">
             <div class="border-top border-1">
                 <div class="d-flex flex-nowrap fw-bold border-bottom border-2 py-1">
@@ -78,6 +71,8 @@
 
     </div>
 </div>
+
+@Html.AntiForgeryToken()
 
 <partial name="Shared/Modal/_ModalCommon" />
 

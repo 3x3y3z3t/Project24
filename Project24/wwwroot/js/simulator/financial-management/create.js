@@ -1,5 +1,5 @@
 /*  simulator/financial-management/create.js
-    Version: v1.0 (2023.09.24)
+    Version: v1.1 (2023.10.02)
 
     Author
         Arime-chan
@@ -77,6 +77,16 @@ window.FinManCreatePage = {
 
     // ==================================================
 
+    openSyncInProgressModal: function () {
+        Modal.Common.openOneBtnModal("Sync In Progress", "Sync in progress. Please wait until data is done being sync.", MODAL_ICON_INFO);
+    },
+
+    openImportInProgressModal: function () {
+        Modal.Common.openOneBtnModal("Import In Progress", "Import in progress. Please wait until data is done being imported.", MODAL_ICON_INFO);
+    },
+
+    // ==================================================
+
     ajax_fetchPageData: function () {
         if (this.m_AwaitingData)
             return;
@@ -122,15 +132,26 @@ window.FinManCreatePage = {
 
         let body = _content.substring(6);
 
-        if (P24Utils.Ajax.successContentCheckCommon(_content, body)) {
-            let processedData = this.Data.processPageData(body);
-            if (processedData == null)
-                return;
+        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+            return;
 
-            this.UI.refreshPage(processedData);
-
+        if (body == "ImportInProgress") {
+            this.Data.PageData = body;
+            this.openImportInProgressModal();
             return;
         }
+
+        if (body == "SyncInProgress") {
+            this.Data.PageData = body;
+            this.openSyncInProgressModal();
+            return;
+        }
+
+        let processedData = this.Data.processPageData(body);
+        if (processedData == null)
+            return;
+
+        this.UI.refreshPage(processedData);
     },
 
     ajax_submit_success: function (_content, _textStatus, _xhr) {
@@ -139,20 +160,8 @@ window.FinManCreatePage = {
         this.UI.m_BtnSubmit.removeAttr("disabled");
         let body = _content.substring(6);
 
-        if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + body + "</pre>");
+        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
             return;
-        }
-
-        if (_content.startsWith(P24_MSG_TAG_ERROR)) {
-            Modal.Common.openOneBtnModal("Error", body, MODAL_ICON_ERROR);
-            return;
-        }
-
-        if (!_content.startsWith(P24_MSG_TAG_SUCCESS)) {
-            console.error("ajax_submit_success(): Unknown error: \n" + _content);
-            return;
-        }
 
         this.Data.AddedData = [];
 
@@ -160,7 +169,7 @@ window.FinManCreatePage = {
         if (processData != null)
             this.UI.refreshPage(processData);
 
-        Modal.Common.openOneBtnModal("Success", "", MODAL_ICON_SUCCESS);
+        Modal.Common.openOneBtnModal("Success", "Data has been added.", MODAL_ICON_SUCCESS);
 
     },
 
@@ -189,6 +198,15 @@ FinManCreatePage.Data = {
 
     removeRecord: function (_index) {
         this.AddedData[_index] = null;
+    },
+
+    containsCategory: function (_category) {
+        for (const record of this.AddedData) {
+            if (_category == record.Category)
+                return true;
+        }
+
+        return false;
     },
 
     // ==================================================
@@ -309,10 +327,13 @@ FinManCreatePage.UI = {
             return;
         }
 
+        if (!FinManCreatePage.Data.containsCategory(category)) {
+            this.m_DataListCategories.append("<option value=\"" + category + "\"></option>");
+        }
+
         FinManCreatePage.addRecord(date, category, amount, details);
 
         this.clearInputs();
-
         this.m_BtnSubmit.removeAttr("disabled");
     },
 
@@ -321,6 +342,16 @@ FinManCreatePage.UI = {
     },
 
     btnSubmit_onclick: function () {
+        if (FinManCreatePage.Data.PageData == "ImportInProgress") {
+            FinManCreatePage.openImportInProgressModal();
+            return;
+        }
+
+        if (FinManCreatePage.Data.PageData == "SyncInProgress") {
+            FinManCreatePage.openSyncInProgressModal();
+            return;
+        }
+
         FinManCreatePage.submitRecords();
 
         this.m_BtnSubmit.attr("disabled", true);
@@ -331,7 +362,7 @@ FinManCreatePage.UI = {
     refreshPage: function (_data) {
         let html = "";
         for (const category of _data) {
-            html += "<option value=\"" + category + "\">";
+            html += "<option value=\"" + category + "\"></option>";
         }
 
         this.m_DataListCategories.html(html);

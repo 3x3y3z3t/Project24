@@ -1,7 +1,7 @@
 /*  App/Utils/MiscUtils.cs
- *  Version: v1.3 (2023.09.27)
+ *  Version: v1.4 (2023.09.30)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -31,6 +31,36 @@ namespace Project24.App
         public static string FormatDateTimeString_EndsWithMinute(DateTime _dateTime) => string.Format("{0:yyyy}/{0:MM}/{0:dd} {0:HH}:{0:mm}", _dateTime);
         public static string FormatDateTimeString_EndsWithSecond(DateTime _dateTime) => string.Format("{0:yyyy}/{0:MM}/{0:dd} {0:HH}:{0:mm}:{0:ss}", _dateTime);
         #endregion
+
+        public static string FormatDataSize(long _size)
+        {
+            const long oneKiB = 1024L;
+            const long oneMiB = 1024L * oneKiB;
+            const long oneGiB = 1024L * oneMiB;
+            const long oneTiB = 1024L * oneGiB;
+
+            if (_size >= oneTiB)
+            {
+                return string.Format("{0:##0.00} TB", (float)_size / oneTiB);
+            }
+
+            if (_size >= oneGiB)
+            {
+                return string.Format("{0:##0.00} GB", (float)_size / oneGiB);
+            }
+
+            if (_size >= oneMiB)
+            {
+                return string.Format("{0:##0.00} MB", (float)_size / oneMiB);
+            }
+
+            if (_size >= oneKiB)
+            {
+                return string.Format("{0:##0.00} KB", (float)_size / oneKiB);
+            }
+
+            return string.Format("{0:##0.00}  B", (float)_size);
+        }
 
 
         #region Version Info

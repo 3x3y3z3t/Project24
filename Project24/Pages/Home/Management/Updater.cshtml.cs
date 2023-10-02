@@ -1,5 +1,5 @@
 /*  Home/Management/Updater.cshtml.cs
- *  Version: v1.3 (2023.09.27)
+ *  Version: v1.4 (2023.09.30)
  *  
  *  Author
  *      Arime-chan
@@ -7,7 +7,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Mime;
 using System.Reflection;
@@ -43,9 +42,9 @@ namespace Project24.Pages.Home.Maintenance
             public TimeSpan Remaining { get; set; } = TimeSpan.Zero;
             public string AppSide { get; private set; } = Program.AppSide;
 
-            public string MainVer { get; set; } = null;
-            public string PrevVer { get; set; } = null;
-            public string NextVer { get; set; } = null;
+            public string MainVer { get; set; } = "";
+            public string PrevVer { get; set; } = "";
+            public string NextVer { get; set; } = "";
 
             public List<FileInfoPageDataModel> Files { get; set; } = null;
 

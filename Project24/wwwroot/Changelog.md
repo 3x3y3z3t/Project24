@@ -1,4 +1,12 @@
 
+### v-core6-0.8.0 (2023.10.02)
+- Added Simulator > FinancialManagement Remove page.
+- Added Simulator > FinancialManagement Import functionality.
+- Added `P24Stopwatch` which has extra functionality over `System.Diagnostics.Stopwatch`.
+- Added `Syncable` which define object that can be synchronized (import from other source).
+- Added helper methods for Syncable in `ApplicationDbContext` (basically overrides of DBContext's Add and Update methods).
+- Added `DBMaintenanceSvc` to perform various db maintenance task, include locking db during import.
+
 ### v-core6-0.7.0 (2023.09.21)
 - Added file logger.
 - Added Simulator > FinancialManagement simulator.

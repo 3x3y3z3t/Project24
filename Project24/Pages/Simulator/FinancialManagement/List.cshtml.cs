@@ -1,16 +1,19 @@
 /*  Home/Simulator/FinancialManagement/List.cshtml.cs
- *  Version: v1.0 (2023.09.24)
+ *  Version: v1.1 (2023.10.01)
  *
  *  Author
  *      Arime-chan
  */
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -19,21 +22,45 @@ using Project24.App;
 using Project24.App.Services;
 using Project24.Data;
 using Project24.Model.Simulator.FinancialManagement;
+using Project24.SerializerContext;
 
 namespace Project24.Pages.Simulator.FinancialManagement
 {
     public class ListModel : PageModel
     {
-        public ListModel(InternalTrackerSvc _trackerSvc, ApplicationDbContext _dbContext, ILogger<ListModel> _logger)
+        public ListModel(DBMaintenanceSvc _dbMaintenanceSvc, ApplicationDbContext _dbContext, ILogger<ListModel> _logger)
         {
-            m_TrackerSvc = _trackerSvc;
+            m_DbMaintenanceSvc = _dbMaintenanceSvc;
             m_DbContext = _dbContext;
             m_Logger = _logger;
         }
 
 
-        public void OnGet()
-        { }
+        public async Task<IActionResult> OnGetExportAsync()
+        {
+            if (this.IsDbLockedForSync(m_DbMaintenanceSvc, m_Logger))
+                return Page();
+
+            if (this.IsDbLockedForImport(m_DbMaintenanceSvc, m_Logger))
+                return Page();
+
+            var categories = await (from _category in m_DbContext.Sim_TransactionCategories select _category).ToListAsync();
+            var transactions = await (from _transaction in m_DbContext.Sim_Transactions select _transaction).ToListAsync();
+            var reports = await (from _report in m_DbContext.Sim_MonthlyReports select _report).ToListAsync();
+
+            ImportExportDataModel data = new()
+            {
+                Categories = categories,
+                Transactions = transactions,
+                Reports = reports,
+            };
+
+            string jsonData = JsonSerializer.Serialize(data);
+            byte[] content = Encoding.UTF8.GetBytes(jsonData);
+            string filename = string.Format("data-{0:yyMMdd-HHmmss}.json", DateTime.Now);
+
+            return File(content, MediaTypeNames.Text.Plain, filename);
+        }
 
         #region AJAX Handler
         // ==================================================
@@ -42,17 +69,17 @@ namespace Project24.Pages.Simulator.FinancialManagement
         // ajax handler;
         public IActionResult OnGetFetchPageData(short _year, short _month)
         {
+            if (this.IsDbLockedForSync(m_DbMaintenanceSvc, m_Logger))
+                return Content(MessageTag.Success + "SyncInProgress", MediaTypeNames.Text.Plain);
+
+            if (this.IsDbLockedForImport(m_DbMaintenanceSvc, m_Logger))
+                return Content(MessageTag.Success + "ImportInProgress", MediaTypeNames.Text.Plain);
+
             if (_year == 0)
                 _year = (short)DateTime.Now.Year;
 
             if (_month == 0)
                 _month = (short)DateTime.Now.Month;
-
-            if (bool.Parse(m_TrackerSvc[InternalTrackedKeys.SIM_FIN_MAN_IS_DIRTY]) || true)
-            {
-                TimeSpan ts = Task.Run(ResyncMonthlyReports).Result;
-                m_Logger.LogInformation("Resync Sim_MonthlyReports took {_ts:0.00}ms.", ts.TotalMilliseconds);
-            }
 
             var report = (from _report in m_DbContext.Sim_MonthlyReports
                           where _report.Year == _year && _report.Month == _month
@@ -74,6 +101,7 @@ namespace Project24.Pages.Simulator.FinancialManagement
 
             var transactions = (from _transaction in m_DbContext.Sim_Transactions.Include(_x => _x.Category)
                                 where _transaction.ReportId == report.Id
+                                orderby _transaction.AddedDate
                                 select new Sim_TransactionViewModel()
                                 {
                                     Id = _transaction.Id,
@@ -90,43 +118,51 @@ namespace Project24.Pages.Simulator.FinancialManagement
             return Content(MessageTag.Success + jsonData, MediaTypeNames.Text.Plain);
         }
 
+        // ajax handler;
+        public IActionResult OnPostImportAsync(IFormFile _file)
+        {
+            if (this.IsDbLockedForSync(m_DbMaintenanceSvc, m_Logger))
+                return Content(MessageTag.Success + "SyncInProgress", MediaTypeNames.Text.Plain);
+
+            if (this.IsDbLockedForImport(m_DbMaintenanceSvc, m_Logger))
+                return Content(MessageTag.Success + "ImportInProgress", MediaTypeNames.Text.Plain);
+
+            m_Logger.LogInformation("Accepted import data file: {_fileName} ({_strSize}).", _file.FileName, MiscUtils.FormatDataSize(_file.Length));
+
+            ImportExportDataModel data;
+            try
+            {
+                StreamReader reader = new(_file.OpenReadStream());
+                string jsonData = reader.ReadToEnd();
+                reader.Close();
+
+                data = JsonSerializer.Deserialize(jsonData, P24JsonSerializerContext.Default.ImportExportDataModel);
+            }
+            catch (Exception _ex)
+            {
+                m_Logger.LogError("Exception during parsing import data file: {_ex}", _ex);
+                return Content(MessageTag.Exception + _ex, MediaTypeNames.Text.Plain);
+            }
+
+            if (data.Categories == null && data.Reports == null && data.Transactions == null)
+            {
+                m_Logger.LogWarning("No data to import.");
+                return Content(MessageTag.Warning + "No data to import.", MediaTypeNames.Text.Plain);
+            }
+
+            Task.Run(() => { ImportData(data); });
+
+            return Content(MessageTag.Success + "Import", MediaTypeNames.Text.Plain);
+        }
+
         // End: AJAX Handler
         // ==================================================
         #endregion
 
-        private TimeSpan ResyncMonthlyReports()
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-
-            var reports = (from _report in m_DbContext.Sim_MonthlyReports
-                           orderby _report.Year, _report.Month
-                           select _report)
-                          .ToList();
-
-            var lastBalanceOut = 0;
-            foreach (var report in reports)
-            {
-                var sum = (from _transaction in m_DbContext.Sim_Transactions
-                           where _transaction.ReportId == report.Id
-                           select _transaction.Amount)
-                          .Sum();
-
-                report.BalanceIn = lastBalanceOut;
-                report.BalanceOut = report.BalanceIn + sum;
-                lastBalanceOut = report.BalanceOut;
-            }
-
-            m_DbContext.UpdateRange(reports);
-            m_TrackerSvc[InternalTrackedKeys.SIM_FIN_MAN_IS_DIRTY] = false.ToString();
-
-            m_TrackerSvc.SaveChangesAsync(m_DbContext).Wait();
-
-            sw.Stop();
-            return sw.Elapsed;
-        }
+        private void ImportData(ImportExportDataModel _data) => m_DbMaintenanceSvc.ImportSimulatorData_FinMan(_data);
 
 
-        private readonly InternalTrackerSvc m_TrackerSvc;
+        private readonly DBMaintenanceSvc m_DbMaintenanceSvc;
         private readonly ApplicationDbContext m_DbContext;
         private readonly ILogger<ListModel> m_Logger;
     }

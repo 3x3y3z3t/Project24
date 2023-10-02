@@ -1,7 +1,7 @@
 /*  Project24
  *  
  *  Program.cs
- *  Version: v1.4 (2023.09.21)
+ *  Version: v1.5 (2023.10.02)
  *  
  *  Author
  *      Arime-chan
@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -47,6 +50,8 @@ namespace Project24
         public static async Task Main(string[] _args)
         {
             Console.WriteLine("\r\n" + LINE + "\r\n==    Project24 Started                         ==\r\n" + LINE + "\r\n");
+
+            P24Stopwatch stopwatch = P24Stopwatch.StartNew();
 
             var builder = WebApplication.CreateBuilder(_args);
             var configuration = builder.Configuration;
@@ -88,6 +93,8 @@ namespace Project24
 
             Console.WriteLine();
 
+            stopwatch.Lap("[Cfg] App Config (global)");
+
             // ==================================================
             //
             // SERVICE CONFIGURATION
@@ -103,6 +110,9 @@ namespace Project24
 
             var serverVersion = ServerVersion.AutoDetect(connectionString);
 
+            // TODO: consider pooling DB context instead;
+            // https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cexpression-api-with-constant#dbcontext-pooling
+
             services.AddDbContext<ApplicationDbContext>(_options =>
             {
                 _options.UseMySql(connectionString, serverVersion)
@@ -110,11 +120,23 @@ namespace Project24
                 //.EnableDetailedErrors()
                 ;
             });
+
+            // TODO: handle case in which db connection cannot be established;
+
+            stopwatch.Lap("[Cfg] Db Connection config");
             #endregion
 
             #region Identity
             /* Identity */
+            builder.Services.AddDefaultIdentity<IdentityUser>(_options =>
+            {
+                _options.SignIn.RequireConfirmedAccount = true;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
             // TODO: Add Identity;
+
+            stopwatch.Lap("[Cfg] Identity config");
             #endregion
 
             #region Server Configuration
@@ -122,6 +144,7 @@ namespace Project24
             services.Configure<KestrelServerOptions>(_options =>
             {
                 _options.Limits.MaxRequestBodySize = Constants.MaxRequestSize;
+                _options.AllowSynchronousIO = true;
             });
 
             services.Configure<FormOptions>(_options =>
@@ -129,29 +152,31 @@ namespace Project24
                 //_options.ValueCountLimit = 1024;
                 _options.ValueLengthLimit = Constants.MaxRequestSize;
             });
+
+            stopwatch.Lap("[Cfg] Server config");
             #endregion
 
             #region Hosted Services & Background Tasks
             /* Hosted Services & Background Tasks */
-            services.AddSingleton<LocalizationSvc>();
-            services.AddSingleton<InternalTrackerSvc>();
+            services.AddSingleton<DBMaintenanceSvc>();
             services.AddSingleton<FileSystemSvc>();
+            services.AddSingleton<InternalTrackerSvc>();
+            services.AddSingleton<LocalizationSvc>();
             services.AddSingleton<ServerAnnouncementSvc>();
             services.AddSingleton<UpdaterSvc>();
+
+            stopwatch.Lap("[Cfg] Hosted Service registration");
             #endregion
+
+
+            #region Misc
+            services.AddLogging(LoggerConfig.ConfigureLogger);
 
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddRazorPages();
 
-            #region Misc
-            services.AddLogging(LoggerConfig.ConfigureLogger);
+            stopwatch.Lap("[Cfg] Misc config");
             #endregion
-
-            // Add services to the container.
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-
-
 
             var app = builder.Build();
 
@@ -161,6 +186,8 @@ namespace Project24
             //
             // ==================================================
 
+            IsDevelopment = app.Environment.IsDevelopment();
+
             app.Lifetime.ApplicationStarted.Register(() => app.Logger.LogInformation(LINE + "\r\n==    Application Started                       ==\r\n" + LINE));
             app.Lifetime.ApplicationStopping.Register(() => app.Logger.LogInformation(LINE + "\r\n==    Application Stopping                      ==\r\n" + LINE));
             app.Lifetime.ApplicationStopped.Register(() =>
@@ -169,65 +196,87 @@ namespace Project24
                 Console.WriteLine("\r\n" + LINE + "\r\n==    Project24 Stopped                         ==\r\n" + LINE + "\r\n");
             });
 
-            IsDevelopment = app.Environment.IsDevelopment();
-
-            string usn = LaunchUsername;
-
-            //ILogger<Program> logger = null;
+            stopwatch.Lap("[Init] Startup/Shutdown msg registration");
 
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 dbContext.Database.Migrate();
-
-                var localizationSvc = scope.ServiceProvider.GetRequiredService<LocalizationSvc>();
-                var svrAnnouncementSvc = scope.ServiceProvider.GetRequiredService<ServerAnnouncementSvc>();
-
+                stopwatch.Lap("[Init] Db migration");
 
                 var trackerSvc = scope.ServiceProvider.GetRequiredService<InternalTrackerSvc>();
                 trackerSvc.StartService();
+                stopwatch.Lap("[Init] Tracker svc init");
 
-                Stopwatch sw = Stopwatch.StartNew();
+                var localizationSvc = scope.ServiceProvider.GetRequiredService<LocalizationSvc>();
+                var svrAnnouncementSvc = scope.ServiceProvider.GetRequiredService<ServerAnnouncementSvc>();
+                var dbMaintenanceSvc = scope.ServiceProvider.GetRequiredService<DBMaintenanceSvc>();
 
                 await TaskExt.WhenAll(
                     localizationSvc.StartAsync(),
-                    svrAnnouncementSvc.StartAsync()
+                    svrAnnouncementSvc.StartAsync(),
+                    dbMaintenanceSvc.StartAsync()
                 );
-
-                var elapsed = sw.Elapsed;
-                sw.Stop();
-                Console.WriteLine("elapsed = " + elapsed);
-
-                string s = JsonSerializer.Serialize(DateTime.Now);
-                DateTime dt = JsonSerializer.Deserialize<DateTime>("\"2023-09-24T03:32:16.238Z\"").ToLocalTime();
-
-                //var ts = new TimeSpan(-1, 25, 59, 59,  9);
-                var ts = new TimeSpan(1, 0, 0, 0);
-
-                string tss = JsonSerializer.Serialize(ts);
-
-
-                int x = 0;
-
-
-
-
-
-
-
-
-
-
-
-
+                stopwatch.Lap("[Init] Localize + Announcement + Db Maintenance svc init");
 
                 var updaterSvc = scope.ServiceProvider.GetRequiredService<UpdaterSvc>();
                 await updaterSvc.StartAsync();
+                stopwatch.Lap("[Init] Updater svc init");
 
-                //logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
             }
 
+
+            string str = "12345";
+            int strLen = str.Length;
+            int remainder = 4 - (strLen % 4);
+
+            Console.WriteLine(">12341234123412341234<");
+            Console.WriteLine(">" + string.Format("{0,-" + (strLen + remainder) + "}", str) + "<");
+
+
+
+
+            string gatangoton = "asidufhnail kurhffghyvu834r57 yhgf8iuosegvyh dsnhbfkuy rsdg";
+
+            byte[] data = Encoding.UTF8.GetBytes(gatangoton);
+
+            SHA256 hasher = SHA256.Create();
+            byte[] newHashAsBytesArray = hasher.ComputeHash(data);
+            string newHash = "";
+
+            foreach (byte b in newHashAsBytesArray)
+            {
+                newHash += b.ToString("x2");
+            }
+
+            
+
+
+
+
+                string s = JsonSerializer.Serialize(DateTime.Now);
+            DateTime dt = JsonSerializer.Deserialize<DateTime>("\"2023-09-24T03:32:16.238Z\"").ToLocalTime();
+
+            //var ts = new TimeSpan(-1, 25, 59, 59,  9);
+            var ts = new TimeSpan(1, 0, 0, 0);
+
+            string tss = JsonSerializer.Serialize(ts);
+
+
+
+
+
+
+
+
+            HttpClient client = new();
+
+            var result = await client.GetAsync("http://192.168.10.111/Home/Changelog?handler=Changelog", HttpCompletionOption.ResponseContentRead);
+
+            string content = await result.Content.ReadAsStringAsync();
+
+            int k = 0;
 
             /*
              public readonly IPasswordHasher<ApplicationUser> _passwordHasher;
@@ -241,7 +290,7 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
             var successResult = _passwordHasher.VerifyHashedPassword(null, hasedPassword , "Password");
              */
 
-
+            stopwatch.Lap("[Test] Dev Test code run");
 
             // ==================================================
             //
@@ -271,12 +320,21 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
 
             app.MapRazorPages();
 
+            stopwatch.Lap("[Pipeline] Http Request Pipeline setup");
+
+            stopwatch.Stop();
+            TimeSpan totalTime = stopwatch.Elapsed;
+
+            string msg = string.Format("Total time: {0:0}s {1:000}ms\n", (int)totalTime.TotalSeconds, totalTime.Milliseconds) + stopwatch.GetLapsesAsLogString();
+            app.Logger.LogInformation("{_msg}", msg);
+
             // ==================================================
             //
             // APP RUN
             //
             // ==================================================
-            //logger.LogInformation("==================\r\n= App is running =\r\n==================");
+
+
             app.Run();
         }
 

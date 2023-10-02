@@ -1,5 +1,5 @@
 /*  Data/ApplicationDbContext.cs
- *  Version: v1.4 (2023.09.23)
+ *  Version: v1.5 (2023.10.01)
  *  
  *  Author
  *      Arime-chan
@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -50,6 +52,124 @@ namespace Project24.Data
         {
         }
 
+
+        #region Custom Add Method Overloads
+        public override EntityEntry Add(object _entity)
+        {
+            if (_entity is Syncable syncable)
+                _ = syncable.VersionUp();
+
+            return base.Add(_entity);
+        }
+
+        public override EntityEntry<TEntity> Add<TEntity>(TEntity _entity)
+        {
+            if (_entity is Syncable syncable)
+                _ = syncable.VersionUp();
+
+            return base.Add(_entity);
+        }
+
+        public override void AddRange(params object[] _entities)
+        {
+            foreach (var entity in _entities)
+            {
+                if (entity is Syncable syncable)
+                    _ = syncable.VersionUp();
+            }
+
+            base.AddRange(_entities);
+        }
+
+        public override void AddRange(IEnumerable<object> _entities)
+        {
+            foreach (var entity in _entities)
+            {
+                if (entity is Syncable syncable)
+                    _ = syncable.VersionUp();
+            }
+
+            base.AddRange(_entities);
+        }
+
+        public override ValueTask<EntityEntry> AddAsync(object _entity, CancellationToken _cancellationToken = default)
+        {
+            if (_entity is Syncable syncable)
+                _ = syncable.VersionUp();
+
+            return base.AddAsync(_entity, _cancellationToken);
+        }
+
+        public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity _entity, CancellationToken _cancellationToken = default)
+        {
+            if (_entity is Syncable syncable)
+                _ = syncable.VersionUp();
+
+            return base.AddAsync(_entity, _cancellationToken);
+        }
+
+        public override Task AddRangeAsync(params object[] _entities)
+        {
+            foreach (var entity in _entities)
+            {
+                if (entity is Syncable syncable)
+                    _ = syncable.VersionUp();
+            }
+
+            return base.AddRangeAsync(_entities);
+        }
+
+        public override Task AddRangeAsync(IEnumerable<object> _entities, CancellationToken _cancellationToken = default)
+        {
+            foreach (var entity in _entities)
+            {
+                if (entity is Syncable syncable)
+                    _ = syncable.VersionUp();
+            }
+
+            return base.AddRangeAsync(_entities, _cancellationToken);
+        }
+        #endregion
+
+        #region Custom Update Method Overloads
+        public override EntityEntry Update(object _entity)
+        {
+            if (_entity is Syncable syncable)
+                _ = syncable.VersionUp();
+
+            return base.Update(_entity);
+        }
+
+        public override EntityEntry<TEntity> Update<TEntity>(TEntity _entity)
+        {
+            if (_entity is Syncable syncable)
+                _ = syncable.VersionUp();
+
+            return base.Update(_entity);
+        }
+
+        public override void UpdateRange(params object[] _entities)
+        {
+            foreach (var entity in _entities)
+            {
+                if (entity is Syncable syncable)
+                    _ = syncable.VersionUp();
+            }
+
+            base.UpdateRange(_entities);
+        }
+
+        public override void UpdateRange(IEnumerable<object> _entities)
+        {
+            foreach (var entity in _entities)
+            {
+                if (entity is Syncable syncable)
+                    _ = syncable.VersionUp();
+            }
+
+            base.UpdateRange(_entities);
+        }
+        #endregion
     }
 
 }

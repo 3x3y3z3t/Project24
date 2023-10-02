@@ -10,7 +10,7 @@ Program will crash and data will be lose when using interchangeably.
 When this branch is stable enough, it will replace replace the stable branch.
 
 ## Version
-- Project24: v.core6-0.6.0
+- Project24: v.core6-0.8.0
 - AppHelper: v.core6-1.1.0
 
 
@@ -88,7 +88,7 @@ Then, restart the systemd service using the command above.
 
 ## Known Issues
 #### Issues (intentional, won't fix)
-These issues are in internal logic, so on normal working condition there is no way fo them to go wrong.
+These issues are in internal logic, so on normal working condition there is no way for them to go wrong.
 - `Updater` accepts all files uploaded without verify their purpose.
 - `ServerAnnouncementSvc` will crash if json string or ini string loading from database is malformatted.
 

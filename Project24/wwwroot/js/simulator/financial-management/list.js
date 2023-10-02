@@ -1,30 +1,9 @@
 /*  simulator/financial-management/list.js
-    Version: v1.0 (2023.09.24)
+    Version: v1.2 (2023.10.02)
 
     Author
         Arime-chan
  */
-
-//class Record {
-//    AddedDate = null;
-//    Category = null;
-//    Amount = 0;
-//    Details = null;
-
-
-//    constructor(_addedDate, _category, _amount, _details = null) {
-//        this.AddedDate = _addedDate;
-//        this.Category = _category;
-//        this.Amount = _amount;
-//        this.Details = _details;
-//    }
-
-
-//    getAddedDateAsString() {
-//        return DotNetString.formatCustomDateTime("yyyy/MM/dd HH:mm", this.AddedDate);
-//    }
-//}
-
 
 window.FinManListPage = {
     Data: null,
@@ -53,10 +32,10 @@ window.FinManListPage = {
     confirmRemoveRecord: function (_id) {
         let record = null;
 
-        for (const item of this.Data.Transactions) {
+        for (const item of this.Data.PageData.Transactions) {
             if (item.Id == _id) {
                 record = item;
-                return;
+                break;
             }
         }
 
@@ -65,19 +44,31 @@ window.FinManListPage = {
             return;
         }
 
+        let addedDate = DotNetString.formatCustomDateTime("yyyy/MM/dd HH:mm", record.AddedDate);
+
         let html = "<div>Are you sure you want to remove record #" + _id + "?</div>"
             + "<div class=\"mt-2 ms-4\">"
-            + "<div>Added Date: <code>" + record.getAddedDateAsString() + "</code></div>"
+            + "<div>Added Date: <code>" + addedDate + "</code></div>"
             + "<div>Category: <code>" + record.Category + "</code></div>"
             + "<div>Amount: <code>" + record.Amount + "</code></div>"
             + "<div>Details: <code>" + record.Details + "</code></div>"
             + "</div>";
 
-        Modal.Common.openTwoBtnModal("Remove Record", html, MODAL_ICON_QUESTION, "Yes", "FinManCreatePage.removeRecord(" + _id + ")");
+        Modal.Common.openTwoBtnModal("Remove Record", html, MODAL_ICON_QUESTION, "Yes", "FinManListPage.removeRecord(" + _id + ")");
     },
 
     removeRecord: function (_id) {
         this.ajax_removeRecord(_id);
+    },
+
+    // ==================================================
+
+    openSyncInProgressModal: function () {
+        Modal.Common.openOneBtnModal("Sync In Progress", "Sync in progress. Please wait until data is done being sync.", MODAL_ICON_INFO);
+    },
+
+    openImportInProgressModal: function () {
+        Modal.Common.openOneBtnModal("Import In Progress", "Import in progress. Please wait until data is done being imported.", MODAL_ICON_INFO);
     },
 
     // ==================================================
@@ -107,10 +98,34 @@ window.FinManListPage = {
             type: "POST",
             url: "Remove",
             headers: { RequestVerificationToken: token },
-            data: JSON.stringify({ _id: _id }),
+            data: JSON.stringify(_id),
             cache: false,
-            contenttype: "application/json; charset=utf-8",
+            contentType: "application/json",
+            processData: false,
             success: function (_content, _textStatus, _xhr) { FinManListPage.ajax_removeRecord_success(_content, _textStatus, _xhr); },
+            error: function (_xhr, _textStatus, _errorThrow) { FinManListPage.ajax_error(_xhr, _textStatus, _errorThrow); }
+        });
+    },
+
+    ajax_import: function (_file) {
+        if (this.m_AwaitingData)
+            return;
+
+        this.m_AwaitingData = true;
+        let token = $("input[name='__RequestVerificationToken']").val();
+
+        let formData = new FormData();
+        formData.append("_file", _file);
+
+        $.ajax({
+            type: "POST",
+            url: "List?handler=Import",
+            headers: { RequestVerificationToken: token },
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (_content, _textStatus, _xhr) { FinManListPage.ajax_import_success(_content, _textStatus, _xhr); },
             error: function (_xhr, _textStatus, _errorThrow) { FinManListPage.ajax_error(_xhr, _textStatus, _errorThrow); }
         });
     },
@@ -125,79 +140,113 @@ window.FinManListPage = {
     ajax_fetchPageData_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
+        this.UI.clearPage();
+        this.UI.refreshPageButtons(false);
+
         let body = _content.substring(6);
 
+        //console.log(body);
+
         if (!P24Utils.Ajax.successContentCheckCommon(_content, body)) {
-            this.UI.clearPage();
+            this.UI.refreshMonthNavBar();
+            this.UI.refreshPageButtons(true);
+            return;
+        }
+
+        if (body == "ImportInProgress") {
+            this.Data.PageData = body;
+            this.openImportInProgressModal();
+            return;
+        }
+
+        if (body == "SyncInProgress") {
+            this.Data.PageData = body;
+            this.openSyncInProgressModal();
             return;
         }
 
         let processedData = this.Data.processPageData(body);
         if (processedData == null) {
-            this.UI.clearPage();
             return;
         }
 
         this.UI.refreshPage(processedData);
+        this.UI.refreshPageButtons(true);
     },
 
-    //ajax_submit_success: function (_content, _textStatus, _xhr) {
-    //    this.m_AwaitingData = false;
+    ajax_removeRecord_success: function (_content, _textStatus, _xhr) {
+        this.m_AwaitingData = false;
 
-    //    this.UI.m_BtnSubmit.removeAttr("disabled");
-    //    let body = _content.substring(6);
+        let body = _content.substring(6);
 
-    //    if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
-    //        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + _body + "</pre>");
-    //        return;
-    //    }
+        if (!P24Utils.Ajax.successContentCheckCommon(_content, body)) {
+            return;
+        }
 
-    //    if (_content.startsWith(P24_MSG_TAG_ERROR)) {
-    //        Modal.Common.openOneBtnModal("Error", _body, MODAL_ICON_ERROR);
-    //        return;
-    //    }
+        let arr = body.split(",");
 
-    //    if (!_content.startsWith(P24_MSG_TAG_SUCCESS)) {
-    //        console.error("ajax_submit_success(): Unknown error: \n" + _content);
-    //        return;
-    //    }
+        Modal.Common.openOneBtnModal("Success", arr[1], MODAL_ICON_SUCCESS);
 
-    //    this.Data.AddedData = [];
+        let id = +arr[0];
+        let transaction = null;
+        let newArray = [];
+        
+        for (const item of this.Data.PageData.Transactions) {
+            if (item.Id != id) {
+                newArray.push(item);
+            }
+            else {
+                transaction = item;
+            }
+        }
 
-    //    let processData = this.Data.processPageData(body);
-    //    if (processData != null)
-    //        this.UI.refreshPage(processData);
+        if (transaction == null) {
+            console.log("Transaction '" + id + "' not found (this should not happen).");
+            return;
+        }
 
-    //    Modal.Common.openOneBtnModal("Success", "", MODAL_ICON_SUCCESS);
+        this.Data.PageData.BalanceOut -= transaction.Amount;
+        this.Data.PageData.Transactions = newArray;
 
-    //},
+        this.UI.refreshPage(this.Data.PageData);
+    },
 
-    //ajax_submit_error: function (_xhr, _textStatus, _errorThrow) {
-    //    this.m_AwaitingData = false;
-    //    this.UI.m_BtnSubmit.removeAttr("disabled");
+    ajax_import_success: function (_content, _textStatus, _xhr) {
+        this.m_AwaitingData = false;
 
-    //    P24Utils.Ajax.error(_xhr, _textStatus, _errorThrown);
-    //},
+        let body = _content.substring(6);
+
+        if (!P24Utils.Ajax.successContentCheckCommon(_content, body)) {
+            return;
+        }
+
+        this.UI.refreshPageButtons(false);
+
+        if (body == "Import") {
+            Modal.Common.openOneBtnModal("Success", "Import success. Please wait while data is being imported.", MODAL_ICON_SUCCESS);
+            return;
+        }
+
+        if (body == "ImportInProgress") {
+            Modal.Common.openOneBtnModal("Import In Progress", "Another import is in progress. Please wait until data is done being imported. This import will be discarded.", MODAL_ICON_SUCCESS);
+            return;
+        }
+
+        if (body == "SyncInProgress") {
+            this.openSyncInProgressModal();
+            return;
+        }
+
+        console.warn("Server returned success but message is invalid >> " + body);
+    },
 };
 
 FinManListPage.Data = {
     PageData: null,
-    //AddedData: null,
 
 
     init: function () {
-        //this.AddedData = [];
     },
-
-    // ==================================================
-
-    //addRecord: function (_date, _category, _amount, _details) {
-    //    this.AddedData.push(new Record(_date, _category, _amount, _details));
-    //},
-
-    //removeRecord: function (_index) {
-    //    this.AddedData[_index] = null;
-    //},
 
     // ==================================================
 
@@ -209,8 +258,9 @@ FinManListPage.Data = {
         }
 
         //console.log(_json);
-        console.log(parsedData);
+        //console.log(parsedData);
 
+        this.PageData = parsedData;
         return parsedData;
     },
 
@@ -221,6 +271,7 @@ FinManListPage.UI = {
     m_DivTransactionList: null,
 
     m_InputSelectYear: null,
+    m_InputFile: null,
 
     m_RowStyles: [],
 
@@ -230,13 +281,14 @@ FinManListPage.UI = {
         this.m_DivTransactionList = $("#div-transaction-list");
 
         this.m_InputSelectYear = $("#select-year");
+        this.m_InputFile = $("#input-file");
 
         this.m_RowStyles = ["20em", "25em", "15em", "100%", "16px"];
         for (let i = 0; i < this.m_RowStyles.length; ++i) {
             $("#tr" + i).css("width", this.m_RowStyles[i]);
         }
 
-       // init Year select box;
+        // init Year select box;
         let html = "";
         let thisYear = (new Date()).getFullYear();
         for (let i = 2023; i <= thisYear; ++i) {
@@ -247,77 +299,55 @@ FinManListPage.UI = {
         }
         this.m_InputSelectYear.html(html);
 
-        // init Month nav bar;
         this.refreshMonthNavBar();
+        this.refreshPageButtons();
     },
-
-    // ==================================================
-
-    //addRecord: function (_date, _category, _amount, _details) {
-    //},
-
-    //removeRecord: function (_index) {
-    //    $("#r" + _index).remove();
-    //},
 
     // ==================================================
 
     selectYear_onchange: function () {
-
+        this.refreshMonthNavBar();
     },
 
     btnMonth_onclick: function (_month) {
-        let year = 2023;
-
-        // TODO: get yyear;
+        let year = +this.m_InputSelectYear.val();
 
         FinManListPage.loadMonth(year, _month + 1);
     },
 
-    //btnAdd_onclick: function () {
-    //    let date = new Date(this.m_InputAddDate.val());
-    //    let category = this.m_InputCategory.val();
-    //    let amount = this.m_InputAmount.val();
-    //    let details = this.m_InputDetails.val();
+    inputFile_onchange: function () {
+        let file = this.m_InputFile[0].files[0];
+        if (file == null)
+            return;
 
-    //    let formElement = $(".needs-validation");
-    //    formElement.addClass("was-validated");
-    //    if (!formElement[0].checkValidity()) {
-    //        return;
-    //    }
+        let strSize = P24Utils.formatDataLength(file.size);
 
-    //    let divElement = $("#div-invalid-date");
-    //    if (isNaN(date)) {
-    //        divElement.removeAttr("hidden");
-    //        return;
-    //    }
+        let promptMsg = "Are you sure you want to upload this file?\n"
+            + "    File name: " + file.name + "\n"
+            + "    Size: " + strSize + "\n"
+            + "WARNING: This is the last confirmation. Database will be overwritten with data in this file!";
 
-    //    FinManListPage.addRecord(date, category, amount, details);
+        let confirm = window.confirm(promptMsg);
 
-    //    this.clearInputs();
+        if (!confirm) {
+            this.m_InputFile.val(null);
+            return;
+        }
 
-    //    this.m_BtnSubmit.removeAttr("disabled");
-    //},
-
-    //btnClear_onclick: function () {
-    //    this.clearInputs();
-    //},
-
-    //btnSubmit_onclick: function () {
-    //    FinManListPage.submitRecords();
-
-    //    this.m_BtnSubmit.attr("disabled", true);
-    //},
+        FinManListPage.ajax_import(file);
+        this.m_InputFile.val(null);
+    },
 
     // ==================================================
 
     clearPage: function () {
         this.m_DivReportInfo.html("");
         this.m_DivTransactionList.html("");
+
+        this.refreshMonthNavBar(true);
     },
 
     refreshPage: function (_data) {
-
         let balanceIn = P24Utils.formatNumberWithSeparator(_data.BalanceIn);
         let balanceOut = P24Utils.formatNumberWithSeparator(_data.BalanceOut);
         let offset = _data.BalanceOut - _data.BalanceIn;
@@ -347,9 +377,11 @@ FinManListPage.UI = {
         }
 
         this.m_DivTransactionList.html(html);
+
+        this.refreshMonthNavBar();
     },
 
-    refreshMonthNavBar: function () {
+    refreshMonthNavBar: function (_clear = false) {
         let date = new Date();
         let thisYear = date.getFullYear();
         let thisMonth = date.getMonth();
@@ -359,12 +391,36 @@ FinManListPage.UI = {
         for (let i = 0; i < 12; ++i) {
             let element = $("#btn-month-" + i);
 
-            if ((selectedYear == 2023 && i < 3) || (selectedYear == thisYear && i > thisMonth)) {
+            if (_clear || (selectedYear == 2023 && i < 3) || (selectedYear == thisYear && i > thisMonth)) {
                 element.removeAttr("data-bs-toggle");
                 element.removeAttr("data-bs-target");
                 element.removeAttr("onclick");
                 element.addClass("disabled");
             }
+            else {
+                element.attr("data-bs-toggle", "tab");
+                element.attr("data-bs-target", "#div-tab-content");
+                element.attr("onclick", "FinManListPage.UI.btnMonth_onclick(" + i + ")");
+                element.removeClass("disabled");
+            }
+        }
+    },
+
+    refreshPageButtons: function (_enabled) {
+        let btnAdd = $("#link-add");
+        let btnExport = $("#link-export");
+        let btnImport = $("#link-import");
+
+        if (_enabled) {
+            this.m_InputFile.removeAttr("disabled");
+            btnAdd.removeClass("disabled");
+            btnExport.removeClass("disabled");
+            btnImport.removeClass("disabled");
+        } else {
+            this.m_InputFile.attr("disabled", true);
+            btnAdd.addClass("disabled");
+            btnExport.addClass("disabled");
+            btnImport.addClass("disabled");
         }
     },
 
@@ -395,15 +451,13 @@ FinManListPage.UI = {
             }
         }
 
-    //    index = FinManListPage.Data.AddedData.length - 1;
-
         let html = "<div id=\"r" + _record.Id + "\" class=\"d-flex flex-nowrap border-bottom py-1\">"
             + "<div class=\"px-2\" style=\"width:" + this.m_RowStyles[0] + "\">" + dateString + "</div>"
             + "<div class=\"px-2\" style=\"width:" + this.m_RowStyles[1] + "\">" + _record.Category + "</div>"
             + "<div class=\"px-2 text-end text-" + classAmount + "\" style=\"width:" + this.m_RowStyles[2] + "\">" + amountString + "</div>"
             + "<div class=\"px-2\" style=\"width:" + this.m_RowStyles[3] + "\">" + details + "</div>"
             + "<div style=\"width:" + this.m_RowStyles[4] + "\">"
-            + "<a href=\"#\" class=\"text-danger\" onclick=\"FinManCreatePage.confirmRemoveRecord('" + _record.Id + "')\">" + P24Utils.svg("x-lg") + "</a>"
+            + "<a href=\"#\" class=\"text-danger\" onclick=\"FinManListPage.confirmRemoveRecord('" + _record.Id + "')\">" + P24Utils.svg("x-lg") + "</a>"
             + "</div></div>";
 
         return html;
