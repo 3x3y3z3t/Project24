@@ -1,4 +1,16 @@
 
+### v-core6-0.9.0 (2023.10.15)
+- Added user authentication (powered by Identity Framework).
+- Added some role names for specific pages.
+- Added landing page (`Index` pages).
+- Added `PageCollection` that stores all pages' path.
+- Added `UserAction` to record user's action.
+- Updated some pages to enforce authorization.
+- Updated Localization functionality: Project24 now display localized contents based on User preference > Local settings > App default.
+- Updated `LocalizationSvc` to take advantage of AppHelper's Locale File reader.
+- Added Locale File Validator in AppHelper.
+- Added Locale File reader utility in AppHelper.
+
 ### v-core6-0.8.0 (2023.10.02)
 - Added Simulator > FinancialManagement Remove page.
 - Added Simulator > FinancialManagement Import functionality.

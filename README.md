@@ -10,8 +10,8 @@ Program will crash and data will be lose when using interchangeably.
 When this branch is stable enough, it will replace replace the stable branch.
 
 ## Version
-- Project24: v.core6-0.8.0
-- AppHelper: v.core6-1.1.0
+- Project24: v.core6-0.9.0
+- AppHelper: v.core6-1.2.0
 
 
 ## Installation (Linux - ARM x64)

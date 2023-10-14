@@ -1,5 +1,5 @@
 /*  simulator/financial-management/create.js
-    Version: v1.1 (2023.10.02)
+    Version: v1.2 (2023.10.13)
 
     Author
         Arime-chan
@@ -45,8 +45,8 @@ window.FinManCreatePage = {
     // ==================================================
 
     addRecord: function (_addedDate, _category, _amount, _details) {
-        this.Data.addRecord(_addedDate, _category, _amount, _details);
-        this.UI.addRecord(_addedDate, _category, _amount, _details);
+        this.Data.addRecord(_addedDate, _category, +_amount, _details);
+        this.UI.addRecord(_addedDate, _category, +_amount, _details);
     },
 
     confirmRemoveRecord: function (_index) {
@@ -201,6 +201,11 @@ FinManCreatePage.Data = {
     },
 
     containsCategory: function (_category) {
+        for (const category of this.PageData) {
+            if (_category == category)
+                return true;
+        }
+
         for (const record of this.AddedData) {
             if (_category == record.Category)
                 return true;
@@ -216,6 +221,7 @@ FinManCreatePage.Data = {
 
         //console.log(_json);
         //console.log(parsedData);
+        this.PageData = parsedData;
 
         return parsedData;
     },

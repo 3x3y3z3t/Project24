@@ -1,0 +1,39 @@
+@*  Areas/Identity/Pages/Account/Logout.cshtml
+ *  Version: v1.0 (2023.10.08)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+@model LogoutModel
+
+@{
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_IDENTITY_ACC_LOGOUT];
+}
+
+<div>
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        @*<form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">*@
+        <form method="post" class="form-inline" asp-route-returnUrl="@Url.Page("/", new { area = "" })">
+            <p>@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_IDENTITY_ACCOUNT_LOGOUT_INCOMPLETE])</p>
+            <button type="submit" class="btn btn-primary">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.BTN_LOGOUT])</button>
+        </form>
+    }
+    else
+    {
+        <p>@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_IDENTITY_ACCOUNT_LOGOUT_COMPLETE])</p>
+        <a asp-page="/Index">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_BACK_TO_HOME])</a>
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                window.setTimeout(redirect, 10 * 1000);
+            });
+
+            function redirect() {
+                location.href = "/";
+            }
+        </script>
+    }
+</div>

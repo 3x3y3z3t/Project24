@@ -5,7 +5,6 @@
  *      Arime-chan
  */
 
-using Project24.Pages.Simulator.FinancialManagement;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;

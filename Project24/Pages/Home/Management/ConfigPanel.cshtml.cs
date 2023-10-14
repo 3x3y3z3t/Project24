@@ -5,22 +5,24 @@
  *      Arime-chan
  */
 
-
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Linq;
-using Project24.App.Services;
-using Project24.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using Project24.SerializerContext;
-using Project24.App;
 using System.Net.Mime;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using Project24.App;
+using Project24.App.Services;
+using Project24.App.Utils;
+using Project24.Data;
+using Project24.SerializerContext;
 
 namespace Project24.Pages.Home.Management
 {
+    [Authorize(Roles = PageCollection.Home.Management.ConfigPanel)]
     public class ConfigPanelModel : PageModel
     {
         #region View Model

@@ -1,9 +1,9 @@
 /*  AppHelper
  *  
  *  Program.cs
- *  Version: v1.0 (2023.08.27)
+ *  Version: v1.1 (2023.10.13)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 
 namespace AppHelper
 {
-    public class Program
+    public partial class Program
     {
         public static void Main(string[] _args)
         {
@@ -25,25 +25,44 @@ namespace AppHelper
 
             if (_args.Length <= 0)
             {
-                _ = PrintHelpPage(null);
+                _ = Callback_PrintHelpPage(null);
             }
             else
             {
                 m_Monitor.ParseCLA(_args);
                 
 
-                m_Monitor.RegisterArguments("--help -?", PrintHelpPage);
-                m_Monitor.RegisterArguments("--printCurrentUser", PrintCurrentUserName);
-                m_Monitor.RegisterArguments("--outputVerInfo", WriteVersionInfo);
-                m_Monitor.RegisterArguments("--setup", SetUpAppEnvironment);
+                m_Monitor.RegisterArguments("--help -?", Callback_PrintHelpPage);
+                m_Monitor.RegisterArguments("--printCurrentUser", Callback_PrintCurrentUserName);
+                m_Monitor.RegisterArguments("--outputVerInfo", Callback_WriteVersionInfo);
+                m_Monitor.RegisterArguments("--setup", Callback_SetUpAppEnvironment);
+                m_Monitor.RegisterArguments("--validateLocaleFiles", Callback_ValidateLocaleFiles);
                 //m_Monitor.RegisterArguments("--testSysCaller", TestSystemCaller);
 
 
                 if (!m_Monitor.TryInvokeAll())
-                    _ = PrintHelpPage(null);
+                    _ = Callback_PrintHelpPage(null);
             }
 
             Console.WriteLine("========== AppHelper exiting.. ==========");
+        }
+        private static KeyValuePair<string, string>? ParseSingleLine(string _locale, string _line, int _index)
+        {
+            int pos = _line.IndexOf('=');
+            if (pos < 0)
+            {
+                return null;
+            }
+
+            string key = _line[..pos].Trim();
+            string value = _line[(pos + 1)..].Trim();
+
+            if (key == "" || value == "")
+            {
+                return null;
+            }
+
+            return new(key, value);
         }
 
         // ==================================================;
@@ -51,7 +70,7 @@ namespace AppHelper
         // ==================================================;
         #region Callbacks
 
-        private static ErrorCode PrintHelpPage(List<string> _param)
+        private static ErrorCode Callback_PrintHelpPage(List<string> _param)
         {
             Console.WriteLine("// TODO: print help page;\r\n");
 
@@ -60,25 +79,26 @@ namespace AppHelper
                 "  --help                   Prints this help page.\r\n" +
                 "  --outputVerInfo          Writes Project24 app's version info to a file.\r\n" +
                 "  --printCurrentUser       Prints the username of current user (that run this app).\r\n" +
-                "  --setup [quiet]          Run initial setup for Project24. AppHelper will write service files for Project24 on Linux and overwrite existing files. Use \"quiet\" parameter to run quietly (no prompt for overwritten).\r\n" +
+                "  --setup [quiet]          Runs initial setup for Project24. AppHelper will write service files for Project24 on Linux and overwrite existing files. Use \"quiet\" parameter to run quietly (no prompt for overwritten).\r\n" +
+                "  --validateLocaleFiles    Validates locale files against Project24's data, and writes any missing entries." +
                 "" +
                 "";
 
             Console.WriteLine(page);
 
-            return ErrorCode.OK;
+            return ErrorCode.NoError;
         }
 
-        private static ErrorCode PrintCurrentUserName(List<string> _param)
+        private static ErrorCode Callback_PrintCurrentUserName(List<string> _param)
         {
             string username = Environment.UserName;
 
             Console.WriteLine("Current User Name: " + username);
 
-            return ErrorCode.OK;
+            return ErrorCode.NoError;
         }
 
-        private static ErrorCode SetUpAppEnvironment(List<string> _param)
+        private static ErrorCode Callback_SetUpAppEnvironment(List<string> _param)
         {
             if (_param.Count <= 0 || _param[0] != "quiet")
             {
@@ -108,7 +128,7 @@ namespace AppHelper
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Console.WriteLine("  Window is not supported yet.");
-                if (LinuxHelperFileWriter.WriteAppsettingsFile() != ErrorCode.OK)
+                if (LinuxHelperFileWriter.WriteAppsettingsFile() != ErrorCode.NoError)
                 {
                     return ErrorCode.InternalError;
                 }
@@ -134,17 +154,17 @@ namespace AppHelper
                 Console.WriteLine("  Writing Service files..");
                 {
                     string workingDir = Directory.GetCurrentDirectory();
-                    if (LinuxHelperFileWriter.WriteServiceFile(svcName, mainDir, workingDir, execName, username, description + " (main app)") != ErrorCode.OK)
+                    if (LinuxHelperFileWriter.WriteServiceFile(svcName, mainDir, workingDir, execName, username, description + " (main app)") != ErrorCode.NoError)
                         return ErrorCode.InternalError;
                 }
                 {
                     string workingDir = Path.GetFullPath(Directory.GetCurrentDirectory() + "/../" + prevDir);
-                    if (LinuxHelperFileWriter.WriteServiceFile(svcName, prevDir, workingDir, execName, username, description + " (prev app)") != ErrorCode.OK)
+                    if (LinuxHelperFileWriter.WriteServiceFile(svcName, prevDir, workingDir, execName, username, description + " (prev app)") != ErrorCode.NoError)
                         return ErrorCode.InternalError;
                 }
 
                 Console.WriteLine("  Writing Nginx VHost Config files..");
-                if (LinuxHelperFileWriter.WriteNginxVHostConfigFile(appName) != ErrorCode.OK)
+                if (LinuxHelperFileWriter.WriteNginxVHostConfigFile(appName) != ErrorCode.NoError)
                     return ErrorCode.InternalError;
 
                 Console.WriteLine("  Creating directories..");
@@ -159,7 +179,7 @@ namespace AppHelper
                     return ErrorCode.Exception;
                 }
 
-                if (LinuxHelperFileWriter.WriteAppsettingsFile() != ErrorCode.OK)
+                if (LinuxHelperFileWriter.WriteAppsettingsFile() != ErrorCode.NoError)
                 {
                     return ErrorCode.InternalError;
                 }
@@ -176,19 +196,19 @@ namespace AppHelper
                 SystemCaller.ExecUnixCommand("sudo systemctl enable --now " + svcName + "-main");
 
                 Console.WriteLine("  Done");
-                return ErrorCode.OK;
+                return ErrorCode.NoError;
             }
 
             Console.WriteLine("  Platform is not supported.");
             return ErrorCode.NotImplemented;
         }
 
-        /// <summary> Write the version information for the app to .dat file. This function takes a list of 2 params.</summary>
+        /// <summary> Writes the version information for the app to .dat file. This function takes a list of 2 params.</summary>
         /// <param name="_params">
-        ///     1. The full PATH to the assembly.
-        ///     2. The assembly NAME.
+        ///     <c>1</c> The full PATH to the assembly.<br />
+        ///     <c>2</c> The assembly NAME.<br />
         /// </param>
-        private static ErrorCode WriteVersionInfo(List<string> _params)
+        private static ErrorCode Callback_WriteVersionInfo(List<string> _params)
         {
             Console.WriteLine("Build check: x.x." + s_Build + "." + s_Revision);
 
@@ -218,7 +238,7 @@ namespace AppHelper
 
             Console.WriteLine("Version info file written.");
 
-            return ErrorCode.OK;
+            return ErrorCode.NoError;
         }
 
 #if false

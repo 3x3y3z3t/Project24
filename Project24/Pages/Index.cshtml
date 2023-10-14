@@ -1,5 +1,5 @@
 @*  Index.cshtml
- *  Version: v1.1 (2023.03.11)
+ *  Version: v1.2 (2023.10.13)
  *
  *  Contributor
  *      Arime-chan
@@ -8,17 +8,109 @@
 @page
 @model IndexModel
 @{
-    Layout = "_LayoutCommon";
-    ViewData["Title"] = "Trang chủ";
+    Layout = P24PageLayout.CommonLayout;
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_INDEX];
+
+    string btnWidth = "20em";
+    string classModule = "d-flex flex-wrap my-2 mx-2";
+    string classModuleDescription = "ms-2";
 }
 
-<hr />
+<div class="fs-2 my-2">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_INDEX_WELCOME])</div>
+<p>
+    <div class="fs-4">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_INDEX_WHATS_NEW])</div>
 
-<div class="text-center">
-    <div class="d-flex align-items-center justify-content-center">
-        <a asp-page="Home/Index" class="btn btn-secondary m-2" style="width: 50ch">
-            <div style="font-size: larger">Dashboard</div>
-            <div style="font-size: small">(Home/Index)</div>
-        </a>
+    @MiscUtils.HtmlDisplay("<div>" + m_LocalizationSvc[LOCL.DESC_INDEX_WHATS_NEW_LONG].Replace("\\n", "</div><div>") + "</div>")
+</p>
+
+
+<hr />
+    <div class="fs-4 my-2">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_CURRENT_PROGRESS])</div>
+
+<div class="@classModule">
+    <a asp-page="ClinicManager/Index" class="btn btn-primary disabled" style="width:@btnWidth">
+        <div style="font-size: larger">Clinic Manager</div>
+        <div style="font-size: small">(ClinicManager/Index)</div>
+    </a>
+    <div class="@classModuleDescription">
+        <div class="fs-4"><code>0%</code></div>
     </div>
 </div>
+
+<div class="@classModule">
+    <a asp-page="Nas/Index" class="btn btn-primary disabled" style="width:@btnWidth">
+        <div style="font-size: larger">NAS</div>
+        <div style="font-size: small">(Nas/Index)</div>
+    </a>
+    <div class="@classModuleDescription">
+        <div class="fs-4"><code>0%</code></div>
+    </div>
+</div>
+
+<div class="@classModule">
+    <a asp-page="Home/Index" class="btn btn-primary" style="width:@btnWidth">
+        <div style="font-size: larger">Dashboard</div>
+        <div style="font-size: small">(Home/Index)</div>
+    </a>
+    <div class="@classModuleDescription">
+        <div class="fs-4"><code>10%</code></div>
+    </div>
+</div>
+
+
+<hr />
+@{
+    int entryCount = typeof(LOCL).GetFields().Length;
+
+    int vieEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.VI_VN).Length;
+    int engEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.EN_US).Length;
+    int japEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.JA_JP).Length;
+    int localizedEntriesCount = vieEntryCount + engEntryCount + japEntryCount;
+    int totalEntriesCount = entryCount * 3;
+
+    string viePercent = (vieEntryCount * 100.0 / entryCount).ToString("0.00") + "%";
+    string engPercent = (engEntryCount * 100.0 / entryCount).ToString("0.00") + "%";
+    string japPercent = (japEntryCount * 100.0 / entryCount).ToString("0.00") + "%";
+
+    string totalPercent = ((vieEntryCount + engEntryCount + japEntryCount) * 100.0 / (entryCount * 3)).ToString("0.00") + "%";
+}
+<div class="fs-4 my-2">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_TRANSLATION_PROGRESS]): @totalPercent (@localizedEntriesCount/@totalEntriesCount)</div>
+
+<div class="d-flex flex-wrap">
+    <div class="col-12 col-md-2"><span style="width:15em">Tiếng Việt: </span><code>@viePercent (@vieEntryCount/@entryCount)</code></div>
+    <div class="col-12 col-md-10">
+        <div class="progress">
+            <div class="progress-bar" style="width:@viePercent"></div>
+        </div>
+    </div>
+</div>
+<div class="d-flex flex-wrap">
+    <div class="col-12 col-md-2"><span style="width:15em">English: </span><code>@engPercent (@engEntryCount/@entryCount)</code></div>
+    <div class="col-12 col-md-10">
+        <div class="progress">
+            <div class="progress-bar" style="width:@engPercent"></div>
+        </div>
+    </div>
+</div>
+<div class="d-flex flex-wrap">
+    <div class="col-12 col-md-2"><span style="width:15em">日本語: </span><code>@japPercent (@japEntryCount/@entryCount)</code></div>
+    <div class="col-12 col-md-10">
+        <div class="progress">
+            <div class="progress-bar" style="width:@japPercent"></div>
+        </div>
+    </div>
+</div>
+
+
+
+@if (false)
+{
+    <div class="text-center">
+        <div class="d-flex align-items-center justify-content-center">
+            <a asp-page="Home/Index" class="btn btn-secondary m-2" style="width: 50ch">
+                <div style="font-size: larger">Dashboard</div>
+                <div style="font-size: small">(Home/Index)</div>
+            </a>
+        </div>
+    </div>
+}

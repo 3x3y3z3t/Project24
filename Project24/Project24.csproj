@@ -23,6 +23,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Pages\Shared\_Layout.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Pages\Shared\_Layout.cshtml.css" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\LICENSE.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
@@ -36,10 +44,14 @@
   <ItemGroup>
     <PackageReference Include="Markdig.Signed" Version="0.31.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.15" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.15" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.21" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.21">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" ExcludeAssets="All" />
     <PackageReference Include="NReco.Logging.File" Version="1.1.6" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
   </ItemGroup>
@@ -69,10 +81,6 @@
     <ProjectReference Include="..\AppHelper\AppHelper.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Model\Home\Management\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TransformOnBuild>true</TransformOnBuild>
 
@@ -82,13 +90,14 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --outputVerInfo $(TargetDir) $(TargetFileName)" />
+    <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --validateLocaleFiles $(TargetPath) Project24.App.LOCL $(ProjectDir)wwwroot/res/locale vi-VN en-US ja-JP" />
   </Target>
 
   <Target Name="AfterPublishEx" AfterTargets="AfterPublish">
-    <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.dll $(PublishDir)AppHelper.dll" />
-    <Exec Command="copy $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.deps.json $(PublishDir)AppHelper.deps.json" />
+    <Exec Command="copy $(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/linux-arm64/publish/AppHelper.dll $(PublishDir)AppHelper.dll" />
+    <Exec Command="copy $(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/linux-arm64/publish/AppHelper.deps.json $(PublishDir)AppHelper.deps.json" />
     
-    <Exec Command="copy /v $(PublishDir)..\\version.dat $(PublishDir)version.dat" />
+    <Exec Command="copy /v $(PublishDir)../version.dat $(PublishDir)version.dat" />
     <Exec Command="del /f $(PublishDir)appsettings.Development.json" />
   </Target>
 

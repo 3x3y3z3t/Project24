@@ -1,14 +1,11 @@
 /*  Data/ApplicationDbContext.cs
- *  Version: v1.5 (2023.10.01)
+ *  Version: v1.6 (2023.10.06)
  *  
  *  Author
  *      Arime-chan
  */
 
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -16,12 +13,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Project24.Model;
 using Project24.Model.Home;
+using Project24.Model.Identity;
 using Project24.Model.Simulator.FinancialManagement;
 
 namespace Project24.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
+        public DbSet<P24IdentityUser> P24Users { get; set; }
+        public DbSet<P24IdentityRole> P24Roles { get; set; }
+
+
+
+
+
         public DbSet<Announcement> Announcements { get; set; }
 
 
@@ -34,6 +39,7 @@ namespace Project24.Data
 
 
 
+        public DbSet<UserAction> UserActions { get; set; }
         public DbSet<UserUploadData> UserUploadDatas { get; set; }
 
         #region Simulation
@@ -49,14 +55,13 @@ namespace Project24.Data
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
-        {
-        }
+        { }
 
 
         #region Custom Add Method Overloads
         public override EntityEntry Add(object _entity)
         {
-            if (_entity is Syncable syncable)
+            if (_entity is ISyncable syncable)
                 _ = syncable.VersionUp();
 
             return base.Add(_entity);
@@ -64,7 +69,7 @@ namespace Project24.Data
 
         public override EntityEntry<TEntity> Add<TEntity>(TEntity _entity)
         {
-            if (_entity is Syncable syncable)
+            if (_entity is ISyncable syncable)
                 _ = syncable.VersionUp();
 
             return base.Add(_entity);
@@ -74,7 +79,7 @@ namespace Project24.Data
         {
             foreach (var entity in _entities)
             {
-                if (entity is Syncable syncable)
+                if (entity is ISyncable syncable)
                     _ = syncable.VersionUp();
             }
 
@@ -85,7 +90,7 @@ namespace Project24.Data
         {
             foreach (var entity in _entities)
             {
-                if (entity is Syncable syncable)
+                if (entity is ISyncable syncable)
                     _ = syncable.VersionUp();
             }
 
@@ -94,7 +99,7 @@ namespace Project24.Data
 
         public override ValueTask<EntityEntry> AddAsync(object _entity, CancellationToken _cancellationToken = default)
         {
-            if (_entity is Syncable syncable)
+            if (_entity is ISyncable syncable)
                 _ = syncable.VersionUp();
 
             return base.AddAsync(_entity, _cancellationToken);
@@ -102,7 +107,7 @@ namespace Project24.Data
 
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity _entity, CancellationToken _cancellationToken = default)
         {
-            if (_entity is Syncable syncable)
+            if (_entity is ISyncable syncable)
                 _ = syncable.VersionUp();
 
             return base.AddAsync(_entity, _cancellationToken);
@@ -112,7 +117,7 @@ namespace Project24.Data
         {
             foreach (var entity in _entities)
             {
-                if (entity is Syncable syncable)
+                if (entity is ISyncable syncable)
                     _ = syncable.VersionUp();
             }
 
@@ -123,7 +128,7 @@ namespace Project24.Data
         {
             foreach (var entity in _entities)
             {
-                if (entity is Syncable syncable)
+                if (entity is ISyncable syncable)
                     _ = syncable.VersionUp();
             }
 
@@ -134,7 +139,7 @@ namespace Project24.Data
         #region Custom Update Method Overloads
         public override EntityEntry Update(object _entity)
         {
-            if (_entity is Syncable syncable)
+            if (_entity is ISyncable syncable)
                 _ = syncable.VersionUp();
 
             return base.Update(_entity);
@@ -142,7 +147,7 @@ namespace Project24.Data
 
         public override EntityEntry<TEntity> Update<TEntity>(TEntity _entity)
         {
-            if (_entity is Syncable syncable)
+            if (_entity is ISyncable syncable)
                 _ = syncable.VersionUp();
 
             return base.Update(_entity);
@@ -152,7 +157,7 @@ namespace Project24.Data
         {
             foreach (var entity in _entities)
             {
-                if (entity is Syncable syncable)
+                if (entity is ISyncable syncable)
                     _ = syncable.VersionUp();
             }
 
@@ -163,7 +168,7 @@ namespace Project24.Data
         {
             foreach (var entity in _entities)
             {
-                if (entity is Syncable syncable)
+                if (entity is ISyncable syncable)
                     _ = syncable.VersionUp();
             }
 

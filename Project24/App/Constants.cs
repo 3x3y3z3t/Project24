@@ -1,5 +1,5 @@
 /*  App/Constants.cs
- *  Version: v1.3 (2023.09.27)
+ *  Version: v1.4 (2023.10.07)
  *  
  *  Author
  *      Arime-chan
@@ -46,6 +46,7 @@ namespace Project24.App
         public const long MaxLogFileSize = 50 * 1024 * 1024;
 
         public static DateTime Epoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        public static DateTime AppReleaseDate = new DateTime(2022, 8, 31, 2, 18, 37, 135);
     }
 
     public static class ErrCode
@@ -59,9 +60,23 @@ namespace Project24.App
 
     }
 
+    public static class Message
+    {
+        public const string InvalidModelState = "Invalid ModelState";
+    }
+
     public static class DbInternalStateKey
     {
         public const string UPDATER_STATUS = nameof(UPDATER_STATUS);
         public const string UPDATER_DUE_TIME = nameof(UPDATER_DUE_TIME);
+    }
+
+    public enum ExitCodes
+    {
+        Ok = 0,
+
+        InvalidAppSide,
+
+        PowerUserNoPassword,
     }
 }

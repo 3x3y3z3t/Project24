@@ -1,0 +1,55 @@
+@*  Areas/Identity/Pages/Account/Login.cshtml
+ *  Version: v1.0 (2023.10.07)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+@using Microsoft.AspNetCore.Html;
+
+@model LoginModel
+@{
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_IDENTITY_ACC_LOGIN];
+}
+
+<div class="row">
+
+    <div class="col-md-4">
+        <partial name="_StatusMessage.cshtml" model="@Model.StatusMessage" />
+
+        <section>
+            <form id="form-account" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-floating my-1">
+                    <input asp-for="Input.Username" class="form-control" placeholder="" autocomplete="username" />
+                    <label asp-for="Input.Username" class="form-label">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_USERNAME])</label>
+                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                </div>
+                <div class="form-floating my-1">
+                    <input asp-for="Input.Password" class="form-control" placeholder=""/>
+                    <label asp-for="Input.Password" class="form-label">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_PASSWORD])</label>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="ms-2 my-2">
+                    <div class="checkbox">
+                        <label asp-for="Input.RememberMe" class="form-label">
+                            <input class="form-check-input" asp-for="Input.RememberMe" />
+                            @MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_LOGIN_REMEMBER])
+                        </label>
+                    </div>
+                </div>
+
+                <div class="my-2 text-center">
+                    <button id="login-submit" type="submit" class="w-50 btn btn-primary">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.BTN_LOGIN])</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

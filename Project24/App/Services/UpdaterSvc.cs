@@ -259,7 +259,9 @@ namespace Project24.App.Services
             m_Logger.LogInformation("Purge Prev done.");
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private async Task PurgeNextAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             InvokeSvc();
 

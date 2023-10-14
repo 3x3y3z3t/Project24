@@ -1,26 +1,50 @@
-﻿@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
+@*  Pages/Shared/_HeaderCommon.cshtml
+ *  Version: v1.1 (2023.10.13)
+ *
+ *  Contributor
+ *      Arime-chan
+ *@
+
+@using Microsoft.AspNetCore.Identity
+@using Project24.Model.Identity;
+
+@inject SignInManager<P24IdentityUser> m_SignInManager
 
 <ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post" >
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
-}
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
+    @if (m_SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index">
+                @MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_HELLO])
+                <span class="fw-bold">@User.Identity?.Name</span>
+                !
+            </a>
+        </li>
+        <li class="nav-item">
+            <form method="post" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        string title = (string)ViewData[ViewDataKeys.Title];
+
+        string titleRegister = m_LocalizationSvc[LOCL.PAGE_IDENTITY_ACC_REGISTER];
+        string titleLogin = m_LocalizationSvc[LOCL.PAGE_IDENTITY_ACC_LOGIN];
+
+        if (title != titleRegister)
+        {
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">@MiscUtils.HtmlDisplay(titleRegister)</a>
+            </li>
+        }
+
+        if (title != titleLogin)
+        {
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">@MiscUtils.HtmlDisplay(titleLogin)</a>
+            </li>
+        }
+    }
 </ul>

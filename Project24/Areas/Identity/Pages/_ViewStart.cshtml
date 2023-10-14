@@ -1,3 +1,15 @@
-﻿@{
-    Layout = "/Pages/Shared/_Layout.cshtml";
+@*  Areas/Identity/Pages/_ViewStart.cshtml
+ *  Version: v1.0 (2023.10.07)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@using Project24.App;
+@using Project24.App.Services;
+
+@{
+    Layout = P24PageLayout.CommonLayout;
+    ViewData[ViewDataKeys.Flags] = ViewDataFlags.None;
+    ViewData[ViewDataKeys.Locale] = m_LocalizationSvc.CurrentLocale;
 }

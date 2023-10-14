@@ -1,5 +1,5 @@
 /*  Home/Management/Updater.cshtml.cs
- *  Version: v1.4 (2023.09.30)
+ *  Version: v1.5 (2023.10.15)
  *  
  *  Author
  *      Arime-chan
@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -21,11 +22,13 @@ using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.BackendData;
 using Project24.App.Services;
+using Project24.App.Utils;
 using Project24.Data;
 using Project24.Model;
 
 namespace Project24.Pages.Home.Maintenance
 {
+    [Authorize(Roles = PageCollection.Home.Management.Updater)]
     public class UpdaterModel : PageModel
     {
         #region View Model

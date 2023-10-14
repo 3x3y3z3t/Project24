@@ -1,7 +1,7 @@
 /*  Project24
  *  
  *  Program.cs
- *  Version: v1.5 (2023.10.02)
+ *  Version: v1.6 (2023.10.06)
  *  
  *  Author
  *      Arime-chan
@@ -9,7 +9,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -18,19 +19,24 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Project24.App;
+using Project24.App.Identity;
 using Project24.App.Services;
 using Project24.App.Utils;
 using Project24.Data;
+using Project24.Model.Identity;
 
 namespace Project24
 {
@@ -82,7 +88,7 @@ namespace Project24
                 else
                 {
                     Console.WriteLine("App will now exit due to invalid AppSide.");
-                    Environment.Exit(0);
+                    Environment.Exit((int)ExitCodes.InvalidAppSide);
                 }
             }
 
@@ -128,13 +134,22 @@ namespace Project24
 
             #region Identity
             /* Identity */
-            builder.Services.AddDefaultIdentity<IdentityUser>(_options =>
+            builder.Services.AddIdentity<P24IdentityUser, P24IdentityRole>((_options) =>
             {
                 _options.SignIn.RequireConfirmedAccount = true;
-            })
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+                _options.SignIn.RequireConfirmedEmail = true;
+                _options.SignIn.RequireConfirmedPhoneNumber = true;
 
-            // TODO: Add Identity;
+                _options.Password.RequiredLength = 8;
+                _options.Password.RequireNonAlphanumeric = false;
+                _options.Password.RequireUppercase = false;
+                _options.Password.RequireLowercase = false;
+
+                _options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+            })
+                .AddDefaultUI()
+                .AddDefaultTokenProviders()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             stopwatch.Lap("[Cfg] Identity config");
             #endregion
@@ -158,6 +173,8 @@ namespace Project24
 
             #region Hosted Services & Background Tasks
             /* Hosted Services & Background Tasks */
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddSingleton<DBMaintenanceSvc>();
             services.AddSingleton<FileSystemSvc>();
             services.AddSingleton<InternalTrackerSvc>();
@@ -175,6 +192,12 @@ namespace Project24
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddRazorPages();
 
+            // for web api;
+            services.AddControllers().ConfigureApiBehaviorOptions((_options) =>
+            {
+
+            });
+            
             stopwatch.Lap("[Cfg] Misc config");
             #endregion
 
@@ -187,6 +210,7 @@ namespace Project24
             // ==================================================
 
             IsDevelopment = app.Environment.IsDevelopment();
+            s_HostAppLifetime = app.Lifetime;
 
             app.Lifetime.ApplicationStarted.Register(() => app.Logger.LogInformation(LINE + "\r\n==    Application Started                       ==\r\n" + LINE));
             app.Lifetime.ApplicationStopping.Register(() => app.Logger.LogInformation(LINE + "\r\n==    Application Stopping                      ==\r\n" + LINE));
@@ -202,7 +226,11 @@ namespace Project24
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 dbContext.Database.Migrate();
-                stopwatch.Lap("[Init] Db migration");
+                stopwatch.Lap("[Init] DB migration");
+
+                DbSeedDataValidator validator = new(dbContext, configuration, scope.ServiceProvider, app.Logger);
+                _ = await validator.ValidateAsync();
+                stopwatch.Lap("[Init] Validate DB seed data");
 
                 var trackerSvc = scope.ServiceProvider.GetRequiredService<InternalTrackerSvc>();
                 trackerSvc.StartService();
@@ -224,7 +252,14 @@ namespace Project24
                 stopwatch.Lap("[Init] Updater svc init");
 
 
+
+
+
+
             }
+
+
+
 
 
             string str = "12345";
@@ -278,6 +313,20 @@ namespace Project24
 
             int k = 0;
 
+
+
+
+
+
+            // TODO: create power user;
+
+
+
+
+
+
+
+
             /*
              public readonly IPasswordHasher<ApplicationUser> _passwordHasher;
 public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
@@ -292,11 +341,15 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
 
             stopwatch.Lap("[Test] Dev Test code run");
 
+            #region Http Request Pipeline
             // ==================================================
             //
             // HTTP REQUEST PIPELINE
             //
             // ==================================================
+
+            //var localizationsOption = app.Services.GetService<IOptions<RequestLocalizationOptions>>().Value;
+            //app.UseRequestLocalization(localizationsOption);
 
             if (app.Environment.IsDevelopment())
             {
@@ -310,6 +363,8 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
                 app.UseHsts();
             }
 
+            app.UseP24Localization();
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
@@ -321,6 +376,7 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
             app.MapRazorPages();
 
             stopwatch.Lap("[Pipeline] Http Request Pipeline setup");
+            #endregion
 
             stopwatch.Stop();
             TimeSpan totalTime = stopwatch.Elapsed;
@@ -338,8 +394,198 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
             app.Run();
         }
 
+        /// <summary>
+        ///     Shuts down the app gracefully.<br />
+        ///     Use <see cref="ShutdownGracefully(int)"/> overload when you want to pass your own Exit Code.
+        /// </summary>
+        /// <param name="_exitCode"></param>
+        public static void ShutdownGracefully(ExitCodes _exitCode) => ShutdownGracefully((int)_exitCode);
+
+        /// <summary>
+        ///     Shuts down the app gracefully.<br />
+        ///     Use this overload when you want to pass your own Exit Code.
+        ///     Try not to make your exit codes overlap with <see cref="ExitCodes"/>.
+        /// </summary>
+        /// <param name="_exitCode"></param>
+        public static void ShutdownGracefully(int _exitCode)
+        {
+            if (s_HostAppLifetime == null)
+                Environment.Exit(_exitCode);
+
+            Environment.ExitCode = _exitCode;
+            s_HostAppLifetime.StopApplication();
+        }
+
 
         private const string LINE = "==================================================";
+
+
+        private static IHostApplicationLifetime s_HostAppLifetime;
+    }
+
+    internal class DbSeedDataValidator
+    {
+        public DbSeedDataValidator(ApplicationDbContext _dbContext, IConfiguration _configuration, IServiceProvider _serviceProvider, ILogger _logger)
+        {
+            m_DbContext = _dbContext;
+
+            m_Configuration = _configuration;
+            m_ServiceProvider = _serviceProvider;
+            m_logger = _logger;
+        }
+
+
+        internal async Task<bool> ValidateAsync()
+        {
+            bool flag = true;
+
+            flag &= ValidateRoles();
+            flag &= ValidatePowerUser();
+
+            return flag;
+        }
+
+        private bool ValidateRoles()
+        {
+            RoleManager<P24IdentityRole> roleManager = m_ServiceProvider.GetService<RoleManager<P24IdentityRole>>();
+
+            var roles = (from _role in roleManager.Roles
+                         select _role.Name)
+                        .ToList();
+
+            foreach (string roleName in P24RoleName.AllRoleNames)
+            {
+                if (roles.Contains(roleName))
+                    continue;
+
+                P24IdentityRole role = new(roleName);
+                if (!roleManager.CreateAsync(role).Result.Succeeded)
+                    m_logger.LogWarning("Could not create role '{_roleName}'.", roleName);
+            }
+
+            return true;
+        }
+
+        private bool ValidatePowerUser()
+        {
+            UserManager<P24IdentityUser> userManager = m_ServiceProvider.GetRequiredService<UserManager<P24IdentityUser>>();
+
+            string powerUsername = m_Configuration["Credentials:PowerUser:Username"];
+            string powerPassword = m_Configuration["Credentials:PowerUser:Password"];
+
+            P24IdentityUser powerUser = userManager.FindByNameAsync(powerUsername).Result;
+
+            // add user if null;
+            if (powerUser == null)
+            {
+                powerUser = new P24IdentityUser(Constants.AppReleaseDate)
+                {
+                    UserName = powerUsername,
+                    EmailConfirmed = true,
+                    PhoneNumberConfirmed = true,
+                };
+
+                if (!userManager.CreateAsync(powerUser, powerPassword).Result.Succeeded)
+                {
+                    m_logger.LogWarning("Power user was not found but could not be created (possible DB issue?).");
+                    return false;
+                }
+
+                m_logger.LogInformation("Power user was not found and has been created.");
+                return ValidatePowerUserRoles(powerUser, P24RoleName.AllRoleNames, true);
+            }
+
+            // correct user password if incorrect;
+            if (!userManager.CheckPasswordAsync(powerUser, powerPassword).Result)
+            {
+                if (!userManager.RemovePasswordAsync(powerUser).Result.Succeeded)
+                {
+                    m_logger.LogWarning("Power user's password was invalid but could not be removed (this should not happen).");
+                    return false;
+                }
+
+                if (!userManager.AddPasswordAsync(powerUser, powerPassword).Result.Succeeded)
+                {
+                    m_logger.LogCritical("Power user's password was invalid, got cleared but new password could not be created.\n" +
+                        "App will exit due to security issue.");
+
+                    Program.ShutdownGracefully(ExitCodes.PowerUserNoPassword);
+                }
+
+                m_logger.LogInformation("Power user's password was invalid and has been validated.");
+            }
+
+            // correct account status if incorrect;
+            if (!powerUser.EmailConfirmed || !powerUser.PhoneNumberConfirmed)
+            {
+                powerUser.EmailConfirmed = true;
+                powerUser.PhoneNumberConfirmed = true;
+
+                if (!userManager.UpdateAsync(powerUser).Result.Succeeded)
+                {
+                    m_logger.LogWarning("Power user's confirmed status was incorrect but could not be correcred.\nPower user will not be able to log in.");
+                }
+                else
+                {
+                    m_logger.LogInformation("Power user's confirmed status was incorrect and has been corrected.");
+                }
+            }
+
+            return ValidatePowerUserRoles(powerUser, P24RoleName.AllRoleNames);
+        }
+
+        private bool ValidatePowerUserRoles(P24IdentityUser _user, List<string> _roles, bool _bypassCheck = false)
+        {
+            UserManager<P24IdentityUser> userManager = m_ServiceProvider.GetRequiredService<UserManager<P24IdentityUser>>();
+
+            List<string> addList;
+
+            if (_bypassCheck)
+                addList = _roles;
+            else
+            {
+                var userRoles = userManager.GetRolesAsync(_user).Result;
+
+                if (userRoles.Count == 0)
+                    addList = _roles;
+                else
+                {
+                    addList = new();
+                    foreach (string role in _roles)
+                    {
+                        if (userRoles.Contains(role))
+                            continue;
+
+                        addList.Add(role);
+                    }
+                }
+            }
+
+            if (addList.Count == 0)
+                return true;
+
+            if (!userManager.AddToRolesAsync(_user, addList).Result.Succeeded)
+            {
+                m_logger.LogWarning("Could not add missing roles for power user.");
+                return false;
+            }
+
+            m_logger.LogInformation("Power user's missing roles has been added.");
+            return true;
+        }
+
+
+
+
+
+
+
+
+        private readonly ApplicationDbContext m_DbContext;
+
+        private readonly IConfiguration m_Configuration;
+        private readonly IServiceProvider m_ServiceProvider;
+        private readonly ILogger m_logger;
     }
 
 }

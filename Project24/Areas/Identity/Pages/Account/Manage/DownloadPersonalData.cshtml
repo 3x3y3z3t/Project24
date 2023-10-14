@@ -1,0 +1,18 @@
+@*  Areas/Identity/Pages/Account/Manage/DownloadPersonalData.cshtml
+ *  Version: v1.0 (2023.10.13)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+
+@model DownloadPersonalDataModel
+@{
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_IDENTITY_ACC_MANAGE_DOWNLOAD_PERSONAL_DATA];
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

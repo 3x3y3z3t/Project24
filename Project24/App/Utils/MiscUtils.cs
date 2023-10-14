@@ -1,5 +1,5 @@
 /*  App/Utils/MiscUtils.cs
- *  Version: v1.4 (2023.09.30)
+ *  Version: v1.5 (2023.10.10)
  *  
  *  Author
  *      Arime-chan
@@ -10,6 +10,7 @@ using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
+using Microsoft.AspNetCore.Html;
 using Project24.App.BackendData;
 
 namespace Project24.App
@@ -119,6 +120,8 @@ namespace Project24.App
         #region App Location
         public static string WhereAmI() => Directory.GetCurrentDirectory();
         #endregion
+
+        public static HtmlString HtmlDisplay(string _content) => new HtmlString(_content);
 
 
         // https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js

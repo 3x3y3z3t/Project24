@@ -1,7 +1,7 @@
-/*  AppsettingsHelperClasses.cs
+/*  Helpers/AppsettingsHelperClasses.cs
  *  Version: v1.1 (2023.09.21)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 

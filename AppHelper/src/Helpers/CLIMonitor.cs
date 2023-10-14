@@ -1,7 +1,7 @@
-/*  CLIMonitor.cs
- *  Version: v1.1 (2023.08.25)
+/*  Helpers/CLIMonitor.cs
+ *  Version: v1.2 (2023.10.13)
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -20,17 +20,19 @@ namespace AppHelper
         FunctionNotFound = -2,
         InternalError = -1,
 
-        OK = 0,
+        NoError = 0,
         Exception,
         ObjectIsNull,
 
         UserCancelled,
 
         InsufficientParams,
+        InvalidParams,
 
         AssemblyIsNull,
         AssemblyVersionIsNull,
 
+        ReflectionFieldsNotFound,
     }
 
     internal class CLIMonitor

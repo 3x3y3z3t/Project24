@@ -1,0 +1,28 @@
+@*  Areas/Identity/Pages/Account_StatusMessage.cshtml
+ *  Version: v1.0 (2023.10.07)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@model string
+
+@if (!String.IsNullOrEmpty(Model))
+{
+    var statusMsgClass = "primary";
+
+    if (Model.StartsWith(MessageTag.Info))
+        statusMsgClass = "info";
+    else if (Model.StartsWith(MessageTag.Success))
+        statusMsgClass = "success";
+    else if (Model.StartsWith(MessageTag.Warning))
+        statusMsgClass = "warning";
+    else if (Model.StartsWith(MessageTag.Error))
+        statusMsgClass = "danger";
+
+    <div class="alert alert-@statusMsgClass alert-dismissible" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        @MiscUtils.HtmlDisplay(Model[MessageTag.TagLength..])
+    </div>
+    <hr />
+}

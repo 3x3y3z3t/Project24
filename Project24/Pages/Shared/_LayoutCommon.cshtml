@@ -1,5 +1,5 @@
 @*  _LayoutCommon.cshtml
- *  Version: v1.5 (2023.09.23)
+ *  Version: v1.6 (2023.10.07)
  *
  *  Author
  *      Arime-chan
@@ -10,17 +10,24 @@
 
 @inject LocalizationSvc m_LocalizationSvc
 
+@{
+    string title = (string)ViewData[ViewDataKeys.Title];
+    HtmlString titleHtml = new HtmlString(title);
+
+    string localizationFile = "p24-localization-" + ViewData[ViewDataKeys.Locale].ToString() + ".js";
+}
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Project24</title>
+    <title>@title - Project24</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Project24.styles.css" asp-append-version="true" />
+    @*<link rel="stylesheet" href="~/Project24.styles.css" asp-append-version="true" />*@
 
     @await RenderSectionAsync("Stylesheet", required: false)
 </head>
@@ -38,7 +45,7 @@
 
             @if (!MiscUtils.IsFlagSet((int)ViewData[ViewDataKeys.Flags], (int)ViewDataFlags.NoTitle))
             {
-                <h1>@ViewData[ViewDataKeys.Title]</h1>
+                <h1>@titleHtml</h1>
                 <hr />
             }
 
@@ -55,18 +62,7 @@
     <script src="~/js/dotnet.js" asp-append-version="true"></script>
     <script src="~/js/locale/p24-localization-keys.js" asp-append-version="true"></script>
 
-    @if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.EN_US)
-    {
-        <script src="~/js/locale/p24-localization-en-us.js" asp-append-version="true"></script>
-    }
-    else if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.JA_JP)
-    {
-        <script src="~/js/locale/p24-localization-ja-jp.js" asp-append-version="true"></script>
-    }
-    else if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.VI_VN)
-    {
-        <script src="~/js/locale/p24-localization-vi-vn.js" asp-append-version="true"></script>
-    }
+    <script src="~/js/locale/@localizationFile" asp-append-version="true"></script>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
 

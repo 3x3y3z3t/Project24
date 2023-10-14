@@ -1,9 +1,9 @@
-/*  HelperFileWriter.cs
- *  Version: v1.0 (2023.08.27)
+/*  Helpers/HelperFileWriter.cs
+ *  Version: v1.1 (2023.10.06)
  *  
  *  This file contains all static files' content to be written during first set up.
  *  
- *  Contributor
+ *  Author
  *      Arime-chan
  */
 
@@ -98,7 +98,7 @@ namespace AppHelper
 
             // write nginx config file;
             ErrorCode errCode = WriteFile(orgFileName, content);
-            if (errCode != ErrorCode.OK)
+            if (errCode != ErrorCode.NoError)
                 return errCode;
 
             // create symlink to enable vhost config;
@@ -117,7 +117,7 @@ namespace AppHelper
                 return ErrorCode.Exception;
             }
 
-            return ErrorCode.OK;
+            return ErrorCode.NoError;
         }
 
         public static ErrorCode WriteAppsettingsFile()
@@ -157,7 +157,7 @@ namespace AppHelper
                 if (!f1Dirty && !f2Dirty)
                 {
                     Console.WriteLine("  Appsettings files are up-to-date.");
-                    return ErrorCode.OK;
+                    return ErrorCode.NoError;
                 }
             }
 
@@ -171,7 +171,7 @@ namespace AppHelper
                 string content = JsonSerializer.Serialize(appsettings1, typeof(Appsettings_), jsonSerializerOptions);
 
                 ErrorCode errCode = WriteFile(appsettingsFilePathMain, content);
-                if (errCode != ErrorCode.OK)
+                if (errCode != ErrorCode.NoError)
                     return errCode;
             }
 
@@ -182,21 +182,11 @@ namespace AppHelper
                 string content = JsonSerializer.Serialize(appsettings2, typeof(Appsettings_), jsonSerializerOptions);
 
                 ErrorCode errCode = WriteFile(appsettingsFilePathPrev, content);
-                if (errCode != ErrorCode.OK)
+                if (errCode != ErrorCode.NoError)
                     return errCode;
             }
 
-            return ErrorCode.OK;
-        }
-
-        public static ErrorCode WriteUpdaterScriptFile()
-        {
-            return ErrorCode.OK;
-
-            string content = "";
-
-
-            return WriteFile("updater.sh", content);
+            return ErrorCode.NoError;
         }
 
         private static Appsettings_ LoadExistingAppsettingsFile(string _path, bool _isFileExist = true)
@@ -233,7 +223,7 @@ namespace AppHelper
                 return ErrorCode.Exception;
             }
 
-            return ErrorCode.OK;
+            return ErrorCode.NoError;
         }
     }
 

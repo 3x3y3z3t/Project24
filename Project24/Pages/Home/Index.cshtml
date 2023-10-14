@@ -1,0 +1,19 @@
+@*  Home/Index.cshtml
+ *  Version: v1.1 (2023.10.15)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.Home.IndexModel
+@{
+    Layout = P24PageLayout.CommonLayout;
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_HOME_INDEX];
+}
+
+<a asp-page="Changelog" class="btn btn-primary my-2">Changelog</a>
+<a asp-page="Management/ConfigPanel" class="btn btn-primary my-2">ConfigPanel</a>
+<a asp-page="Management/Updater" class="btn btn-primary my-2">Updater</a>
+

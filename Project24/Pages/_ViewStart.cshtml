@@ -1,11 +1,11 @@
-@*  _ViewStart.cshtml
- *  Version: v1.0 (2023.04.11)
+@*  Pages/_ViewStart.cshtml
+ *  Version: v1.1 (2023.10.07)
  *
  *  Contributor
  *      Arime-chan
  *@
 
-@using Project24.App;
 @{
     ViewData[ViewDataKeys.Flags] = ViewDataFlags.None;
+    ViewData[ViewDataKeys.Locale] = m_LocalizationSvc.CurrentLocale;
 }

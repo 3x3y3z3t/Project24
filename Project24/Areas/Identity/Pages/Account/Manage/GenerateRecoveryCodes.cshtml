@@ -1,0 +1,35 @@
+@*  Areas/Identity/Pages/Account/Manage/GenerateRecoveryCodes.cshtml
+ *  Version: v1.0 (2023.10.13)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+
+@model GenerateRecoveryCodesModel
+@{
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_IDENTITY_ACC_MANAGE_GENERATE_RECOVERY_CODE];
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="alert alert-warning" role="alert">
+    <p>
+        <span class="glyphicon glyphicon-warning-sign"></span>
+        <strong>Put these codes in a safe place.</strong>
+    </p>
+    <p>
+        If you lose your device and don't have the recovery codes you will lose access to your account.
+    </p>
+    <p>
+        Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key
+        used in an authenticator app you should <a asp-page="./ResetAuthenticator">reset your authenticator keys.</a>
+    </p>
+</div>
+<div>
+    <form method="post">
+        <button class="btn btn-danger" type="submit">Generate Recovery Codes</button>
+    </form>
+</div>
