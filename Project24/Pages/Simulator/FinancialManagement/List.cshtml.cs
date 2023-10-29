@@ -1,5 +1,5 @@
 /*  Home/Simulator/FinancialManagement/List.cshtml.cs
- *  Version: v1.2 (2023.10.29)
+ *  Version: v1.3 (2023.10.30)
  *
  *  Author
  *      Arime-chan
@@ -47,14 +47,26 @@ namespace Project24.Pages.Simulator.FinancialManagement
                 return Forbid();
 
             if (this.IsDbLockedForSync(m_DbMaintenanceSvc, m_Logger))
+            {
+                m_Logger.LogInformation("Sync in progress.");
                 return Page();
+            }
 
             if (this.IsDbLockedForImport(m_DbMaintenanceSvc, m_Logger))
+            {
+                m_Logger.LogInformation("Import in progress.");
                 return Page();
+            }
 
             var categories = await (from _category in m_DbContext.Sim_TransactionCategories select _category).ToListAsync();
             var transactions = await (from _transaction in m_DbContext.Sim_Transactions select _transaction).ToListAsync();
             var reports = await (from _report in m_DbContext.Sim_MonthlyReports select _report).ToListAsync();
+
+            if (categories.Count <= 0 && transactions.Count <= 0 && reports.Count <= 0)
+            {
+                m_Logger.LogInformation("There is no data to export.");
+                return Page();
+            }
 
             ImportExportDataModel data = new()
             {

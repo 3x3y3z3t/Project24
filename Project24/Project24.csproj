@@ -89,8 +89,8 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --outputVerInfo $(TargetDir) $(TargetFileName)" />
-    <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --validateLocaleFiles $(TargetPath) Project24.App.LOCL $(ProjectDir)wwwroot P24Localization vi-VN en-US ja-JP" />
+    <Exec Command="$(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\AppHelper.exe --outputVerInfo $(TargetDir) $(TargetFileName)" />
+    <Exec Command="$(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\AppHelper.exe --validateLocaleFiles $(TargetPath) Project24.App.LOCL $(ProjectDir)wwwroot P24Localization vi-VN en-US ja-JP" />
   </Target>
 
   <Target Name="AfterPublishEx" AfterTargets="AfterPublish">

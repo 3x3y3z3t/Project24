@@ -1,5 +1,5 @@
 /*  simulator/financial-management/list.js
-    Version: v1.3 (2023.10.29)
+    Version: v1.4 (2023.10.30)
 
     Author
         Arime-chan
@@ -413,14 +413,14 @@ FinManListPage.UI = {
 
         if (_enabled) {
             this.m_InputFile.removeAttr("disabled");
-            btnAdd.removeClass("disabled");
+            //btnAdd.removeClass("disabled");
             btnExport.removeClass("disabled");
-            btnImport.removeClass("disabled");
+            //btnImport.removeClass("disabled");
         } else {
             this.m_InputFile.attr("disabled", true);
-            btnAdd.addClass("disabled");
+            //btnAdd.addClass("disabled");
             btnExport.addClass("disabled");
-            btnImport.addClass("disabled");
+            //btnImport.addClass("disabled");
         }
     },
 

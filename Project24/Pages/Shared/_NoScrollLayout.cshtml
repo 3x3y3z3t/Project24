@@ -1,14 +1,16 @@
 @*  _NoScrollLayout.cshtml
- *  Version: v1.3 (2023.09.23)
+ *  Version: v1.4 (2023.10.29)
  *
  *  Author
  *      Arime-chan
  *@
 
-@using Project24.App;
-@using Project24.App.Services;
+@{
+    string title = (string)ViewData[ViewDataKeys.Title];
+    HtmlString titleHtml = new HtmlString(title);
 
-@inject LocalizationSvc m_LocalizationSvc
+    string localizationFile = "p24-localization-" + ((string)ViewData[ViewDataKeys.Locale]).ToLower() + ".js";
+}
 
 <!DOCTYPE html>
 <html lang="en" class="h-100" style="min-height: 100%">
@@ -16,7 +18,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Project24</title>
+    <title>@title - Project24</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -49,25 +51,13 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="~/js/dotnet.js" asp-append-version="true"></script>
     <script src="~/js/locale/p24-localization-keys.js" asp-append-version="true"></script>
-
-    @if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.EN_US)
-    {
-        <script src="~/js/locale/p24-localization-en-us.js" asp-append-version="true"></script>
-    }
-    else if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.JA_JP)
-    {
-        <script src="~/js/locale/p24-localization-ja-jp.js" asp-append-version="true"></script>
-    }
-    else if (m_LocalizationSvc.CurrentLocale == LocalizationSvc.SupportedLocale.VI_VN)
-    {
-        <script src="~/js/locale/p24-localization-vi-vn.js" asp-append-version="true"></script>
-    }
-
+    <script src="~/js/locale/@localizationFile" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script type="text/javascript" src="~/js/server-announcement.js" asp-append-version="true"></script>
+    <script src="~/js/server-announcement.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

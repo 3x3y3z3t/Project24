@@ -1,7 +1,12 @@
 
+### v-core6-0.9.3 (2023.10.30)
+- Updated Page Layout files to be more streamlined with current design.
+- Updated Simulator > FinancialManagement List page so essential buttons don't get greyed out when there is no data (which locked the page out).
+- Fixed incorrect casing in .js locale files' name.
+
 ### v-core6-0.9.2 (2023.10.29)
 - Fixed missing role for Updater page in `P24RoleName`.
-- Fixed issue with case-sensitivity in `LocalizationSvc.ValidateFrontEndLocaleFile()`.
+- Fixed issue with casing in `LocalizationSvc.ValidateFrontEndLocaleFile()`.
 - Added page `/Error` title's locale key.
 
 ### v-core6-0.9.1 (2023.10.29)

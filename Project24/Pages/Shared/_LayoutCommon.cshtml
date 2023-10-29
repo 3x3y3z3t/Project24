@@ -1,20 +1,15 @@
 @*  _LayoutCommon.cshtml
- *  Version: v1.6 (2023.10.07)
+ *  Version: v1.7 (2023.10.29)
  *
  *  Author
  *      Arime-chan
  *@
 
-@using Project24.App;
-@using Project24.App.Services;
-
-@inject LocalizationSvc m_LocalizationSvc
-
 @{
     string title = (string)ViewData[ViewDataKeys.Title];
     HtmlString titleHtml = new HtmlString(title);
 
-    string localizationFile = "p24-localization-" + ViewData[ViewDataKeys.Locale].ToString() + ".js";
+    string localizationFile = "p24-localization-" + ((string)ViewData[ViewDataKeys.Locale]).ToLower() + ".js";
 }
 
 <!DOCTYPE html>
@@ -27,7 +22,6 @@
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @*<link rel="stylesheet" href="~/Project24.styles.css" asp-append-version="true" />*@
 
     @await RenderSectionAsync("Stylesheet", required: false)
 </head>
@@ -59,14 +53,13 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="~/js/dotnet.js" asp-append-version="true"></script>
     <script src="~/js/locale/p24-localization-keys.js" asp-append-version="true"></script>
-
     <script src="~/js/locale/@localizationFile" asp-append-version="true"></script>
-
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script type="text/javascript" src="~/js/server-announcement.js" asp-append-version="true"></script>
+    <script src="~/js/server-announcement.js" asp-append-version="true"></script>
 
 
     @await RenderSectionAsync("Scripts", required: false)
