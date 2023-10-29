@@ -1,5 +1,11 @@
 
+### v-core6-0.9.5 (2023.10.30)
+- Fixed leftover issue with button greyed out in Simulator > FinancialManagement List page.
+
+### v-core6-0.9.4 (2023.10.30)
+
 ### v-core6-0.9.3 (2023.10.30)
+- Updated `Versioning.tt` (which I forgot to update since v0.2).
 - Updated Page Layout files to be more streamlined with current design.
 - Updated Simulator > FinancialManagement List page so essential buttons don't get greyed out when there is no data (which locked the page out).
 - Fixed incorrect casing in .js locale files' name.
