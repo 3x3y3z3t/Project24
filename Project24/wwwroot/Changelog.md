@@ -1,4 +1,9 @@
 
+### v-core6-0.9.2 (2023.10.29)
+- Fixed missing role for Updater page in `P24RoleName`.
+- Fixed issue with case-sensitivity in `LocalizationSvc.ValidateFrontEndLocaleFile()`.
+- Added page `/Error` title's locale key.
+
 ### v-core6-0.9.1 (2023.10.29)
 - Updated Index page. Index page is now a proper landing page.
 - Updated Request Pipeline to force log user out after their role got changed.

@@ -1,5 +1,5 @@
 /*  App/Services/LocalizationSvc.cs
- *  Version: v1.5 (2023.10.29)
+ *  Version: v1.6 (2023.10.29)
  *  
  *  Author
  *      Arime-chan
@@ -248,7 +248,7 @@ namespace Project24.App.Services
             }
 
             string filePath = Program.WorkingDir + "/wwwroot/js/locale";
-            string fileName = LocaleFileUtils.FrontEndLocaleFileNamePrefix + "-" + _locale + ".js";
+            string fileName = LocaleFileUtils.FrontEndLocaleFileNamePrefix + "-" + _locale.ToLower() + ".js";
             if (!File.Exists(filePath + "/" + fileName))
             {
                 m_Logger.LogWarning("Locale file {_localeFileName} does not exist.", fileName);

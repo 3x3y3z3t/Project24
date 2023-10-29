@@ -1,5 +1,5 @@
 /*  App/Identity/P24RoleName.cs
- *  Version: v1.1 (2023.10.29)
+ *  Version: v1.2 (2023.10.29)
  *  
  *  Author
  *      Arime-chan
@@ -19,6 +19,7 @@ namespace Project24.App.Identity
             PageCollection.Home.Account.List,
 
             PageCollection.Home.Management.ConfigPanel,
+            PageCollection.Home.Management.Updater,
 
             PageCollection.Simulator.FinancialManagement.List,
             PageCollection.Simulator.FinancialManagement.Create,

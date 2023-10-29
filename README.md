@@ -10,7 +10,7 @@ Program will crash and data will be lose when using interchangeably.
 When this branch is stable enough, it will replace replace the stable branch.
 
 ## Version
-- Project24: v.core6-0.9.1
+- Project24: v.core6-0.9.2
 - AppHelper: v.core6-1.3.0
 
 

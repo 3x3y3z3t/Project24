@@ -1,5 +1,5 @@
 /*  App/Utils/P24Localization.cs
- *  Version: v1.5 (2023.10.19)
+ *  Version: v1.6 (2023.10.29)
  *  
  *  Contributor
  *      Arime-chan
@@ -166,6 +166,7 @@ namespace Project24.App
         public const string PAGE_IDENTITY_ACC_MANAGE_TWO_FACTOR_AUTH = nameof(PAGE_IDENTITY_ACC_MANAGE_TWO_FACTOR_AUTH);
 
         public const string PAGE_INDEX = nameof(PAGE_INDEX);
+        public const string PAGE_ERROR = nameof(PAGE_ERROR);
 
         public const string PAGE_HOME_INDEX = nameof(PAGE_HOME_INDEX);
 
