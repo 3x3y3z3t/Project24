@@ -1,5 +1,5 @@
 /*  home/management/updater.js
-    Version: v1.3 (2023.09.27)
+    Version: v1.4 (2023.10.29)
 
     Author
         Arime-chan
@@ -1199,7 +1199,7 @@ UpdaterPage.UI = {
 
         let html = "<div id=\"" + _blockId + "\" class=\"" + blockClass + "\"" + tooltipHtml + ">"
             + this.constructUploadBlockSvg(_status)
-            + _blockText
+            + " " + _blockText
             + "</div>";
 
         return html;

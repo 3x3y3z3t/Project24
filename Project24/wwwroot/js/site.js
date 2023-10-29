@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.5 (2023.09.23)
+ *  Version: 1.6 (2023.10.19)
  *
  *  Author
  *      Arime-chan
@@ -138,7 +138,7 @@ P24Utils.Ajax = {
             if (window.Modal == null) {
                 console.error(P24Localization[LOCL_STR_UNKNOWN_ERR] + ":\n" + _content);
             } else {
-                Modal.Common.openOneBtnModal(P24Localization.get(LOCL_STR_UNKNOWN_ERR), "<pre>" + HtmlUtils.escape(_content) + "</pre>", MODAL_ICON_ERROR);
+                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_UNKNOWN_ERR], "<pre>" + HtmlUtils.escape(_content) + "</pre>", MODAL_ICON_ERROR);
             }
 
             return false;

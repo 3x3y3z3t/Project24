@@ -1,5 +1,5 @@
 /*  App/Utils/ExtensionMethods.cs
- *  Version: v1.2 (2023.10.12)
+ *  Version: v1.3 (2023.10.29)
  *  
  *  Author
  *      Arime-chan
@@ -18,6 +18,7 @@ using Project24.SerializerContext;
 using Project24.Model;
 using Microsoft.AspNetCore.Builder;
 using Project24.App.Middlewares;
+using Microsoft.AspNetCore.Identity;
 
 namespace Project24.App
 {
@@ -103,10 +104,51 @@ namespace Project24.App
             return false;
         }
 
+        public static bool IsUserAuthorized(this PageModel _page, UserManager<P24IdentityUser> _userManager, string[] _roles, ApplicationDbContext _dbContext, string _operation)
+        {
+            if (_page.IsUserAuthorized(_userManager, _roles))
+                return true;
+
+            if (_dbContext != null)
+            {
+                _dbContext.RecordUserAction(
+                    _page.User?.Identity?.Name,
+                    _operation,
+                    UserAction.OperationStatus_.Denied
+                );
+            }
+
+            return false;
+        }
+
+        public static bool IsUserAuthorized(this PageModel _page, UserManager<P24IdentityUser> _userManager, string[] _roles)
+        {
+            if (!_page.User.Identity.IsAuthenticated)
+                return false;
+
+            P24IdentityUser user = _userManager.GetUserAsync(_page.User).Result;
+            if (user == null)
+                return false;
+
+            //var userRoles = _userManager.GetRolesAsync(user).Result;
+            foreach (string role in _roles)
+            {
+                if (!_userManager.IsInRoleAsync(user, role).Result)
+                    return false;
+            }
+
+            return true;
+        }
+
         #region Middleware
         public static IApplicationBuilder UseP24Localization(this IApplicationBuilder _builder)
         {
             return _builder.UseMiddleware<P24LocalizationMiddleware>();
+        }
+
+        public static IApplicationBuilder UseP24PostAuthentication(this IApplicationBuilder _builder)
+        {
+            return _builder.UseMiddleware<P24PostAuthentication>();
         }
         #endregion
     }

@@ -90,14 +90,14 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --outputVerInfo $(TargetDir) $(TargetFileName)" />
-    <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --validateLocaleFiles $(TargetPath) Project24.App.LOCL $(ProjectDir)wwwroot/res/locale vi-VN en-US ja-JP" />
+    <Exec Command="$(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/AppHelper.exe --validateLocaleFiles $(TargetPath) Project24.App.LOCL $(ProjectDir)wwwroot P24Localization vi-VN en-US ja-JP" />
   </Target>
 
   <Target Name="AfterPublishEx" AfterTargets="AfterPublish">
-    <Exec Command="copy $(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/linux-arm64/publish/AppHelper.dll $(PublishDir)AppHelper.dll" />
-    <Exec Command="copy $(SolutionDir)AppHelper/bin/$(ConfigurationName)/net6.0/linux-arm64/publish/AppHelper.deps.json $(PublishDir)AppHelper.deps.json" />
+    <Exec Command="copy /v $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.dll $(PublishDir)AppHelper.dll" />
+    <Exec Command="copy /v $(SolutionDir)AppHelper\\bin\\$(ConfigurationName)\\net6.0\\linux-arm64\\publish\\AppHelper.deps.json $(PublishDir)AppHelper.deps.json" />
     
-    <Exec Command="copy /v $(PublishDir)../version.dat $(PublishDir)version.dat" />
+    <Exec Command="copy /v $(PublishDir)..\\version.dat $(PublishDir)version.dat" />
     <Exec Command="del /f $(PublishDir)appsettings.Development.json" />
   </Target>
 

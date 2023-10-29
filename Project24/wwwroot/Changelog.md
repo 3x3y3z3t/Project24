@@ -1,4 +1,12 @@
 
+### v-core6-0.9.1 (2023.10.29)
+- Updated Index page. Index page is now a proper landing page.
+- Updated Request Pipeline to force log user out after their role got changed.
+- Updated some pages to enforce authorization.
+- Updated Access Denied page with link to previous page.
+- Updated Locale File Validator in AppHelper to handle .js files.
+- Updated Locale File reader utility in AppHelper to handle .js files.
+
 ### v-core6-0.9.0 (2023.10.15)
 - Added user authentication (powered by Identity Framework).
 - Added some role names for specific pages.

@@ -1,5 +1,5 @@
 @*  Areas/Identity/Pages/Account/AccessDenied.cshtml
- *  Version: v1.0 (2023.10.15)
+ *  Version: v1.1 (2023.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -15,5 +15,8 @@
 <div>
     <p class="fs-3 text-danger">@m_LocalizationSvc[LOCL.DESC_IDENTITY_ACCOUNT_ACCESS_DENIED]</p>
 </div>
+
+<a href="@Model.ReturnUrl">Back to Previous Page</a>
+<br />
 
 <a asp-page="/Index">Back to Home</a>

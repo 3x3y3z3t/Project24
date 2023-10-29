@@ -1,5 +1,5 @@
 /*  Home/Simulator/FinancialManagement/List.cshtml.cs
- *  Version: v1.1 (2023.10.01)
+ *  Version: v1.2 (2023.10.29)
  *
  *  Author
  *      Arime-chan
@@ -14,13 +14,16 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.Services;
+using Project24.App.Utils;
 using Project24.Data;
+using Project24.Model.Identity;
 using Project24.Model.Simulator.FinancialManagement;
 using Project24.SerializerContext;
 
@@ -28,8 +31,10 @@ namespace Project24.Pages.Simulator.FinancialManagement
 {
     public class ListModel : PageModel
     {
-        public ListModel(DBMaintenanceSvc _dbMaintenanceSvc, ApplicationDbContext _dbContext, ILogger<ListModel> _logger)
+        public ListModel(UserManager<P24IdentityUser> _userManager, DBMaintenanceSvc _dbMaintenanceSvc, ApplicationDbContext _dbContext, ILogger<ListModel> _logger)
         {
+            m_UserManager = _userManager;
+
             m_DbMaintenanceSvc = _dbMaintenanceSvc;
             m_DbContext = _dbContext;
             m_Logger = _logger;
@@ -38,6 +43,9 @@ namespace Project24.Pages.Simulator.FinancialManagement
 
         public async Task<IActionResult> OnGetExportAsync()
         {
+            if (!this.IsUserAuthorized(m_UserManager, new string[] { PageCollection.Simulator.FinancialManagement.List }))
+                return Forbid();
+
             if (this.IsDbLockedForSync(m_DbMaintenanceSvc, m_Logger))
                 return Page();
 
@@ -121,6 +129,9 @@ namespace Project24.Pages.Simulator.FinancialManagement
         // ajax handler;
         public IActionResult OnPostImportAsync(IFormFile _file)
         {
+            if (!this.IsUserAuthorized(m_UserManager, new string[] { PageCollection.Simulator.FinancialManagement.List }))
+                return Forbid();
+
             if (this.IsDbLockedForSync(m_DbMaintenanceSvc, m_Logger))
                 return Content(MessageTag.Success + "SyncInProgress", MediaTypeNames.Text.Plain);
 
@@ -161,6 +172,8 @@ namespace Project24.Pages.Simulator.FinancialManagement
 
         private void ImportData(ImportExportDataModel _data) => m_DbMaintenanceSvc.ImportSimulatorData_FinMan(_data);
 
+
+        private readonly UserManager<P24IdentityUser> m_UserManager;
 
         private readonly DBMaintenanceSvc m_DbMaintenanceSvc;
         private readonly ApplicationDbContext m_DbContext;

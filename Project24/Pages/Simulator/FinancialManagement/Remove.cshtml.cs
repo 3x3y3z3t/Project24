@@ -1,5 +1,5 @@
 /*  Home/Simulator/FinancialManagement/Remove.cshtml.cs
- *  Version: v1.0 (2023.10.02)
+ *  Version: v1.1 (2023.10.29)
  *
  *  Author
  *      Arime-chan
@@ -7,15 +7,18 @@
 
 using System.Linq;
 using System.Net.Mime;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Project24.App;
 using Project24.App.Services;
+using Project24.App.Utils;
 using Project24.Data;
 
 namespace Project24.Pages.Simulator.FinancialManagement
 {
+    [Authorize(Roles = PageCollection.Simulator.FinancialManagement.Remove)]
     public class RemoveModel : PageModel
     {
         public RemoveModel(DBMaintenanceSvc _dbMaintenanceSvc, ApplicationDbContext _dbContext, ILogger<RemoveModel> _logger)

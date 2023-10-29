@@ -1,5 +1,5 @@
 /*  Home/Simulator/FinancialManagement/Create.cshtml.cs
- *  Version: v1.1 (2023.10.02)
+ *  Version: v1.2 (2023.10.29)
  *
  *  Author
  *      Arime-chan
@@ -12,6 +12,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ using Project24.Model.Simulator.FinancialManagement;
 
 namespace Project24.Pages.Simulator.FinancialManagement
 {
+    [Authorize(Roles = PageCollection.Simulator.FinancialManagement.Create)]
     public class CreateModel : PageModel
     {
         public class TransactionViewModel

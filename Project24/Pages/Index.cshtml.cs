@@ -1,22 +1,33 @@
+/*  Index.cshtml.cs
+ *  Version: v1.1 (2023.10.29)
+ *  
+ *  Author
+ *      Arime-chan
+ */
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
 namespace Project24.Pages
 {
+    [AllowAnonymous]
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
-
-        public IndexModel(ILogger<IndexModel> logger)
+        public IndexModel(ILogger<IndexModel> _logger)
         {
-            _logger = logger;
+            m_Logger = _logger;
         }
+
 
         public IActionResult OnGet()
         {
-            return RedirectToPage("Home/Management/ConfigPanel");
-            return RedirectToPage("Home/Management/Updater");
+            return Page();
         }
+
+
+        private readonly ILogger<IndexModel> m_Logger;
     }
+
 }

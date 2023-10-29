@@ -1,5 +1,5 @@
 @*  Home/Simulator/FinancialManagement/Create.cshtml
- *  Version: v1.0 (2023.09.23)
+ *  Version: v1.1 (2023.09.29)
  *
  *  Author
  *      Arime-chan
@@ -12,9 +12,6 @@
 @{
     Layout = P24PageLayout.CommonLayout;
     ViewData[ViewDataKeys.Title] = "Create Transaction";
-
-
-
 
     string dateTimeNow = string.Format("{0:yyyy/MM/dd HH:mm}", DateTime.Now);
     string dateTimeMin = "2023-04-00";
@@ -46,6 +43,11 @@
             <div class="@classFormInput">
                 <textarea id="input-details" class="form-control" placeholder="" style="height:100px"></textarea>
                 <label for="input-details">Details (optional)</label>
+            </div>
+
+            <div class="form-check ms-2 my-1">
+                <input id="check-card" type="checkbox" class="form-check-input" />
+                <label for="check-card" class="form-check-label">Card</label>
             </div>
         </form>
 

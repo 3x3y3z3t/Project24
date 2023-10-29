@@ -1,7 +1,7 @@
 /*  Project24
  *  
  *  Program.cs
- *  Version: v1.6 (2023.10.06)
+ *  Version: v1.7 (2023.10.13)
  *  
  *  Author
  *      Arime-chan
@@ -48,9 +48,13 @@ namespace Project24
         public static string CurrentSessionName { get; private set; }
 
         public static string AppsettingsVersion { get; private set; }
-
-
         public static bool IsDevelopment { get; private set; }
+
+        /// <summary>
+        ///     Do NOT write to this list outside of <see cref="DbSeedDataValidator"/>.
+        /// </summary>
+        public static HashSet<string> RolesDirtyUser { get; set; }
+
 
 
         public static async Task Main(string[] _args)
@@ -371,6 +375,8 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
             app.UseRouting();
 
             app.UseAuthentication();
+            app.UseP24PostAuthentication();
+
             app.UseAuthorization();
 
             app.MapRazorPages();
@@ -439,6 +445,8 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
         {
             bool flag = true;
 
+            Program.RolesDirtyUser = new();
+
             flag &= ValidateRoles();
             flag &= ValidatePowerUser();
 
@@ -447,7 +455,7 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
 
         private bool ValidateRoles()
         {
-            RoleManager<P24IdentityRole> roleManager = m_ServiceProvider.GetService<RoleManager<P24IdentityRole>>();
+            RoleManager<P24IdentityRole> roleManager = m_ServiceProvider.GetRequiredService<RoleManager<P24IdentityRole>>();
 
             var roles = (from _role in roleManager.Roles
                          select _role.Name)
@@ -569,6 +577,8 @@ public HomeController(IPasswordHasher<ApplicationUser> passwordHasher )
                 m_logger.LogWarning("Could not add missing roles for power user.");
                 return false;
             }
+
+            _ = Program.RolesDirtyUser.Add(_user.UserName);
 
             m_logger.LogInformation("Power user's missing roles has been added.");
             return true;

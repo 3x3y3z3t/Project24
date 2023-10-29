@@ -1,5 +1,5 @@
 /*  Helpers/CLIMonitor.cs
- *  Version: v1.2 (2023.10.13)
+ *  Version: v1.3 (2023.10.29)
  *  
  *  Author
  *      Arime-chan
@@ -33,6 +33,7 @@ namespace AppHelper
         AssemblyVersionIsNull,
 
         ReflectionFieldsNotFound,
+        HasInvalidFields,
     }
 
     internal class CLIMonitor
@@ -100,18 +101,18 @@ namespace AppHelper
             {
                 ErrorCode errCode = TryInvoke(pair.Key, pair.Value);
 
-                string msg = "(Arg = " + pair.Key;
+                string msg = "> Arg =\r\n    " + pair.Key;
                 if (pair.Value.Count > 0)
                 {
-                    msg += ", Params = ";
+                    msg += "\r\n> Params =";
                     foreach (string s in pair.Value)
                     {
-                        msg += s + " ";
+                        msg += "\r\n    " + s;
                     }
-                    msg = msg.Trim();
+                    //msg = msg.Trim();
                 }
 
-                msg += ", ErrCode = " + errCode + ")\r\n";
+                msg += "\r\n> ErrCode = " + errCode + "\r\n";
 
                 Console.WriteLine(msg);
             }

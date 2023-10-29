@@ -1,5 +1,5 @@
 /*  App/Services/LocalizationSvc.cs
- *  Version: v1.4 (2023.10.14)
+ *  Version: v1.5 (2023.10.29)
  *  
  *  Author
  *      Arime-chan
@@ -9,17 +9,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using AppHelper.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Project24.App.Utils;
 using Project24.Model.Identity;
-using Project24.Pages.Simulator.FinancialManagement;
 
 namespace Project24.App.Services
 {
@@ -51,6 +49,24 @@ namespace Project24.App.Services
         }
         #endregion
 
+        #region Front-end Localization Status
+        public class FrontEndLocalizationStatus
+        {
+            public int TotalEntries { get; private set; }
+            public int UntranslatedEntries { get; private set; }
+            public int InvalidEntries { get; private set; }
+
+            public int TranslatedEntries => TotalEntries - UntranslatedEntries;
+            public int ValidEntries => TotalEntries - InvalidEntries;
+
+            public FrontEndLocalizationStatus(int _totalEntries, int _unstranslatedEntries, int _invalidEntries)
+            {
+                TotalEntries = _totalEntries;
+                UntranslatedEntries = _unstranslatedEntries;
+                InvalidEntries = _invalidEntries;
+            }
+        }
+        #endregion
 
         public const string LocaleCookieKey = "p24-lang";
 
@@ -73,17 +89,14 @@ namespace Project24.App.Services
             m_HttpContextAccessor = _httpContextAccessor;
 
             m_Locales = new();
+            m_FrontEndLocalizationStatuses = new();
 
         }
 
 
         public async Task StartAsync(CancellationToken _cancellationToken = default)
         {
-            m_Locales[SupportedLocale.EN_US] = await LoadLocalizedStringAsync(SupportedLocale.EN_US, _cancellationToken);
-            m_Locales[SupportedLocale.JA_JP] = await LoadLocalizedStringAsync(SupportedLocale.JA_JP, _cancellationToken);
-            m_Locales[SupportedLocale.VI_VN] = await LoadLocalizedStringAsync(SupportedLocale.VI_VN, _cancellationToken);
-
-            m_UserLocaleCache = new();
+            _ = await ReloadLocaleStringAsync(_cancellationToken);
 
             m_Logger.LogInformation("Localization Service initialized.");
         }
@@ -131,27 +144,55 @@ namespace Project24.App.Services
             return userLocale;
         }
 
+        public FrontEndLocalizationStatus GetFrontEndLocalizationStatus (string _locale)
+        {
+            if (string.IsNullOrEmpty(_locale) || !m_FrontEndLocalizationStatuses.ContainsKey(_locale))
+                return null;
+
+            return m_FrontEndLocalizationStatuses[_locale];
+        }
+
         public void ClearCachedLocaleForUser(string _username)
         {
             if (m_UserLocaleCache.ContainsKey(_username))
                 m_UserLocaleCache.Remove(_username);
         }
 
+        public async Task<bool> ReloadLocaleStringAsync(CancellationToken _cancellationToken = default)
+        {
+            m_Locales[SupportedLocale.EN_US] = await LoadLocalizedStringAsync(SupportedLocale.EN_US, _cancellationToken);
+            m_Locales[SupportedLocale.JA_JP] = await LoadLocalizedStringAsync(SupportedLocale.JA_JP, _cancellationToken);
+            m_Locales[SupportedLocale.VI_VN] = await LoadLocalizedStringAsync(SupportedLocale.VI_VN, _cancellationToken);
+
+            m_UserLocaleCache = new();
+
+            _ = await TaskExt.WhenAll(
+                ValidateFrontEndLocaleFile(SupportedLocale.EN_US, _cancellationToken),
+                ValidateFrontEndLocaleFile(SupportedLocale.JA_JP, _cancellationToken),
+                ValidateFrontEndLocaleFile(SupportedLocale.VI_VN, _cancellationToken)
+            );
+
+            return true;
+        }
+
 
         private async Task<Dictionary<string, string>> LoadLocalizedStringAsync(string _locale, CancellationToken _cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_locale))
-                return new();
-
-            string localeFileName = _locale + ".ini";
-            string path = Path.GetFullPath(Program.WorkingDir + "/wwwroot/res/locale/" + localeFileName);
-            if (!File.Exists(path))
             {
-                m_Logger.LogWarning("Locale file {_localeFileName} does not exist.", localeFileName);
+                m_Logger.LogWarning("Invalid locale {_locale}.", _locale);
                 return new();
             }
 
-            LocaleFileUtils.LocaleFile localeFile = LocaleFileUtils.ReadLocaleFile(path, _locale, false, false, false);
+            string filePath = Program.WorkingDir + "/wwwroot/res/locale";
+            string fileName = _locale + ".ini";
+            if (!File.Exists(filePath + "/" + fileName))
+            {
+                m_Logger.LogWarning("Locale file {_localeFileName} does not exist.", fileName);
+                return new();
+            }
+
+            LocaleFileUtils.LocaleFile localeFile = LocaleFileUtils.ReadLocaleFileIni(filePath, fileName, false);
             if (!string.IsNullOrEmpty(localeFile.Error))
             {
                 m_Logger.LogWarning("{_error}", localeFile.Error);
@@ -160,66 +201,128 @@ namespace Project24.App.Services
 
             Dictionary<string, string> dict = new();
 
-            string malformRecords = "";
-            int malformCount = 0;
+            string untranslatedKeys = "";
+            int untranslatedCount = 0;
+
+            foreach (var pair in localeFile.Entries)
+            {
+                var entry = pair.Value;
+
+                if (string.IsNullOrWhiteSpace(entry.Value))
+                {
+                    untranslatedKeys += "\n    (" + entry.LineNumber + ") " + entry.Key;
+                    ++untranslatedCount;
+                    continue;
+                }
+
+                dict[entry.Key] = entry.Value;
+            }
+
+            if (localeFile.InvalidEntries.Count > 0)
+            {
+                string invalidKeys = "";
+                foreach (var entry in localeFile.InvalidEntries)
+                {
+                    invalidKeys += "\n    (" + entry.LineNumber + ") ";
+                    if (!string.IsNullOrWhiteSpace(entry.Key))
+                        invalidKeys += entry.Key;
+                }
+
+                m_Logger.LogWarning("{_count} invalid entries in locale file {_fileName}:{_list}", localeFile.InvalidEntries.Count, fileName, invalidKeys);
+            }
+
+            if (untranslatedCount > 0)
+            {
+                m_Logger.LogWarning("{_count} untranslated entries in locale file {_fileName}:{_list}", untranslatedCount, fileName, untranslatedKeys);
+            }
+
+            return dict;
+        }
+
+        private async Task<bool> ValidateFrontEndLocaleFile(string _locale, CancellationToken _cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(_locale))
+            {
+                m_Logger.LogWarning("Invalid locale {_locale}.", _locale);
+                return false;
+            }
+
+            string filePath = Program.WorkingDir + "/wwwroot/js/locale";
+            string fileName = LocaleFileUtils.FrontEndLocaleFileNamePrefix + "-" + _locale + ".js";
+            if (!File.Exists(filePath + "/" + fileName))
+            {
+                m_Logger.LogWarning("Locale file {_localeFileName} does not exist.", fileName);
+                return false;
+            }
+
+            LocaleFileUtils.LocaleFile localeFile = LocaleFileUtils.ReadLocaleFileJs(filePath, fileName, false);
+            if (!string.IsNullOrEmpty(localeFile.Error))
+            {
+                m_Logger.LogWarning("{_error}", localeFile.Error);
+                return false;
+            }
 
             string untranslatedKeys = "";
             int untranslatedCount = 0;
 
             foreach (var pair in localeFile.Entries)
             {
-                if (pair.Key.StartsWith("<>"))
+                var entry = pair.Value;
+
+                if (string.IsNullOrWhiteSpace(entry.Value))
                 {
-                    malformRecords += "\n    (" + pair.Key[2..] + ") " + pair.Value;
-                    ++malformCount;
-                }
-                else if (pair.Value == "")
-                {
-                    untranslatedKeys += "\n    " + pair.Key;
+                    untranslatedKeys += "\n    (" + entry.LineNumber + ") " + entry.Key;
                     ++untranslatedCount;
-                }
-                else
-                {
-                    dict[pair.Key] = pair.Value;
                 }
             }
 
-            if (malformCount > 0)
+            if (localeFile.InvalidEntries.Count > 0)
             {
-                m_Logger.LogWarning("{_count} Malformed entries in locale file for {_locale}:{_list}", malformCount, _locale, malformRecords);
+                string invalidKeys = "";
+                foreach (var entry in localeFile.InvalidEntries)
+                {
+                    invalidKeys += "\n    (" + entry.LineNumber + ") ";
+                    if (!string.IsNullOrWhiteSpace(entry.Key))
+                        invalidKeys += entry.Key;
+                }
+
+                m_Logger.LogWarning("{_count} invalid entries in locale file {_fileName}:{_list}", localeFile.InvalidEntries.Count, fileName, invalidKeys);
             }
 
             if (untranslatedCount > 0)
             {
-                m_Logger.LogWarning("{_count} Untranslated entries in locale file for {_locale}:{_list}", untranslatedCount, _locale, untranslatedKeys);
+                m_Logger.LogWarning("{_count} untranslated entries in locale file {_fileName}:{_list}", untranslatedCount, fileName, untranslatedKeys);
             }
 
-            return dict;
+            m_FrontEndLocalizationStatuses[_locale] = new(localeFile.TotalEntriesCount, untranslatedCount, localeFile.InvalidEntries.Count);
+
+            return true;
         }
 
-        private KeyValuePair<string, string>? ParseSingleLine(string _locale, string _line, int _index)
-        {
-            int pos = _line.IndexOf('=');
-            if (pos < 0)
-            {
-                m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, _index + 1, _line);
-                return null;
-            }
+        //private KeyValuePair<string, string>? ParseSingleLine(string _locale, string _line, int _index)
+        //{
+        //    int pos = _line.IndexOf('=');
+        //    if (pos < 0)
+        //    {
+        //        m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, _index + 1, _line);
+        //        return null;
+        //    }
 
-            string key = _line[..pos].Trim();
-            string value = _line[(pos + 1)..].Trim();
+        //    string key = _line[..pos].Trim();
+        //    string value = _line[(pos + 1)..].Trim();
 
-            if (key == "" || value == "")
-            {
-                m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, _index + 1, _line);
-                return null;
-            }
+        //    if (key == "" || value == "")
+        //    {
+        //        m_Logger.LogWarning("[{_locale}]: Malformed record: ({_line})[{_lineText}]", _locale, _index + 1, _line);
+        //        return null;
+        //    }
 
-            return new(key, value);
-        }
+        //    return new(key, value);
+        //}
 
 
         private readonly Dictionary<string, Dictionary<string, string>> m_Locales;
+        private readonly Dictionary<string, FrontEndLocalizationStatus> m_FrontEndLocalizationStatuses;
         private Dictionary<string, string> m_UserLocaleCache;
 
         private readonly InternalTrackerSvc m_TrackerSvc;

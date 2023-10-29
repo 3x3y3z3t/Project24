@@ -1,5 +1,5 @@
 /*  Areas/Identity/Pages/Account/AccessDenied.cshtml.cs
- *  Version: v1.0 (2023.10.10)
+ *  Version: v1.1 (2023.10.29)
  *  
  *  Author
  *      The .NET Foundation
@@ -18,8 +18,22 @@ namespace Project24.Areas.Identity.Pages.Account
 {
     public class AccessDeniedModel : PageModel
     {
-        public void OnGet()
-        { }
+        public string ReturnUrl { get; set; }
+
+
+        public void OnGet(string returnUrl = null)
+        {
+            if (returnUrl == null)
+                returnUrl = Url.Content("~/");
+            else
+            {
+                int pos = returnUrl.IndexOf('?');
+                if (pos >= 0)
+                    returnUrl = returnUrl.Substring(0, pos);
+            }
+
+            ReturnUrl = returnUrl;
+        }
     }
 
 }

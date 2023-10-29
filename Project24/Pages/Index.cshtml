@@ -1,5 +1,5 @@
 @*  Index.cshtml
- *  Version: v1.2 (2023.10.13)
+ *  Version: v1.3 (2023.10.29)
  *
  *  Contributor
  *      Arime-chan
@@ -25,7 +25,7 @@
 
 
 <hr />
-    <div class="fs-4 my-2">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_CURRENT_PROGRESS])</div>
+<div class="fs-4 my-2">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_CURRENT_PROGRESS])</div>
 
 <div class="@classModule">
     <a asp-page="ClinicManager/Index" class="btn btn-primary disabled" style="width:@btnWidth">
@@ -62,22 +62,30 @@
 @{
     int entryCount = typeof(LOCL).GetFields().Length;
 
-    int vieEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.VI_VN).Length;
-    int engEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.EN_US).Length;
-    int japEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.JA_JP).Length;
-    int localizedEntriesCount = vieEntryCount + engEntryCount + japEntryCount;
-    int totalEntriesCount = entryCount * 3;
+    int totalVieEntryCount = entryCount + m_LocalizationSvc.GetFrontEndLocalizationStatus(LocalizationSvc.SupportedLocale.VI_VN).TotalEntries;
+    int totalEngEntryCount = entryCount + m_LocalizationSvc.GetFrontEndLocalizationStatus(LocalizationSvc.SupportedLocale.EN_US).TotalEntries;
+    int totalJapEntryCount = entryCount + m_LocalizationSvc.GetFrontEndLocalizationStatus(LocalizationSvc.SupportedLocale.JA_JP).TotalEntries;
 
-    string viePercent = (vieEntryCount * 100.0 / entryCount).ToString("0.00") + "%";
-    string engPercent = (engEntryCount * 100.0 / entryCount).ToString("0.00") + "%";
-    string japPercent = (japEntryCount * 100.0 / entryCount).ToString("0.00") + "%";
+    int vieEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.VI_VN).Length
+        + m_LocalizationSvc.GetFrontEndLocalizationStatus(LocalizationSvc.SupportedLocale.VI_VN).TranslatedEntries;
+    int engEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.EN_US).Length
+        + m_LocalizationSvc.GetFrontEndLocalizationStatus(LocalizationSvc.SupportedLocale.EN_US).TranslatedEntries;
+    int japEntryCount = m_LocalizationSvc.GetAllLocalizedStrings(LocalizationSvc.SupportedLocale.JA_JP).Length
+        + m_LocalizationSvc.GetFrontEndLocalizationStatus(LocalizationSvc.SupportedLocale.JA_JP).TranslatedEntries;
+
+    int localizedEntriesCount = vieEntryCount + engEntryCount + japEntryCount;
+    int totalEntriesCount = totalVieEntryCount + totalEngEntryCount + totalJapEntryCount;
+
+    string viePercent = (vieEntryCount * 100.0 / totalVieEntryCount).ToString("0.00") + "%";
+    string engPercent = (engEntryCount * 100.0 / totalEngEntryCount).ToString("0.00") + "%";
+    string japPercent = (japEntryCount * 100.0 / totalJapEntryCount).ToString("0.00") + "%";
 
     string totalPercent = ((vieEntryCount + engEntryCount + japEntryCount) * 100.0 / (entryCount * 3)).ToString("0.00") + "%";
 }
 <div class="fs-4 my-2">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.DESC_TRANSLATION_PROGRESS]): @totalPercent (@localizedEntriesCount/@totalEntriesCount)</div>
 
 <div class="d-flex flex-wrap">
-    <div class="col-12 col-md-2"><span style="width:15em">Tiếng Việt: </span><code>@viePercent (@vieEntryCount/@entryCount)</code></div>
+    <div class="col-12 col-md-2"><span style="width:15em">Tiếng Việt: </span><code>@viePercent (@vieEntryCount/@totalVieEntryCount)</code></div>
     <div class="col-12 col-md-10">
         <div class="progress">
             <div class="progress-bar" style="width:@viePercent"></div>
@@ -85,7 +93,7 @@
     </div>
 </div>
 <div class="d-flex flex-wrap">
-    <div class="col-12 col-md-2"><span style="width:15em">English: </span><code>@engPercent (@engEntryCount/@entryCount)</code></div>
+    <div class="col-12 col-md-2"><span style="width:15em">English: </span><code>@engPercent (@engEntryCount/@totalEngEntryCount)</code></div>
     <div class="col-12 col-md-10">
         <div class="progress">
             <div class="progress-bar" style="width:@engPercent"></div>
@@ -93,7 +101,7 @@
     </div>
 </div>
 <div class="d-flex flex-wrap">
-    <div class="col-12 col-md-2"><span style="width:15em">日本語: </span><code>@japPercent (@japEntryCount/@entryCount)</code></div>
+    <div class="col-12 col-md-2"><span style="width:15em">日本語: </span><code>@japPercent (@japEntryCount/@totalJapEntryCount)</code></div>
     <div class="col-12 col-md-10">
         <div class="progress">
             <div class="progress-bar" style="width:@japPercent"></div>

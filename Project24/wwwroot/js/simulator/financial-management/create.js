@@ -1,5 +1,5 @@
 /*  simulator/financial-management/create.js
-    Version: v1.2 (2023.10.13)
+    Version: v1.3 (2023.10.29)
 
     Author
         Arime-chan
@@ -233,6 +233,7 @@ FinManCreatePage.UI = {
     m_InputCategory: null,
     m_InputAmount: null,
     m_InputDetails: null,
+    m_CheckCard: null,
 
     m_BtnAdd: null,
     m_BtnClear: null,
@@ -249,6 +250,7 @@ FinManCreatePage.UI = {
         this.m_InputCategory = $("#input-category");
         this.m_InputAmount = $("#input-amount");
         this.m_InputDetails = $("#input-details");
+        this.m_CheckCard = $("#check-card");
 
         this.m_BtnAdd = $("#btn-add");
         this.m_BtnClear = $("#btn-clear");
@@ -337,6 +339,12 @@ FinManCreatePage.UI = {
             this.m_DataListCategories.append("<option value=\"" + category + "\"></option>");
         }
 
+        if (this.m_CheckCard.prop("checked")) {
+            // add a dummy as card withdrawal;
+            let cardDate = new Date(date.getTime() - 1);
+            FinManCreatePage.addRecord(cardDate, category, -amount, details);
+        }
+
         FinManCreatePage.addRecord(date, category, amount, details);
 
         this.clearInputs();
@@ -406,6 +414,7 @@ FinManCreatePage.UI = {
         this.m_InputCategory.val("");
         this.m_InputAmount.val("");
         this.m_InputDetails.val("");
+        this.m_CheckCard.prop("checked", false);
 
         let formElement = $(".needs-validation");
         formElement.removeClass("was-validated");

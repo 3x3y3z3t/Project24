@@ -1,5 +1,5 @@
 /*  simulator/financial-management/list.js
-    Version: v1.2 (2023.10.02)
+    Version: v1.3 (2023.10.29)
 
     Author
         Arime-chan
@@ -149,7 +149,7 @@ window.FinManListPage = {
 
         if (!P24Utils.Ajax.successContentCheckCommon(_content, body)) {
             this.UI.refreshMonthNavBar();
-            this.UI.refreshPageButtons(true);
+            this.UI.refreshPageButtons(false);
             return;
         }
 
@@ -359,7 +359,7 @@ FinManListPage.UI = {
         if (offset == 0) {
             html += "unchanged";
         } else if (offset > 0) {
-            html += "<b class=\"text-success\">+" + P24Utils.formatNumberWithSeparator(offset)+ "</b>";
+            html += "<b class=\"text-success\">+" + P24Utils.formatNumberWithSeparator(offset) + "</b>";
         } else if (offset < 0) {
             html += "<b class=\"text-danger\">" + P24Utils.formatNumberWithSeparator(offset) + "</b>";
         }

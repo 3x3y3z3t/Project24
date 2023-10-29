@@ -1,5 +1,5 @@
 /*  App/Utils/P24Localization.cs
- *  Version: v1.4 (2023.10.07)
+ *  Version: v1.5 (2023.10.19)
  *  
  *  Contributor
  *      Arime-chan
@@ -114,6 +114,11 @@ namespace Project24.App
         #region Labels
         public const string LBL_HELLO = nameof(LBL_HELLO);
 
+        public const string LBL_ID = nameof(LBL_ID);
+        public const string LBL_ACCESS_COUNT = nameof(LBL_ACCESS_COUNT);
+        public const string LBL_ADDED_DATE = nameof(LBL_ADDED_DATE);
+        public const string LBL_REMOVED_DATE = nameof(LBL_REMOVED_DATE);
+
         public const string LBL_USERNAME = nameof(LBL_USERNAME);
         public const string LBL_PASSWORD = nameof(LBL_PASSWORD);
         public const string LBL_LOGIN_REMEMBER = nameof(LBL_LOGIN_REMEMBER);
@@ -163,6 +168,9 @@ namespace Project24.App
         public const string PAGE_INDEX = nameof(PAGE_INDEX);
 
         public const string PAGE_HOME_INDEX = nameof(PAGE_HOME_INDEX);
+
+        public const string PAGE_HOME_ACCOUNT_LIST = nameof(PAGE_HOME_ACCOUNT_LIST);
+        public const string PAGE_HOME_ACCOUNT_MANAGE = nameof(PAGE_HOME_ACCOUNT_MANAGE);
 
 
 

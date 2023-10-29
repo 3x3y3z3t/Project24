@@ -1,5 +1,5 @@
 /*  Callbacks.cs
- *  Version: v1.0 (2023.10.13)
+ *  Version: v1.1 (2023.10.29)
  *  
  *  Author
  *      Arime-chan
@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using AppHelper.Helpers;
 
 namespace AppHelper
@@ -31,17 +32,19 @@ namespace AppHelper
         {
             Stopwatch sw = Stopwatch.StartNew();
 
-            if (_params == null || _params.Count < 4)
+            if (_params == null || _params.Count < 5)
             {
                 sw.Stop();
-                Console.WriteLine("ValidateLocaleFiles: Missing required parameters (in order): [Assembly Path] [LOCL Full Name] [Locale Directory Path] [Locale Name]s");
+                Console.WriteLine("ValidateLocaleFiles: Missing required parameters (in order):\n"
+                    + "    0. [Assembly Path]\n"
+                    + "    1. [LOCL Full Name]\n"
+                    + "    2. [Locale Directory Path]\n"
+                    + "    3. [js Localization Class Name]\n"
+                    + "    4+ [Locale Name]s");
                 return ErrorCode.InsufficientParams;
             }
 
             string assemblyPath;
-            string localePath;
-
-
             try
             {
                 assemblyPath = Path.GetFullPath(_params[0]);
@@ -52,10 +55,14 @@ namespace AppHelper
                 Console.WriteLine("ValidateLocaleFiles: Invalid [Assembly Path]: " + _params[0]);
                 return ErrorCode.InvalidParams;
             }
+            // TODO: validate assembly path (security issue);
 
+            string localePath;
             try
             {
                 localePath = Path.GetFullPath(_params[2]);
+                if (!localePath.EndsWith("wwwroot"))
+                    throw new ArgumentException(null);
             }
             catch (Exception)
             {
@@ -64,39 +71,66 @@ namespace AppHelper
                 return ErrorCode.InvalidParams;
             }
 
-            string[] baseEntries = TryGetEntriesFromAssembly(assemblyPath, _params[1], out int longestEntryLength);
-            if (baseEntries == null)
+            string loclTypeFullName = _params[1];
+
+            List<string> requestedLocale = new();
+            for (int i = 4; i < _params.Count; ++i)
+                requestedLocale.Add(_params[i]);
+
+            ErrorCode accumulatedErrorCode = ErrorCode.NoError;
+
+            // ==================================================;
+
+            ErrorCode errCode = ValidateBackEndLocaleFiles(assemblyPath, loclTypeFullName, localePath + "/res/locale", requestedLocale);
+            if (errCode != ErrorCode.NoError)
+                accumulatedErrorCode = errCode;
+
+            errCode = ValidateFrontEndLocaleFiles(localePath + "/js/locale", requestedLocale, _params[3]);
+            if (errCode != ErrorCode.NoError)
+                accumulatedErrorCode = errCode;
+
+            sw.Stop();
+            Console.WriteLine("Validating Locale files took: " + sw.Elapsed.TotalMilliseconds.ToString("0.000") + " ms");
+
+            return accumulatedErrorCode;
+        }
+
+        private static ErrorCode ValidateBackEndLocaleFiles(string _assemblyPath, string _loclTypeFullName, string _backEndLocaleFileDir, List<string> _requestedLocale)
+        {
+            string[] baseKeys = TryGetLocaleKeysFromAssembly(_assemblyPath, _loclTypeFullName, out int longestEntryLength);
+            if (baseKeys == null)
                 return ErrorCode.InvalidParams;
-            if (baseEntries.Length == 0)
+            if (baseKeys.Length == 0)
                 return ErrorCode.ReflectionFieldsNotFound;
 
             int remainder = 4 - (longestEntryLength % 4);
             int alignLength = longestEntryLength + remainder + 4;
 
             ErrorCode accumulatedErrorCode = ErrorCode.NoError;
-            for (int i = 3; i < _params.Count; ++i)
+            for (int i = 0; i < _requestedLocale.Count; ++i)
             {
-                if (_params[i].Contains("./"))
+                if (_requestedLocale[i].Contains("./") || _requestedLocale[i].Contains("../"))
                 {
-                    Console.WriteLine("ValidateLocaleFiles: Invalid [Locale Name " + (i - 3) + "]: " + _params[i]);
+                    Console.WriteLine("ValidateBackEndLocaleFiles: Invalid [Locale Name " + i + "]: " + _requestedLocale[i]);
                     accumulatedErrorCode = ErrorCode.InvalidParams;
                     continue;
                 }
 
                 string path;
+                string fileName = _requestedLocale[i] + ".ini";
                 try
                 {
-                    path = Path.GetFullPath(localePath + "/" + _params[i] + ".ini");
+                    path = Path.GetFullPath(_backEndLocaleFileDir + "/" + fileName);
                 }
                 catch (Exception _ex)
                 {
-                    Console.WriteLine("ValidateLocaleFiles: Invalid locale file.\n" + _ex);
+                    Console.WriteLine("ValidateBackEndLocaleFiles: Invalid locale file.\n" + _ex);
                     accumulatedErrorCode = ErrorCode.InvalidParams;
                     continue;
                 }
 
                 // ==================== read ====================;
-                var localeFile = LocaleFileUtils.ReadLocaleFile(path, _params[i]);
+                var localeFile = LocaleFileUtils.ReadLocaleFileIni(_backEndLocaleFileDir, fileName);
                 if (localeFile.Error != null)
                 {
                     accumulatedErrorCode = ErrorCode.InvalidParams;
@@ -105,27 +139,31 @@ namespace AppHelper
                 // ==================== parse ====================;
                 string lastPrefix = "";
                 string writeEntries = "";
-                foreach (string entry in baseEntries)
+                foreach (string key in baseKeys)
                 {
-                    int pos = entry.IndexOf('_');
-                    string prefix = entry[..pos];
+                    int pos = key.IndexOf('_');
+                    string prefix = key[..pos];
                     if (prefix != lastPrefix)
                     {
                         writeEntries += "\r\n; " + GetPrefixDescription(prefix) + "\r\n";
                         lastPrefix = prefix;
                     }
 
-                    writeEntries += string.Format("{0,-" + alignLength + "}= ", entry);
-                    if (localeFile.Entries.ContainsKey(entry))
-                        writeEntries += localeFile.Entries[entry];
+                    if (localeFile.Entries.ContainsKey(key))
+                        writeEntries += localeFile.Entries[key].ToString(-alignLength);
+                    else
+                        writeEntries += string.Format("{0,-" + alignLength + "} = ", key);
+
                     writeEntries += "\r\n";
                 }
 
-                writeEntries += "\r\n; Malformed entries\r\n";
-                foreach (string key in localeFile.Entries.Keys)
+                if (localeFile.InvalidEntries.Count > 0)
                 {
-                    if (key.StartsWith("<>"))
-                        writeEntries += localeFile.Entries[key] + "\r\n";
+                    writeEntries += "\r\n; Invalid entries\r\n";
+                    foreach (var entry in localeFile.InvalidEntries)
+                    {
+                        writeEntries += ";" + entry.RawString + "\r\n";
+                    }
                 }
 
                 // ==================== write ====================;
@@ -136,19 +174,116 @@ namespace AppHelper
                 }
                 catch (Exception _ex)
                 {
-                    Console.WriteLine("ValidateLocaleFiles: Error during writing back locale file " + _params[1] + ":\n" + _ex);
+                    Console.WriteLine("ValidateBackEndLocaleFiles: Error during writing back locale file " + _requestedLocale[1] + ":\n" + _ex);
                     if (accumulatedErrorCode == ErrorCode.NoError)
                         accumulatedErrorCode = ErrorCode.Exception;
                 }
-            }
 
-            sw.Stop();
-            Console.WriteLine("Validating Locale files took: " + sw.Elapsed.TotalMilliseconds.ToString("0.000") + " ms");
+                // ==================== done ====================;
+            }
 
             return accumulatedErrorCode;
         }
 
-        private static string[] TryGetEntriesFromAssembly(string _fullname, string _fullTypeName, out int _longestEntryLength)
+        private static ErrorCode ValidateFrontEndLocaleFiles(string _frontEndLocaleDirectory, List<string> _requestedLocale, string _className)
+        {
+            string[] baseKeys;
+            int longestEntryLength;
+            {
+                string keysFileFullname = _frontEndLocaleDirectory + "/" + LocaleFileUtils.FrontEndLocaleFileNamePrefix + "-keys.js";
+                baseKeys = TryGetLocaleKeysFromJsFile(keysFileFullname, out longestEntryLength);
+                if (baseKeys == null)
+                    return ErrorCode.InvalidParams;
+                if (baseKeys.Length == 0)
+                    return ErrorCode.ReflectionFieldsNotFound;
+            }
+
+            int remainder = 4 - (longestEntryLength % 4);
+            int alignLength = longestEntryLength + remainder + 4;
+
+            ErrorCode accumulatedErrorCode = ErrorCode.NoError;
+            for (int i = 0; i < _requestedLocale.Count; ++i)
+            {
+                if (_requestedLocale[i].Contains("./") || _requestedLocale[i].Contains("../"))
+                {
+                    Console.WriteLine("ValidateFrontEndLocaleFiles: Invalid [Locale Name " + i + "]: " + _requestedLocale[i]);
+                    accumulatedErrorCode = ErrorCode.InvalidParams;
+                    continue;
+                }
+
+                string path;
+                string fileName = LocaleFileUtils.FrontEndLocaleFileNamePrefix + "-" + _requestedLocale[i].ToLower() + ".js";
+                try
+                {
+                    path = Path.GetFullPath(_frontEndLocaleDirectory + "/" + fileName);
+                }
+                catch (Exception _ex)
+                {
+                    Console.WriteLine("ValidateFrontEndLocaleFiles: Invalid locale file.\n" + _ex);
+                    accumulatedErrorCode = ErrorCode.InvalidParams;
+                    continue;
+                }
+
+                // ==================== read ====================;
+                var localeFile = LocaleFileUtils.ReadLocaleFileJs(_frontEndLocaleDirectory, fileName);
+                if (localeFile.Error != null)
+                {
+                    accumulatedErrorCode = ErrorCode.InvalidParams;
+                    continue;
+                }
+
+                // ==================== parse ====================;
+                string writeEntries = "";
+                foreach (string key in baseKeys)
+                {
+                    if (key == "")
+                    {
+                        writeEntries += "\r\n";
+                        continue;
+                    }
+
+                    if (localeFile.Entries.ContainsKey(key))
+                        writeEntries += localeFile.Entries[key].ToString(-alignLength);
+                    else
+                        writeEntries += string.Format("{0,-" + alignLength + "}: \"\",", key);
+
+                    writeEntries += "\r\n";
+                }
+
+                if (localeFile.InvalidEntries.Count > 0)
+                {
+                    writeEntries += "\r\n    // Invalid entries;\r\n";
+                    foreach (var entry in localeFile.InvalidEntries)
+                    {
+                        writeEntries += "    //" + entry.RawString + "\r\n";
+                    }
+                }
+
+                // ==================== write ====================;
+                string content = localeFile.Header
+                    + "\r\n"
+                    + "window." + _className + " = {\r\n\r\n"
+                    + writeEntries
+                    + "\r\n}\r\n";
+
+                try
+                {
+                    File.WriteAllText(path, content, Encoding.UTF8);
+                }
+                catch (Exception _ex)
+                {
+                    Console.WriteLine("ValidateFrontEndLocaleFiles: Error during writing back locale file " + _requestedLocale[1] + ":\n" + _ex);
+                    if (accumulatedErrorCode == ErrorCode.NoError)
+                        accumulatedErrorCode = ErrorCode.Exception;
+                }
+
+                // ==================== done ====================;
+            }
+
+            return accumulatedErrorCode;
+        }
+
+        private static string[] TryGetLocaleKeysFromAssembly(string _fullname, string _fullTypeName, out int _longestEntryLength)
         {
             List<string> entries;
             _longestEntryLength = 0;
@@ -159,7 +294,7 @@ namespace AppHelper
                 var type = assembly.GetType(_fullTypeName);
                 var fields = type.GetFields();
 
-                entries = new List<string>();
+                entries = new List<string>(fields.Length);
                 foreach (FieldInfo field in fields)
                 {
                     entries.Add(field.Name);
@@ -169,9 +304,83 @@ namespace AppHelper
             }
             catch (Exception _ex)
             {
-                Console.WriteLine("ValidateLocaleFiles: Could not get LOCL entries (exception).\n" + _ex);
+                Console.WriteLine("TryGetLocaleKeysFromAssembly: Exception during reading keys from assembly:\n" + _ex);
                 return null;
             }
+
+            return entries.ToArray();
+        }
+
+        private static string[] TryGetLocaleKeysFromJsFile(string _fullname, out int _longestEntryLength)
+        {
+            List<string> entries;
+            _longestEntryLength = 0;
+
+            string[] lines;
+            try
+            {
+                lines = File.ReadAllLines(_fullname);
+            }
+            catch (Exception _ex)
+            {
+                Console.WriteLine("TryGetLocaleKeysFromJsFile: Could not read lines (exception).\n" + _ex);
+                return null;
+            }
+
+            string keyValueMismatch = "";
+            bool isInsideCommentBlock = false;
+
+            entries = new List<string>(lines.Length);
+            for (int i = 0; i < lines.Length; ++i)
+            {
+                string line = lines[i].Trim();
+                if (line.StartsWith("*/"))
+                {
+                    isInsideCommentBlock = false;
+                    continue;
+                }
+
+                if (isInsideCommentBlock)
+                    continue;
+
+                if (line == "")
+                {
+                    entries.Add("");
+                    continue;
+                }
+
+                if (line.StartsWith("//"))
+                    continue;
+
+                if (line.StartsWith("/*"))
+                {
+                    isInsideCommentBlock = true;
+                    continue;
+                }
+
+                const string pattern = @"\s*([A-Z0-9_]+)\s*=\s*""(.+)"";\s*(//.*)*";
+                var match = Regex.Match(line, pattern);
+
+                if (!match.Success)
+                    continue;
+
+                string key = match.Groups[1].Value.Trim();
+                string value = match.Groups[2].Value.Trim();
+
+                if (key != value)
+                {
+                    keyValueMismatch += "    (" + (i + 1) + ") " + key + " = " + value + "\n";
+                    //key = "<>" + key;
+                }
+
+                if (_longestEntryLength < key.Length)
+                    _longestEntryLength = key.Length;
+
+                entries.Add(key);
+            }
+
+            if (keyValueMismatch != "")
+                Console.WriteLine("TryGetLocaleKeysFromJsFile: Key is malformed (key and key name mismatch):\n" + keyValueMismatch);
 
             return entries.ToArray();
         }
