@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.6 (2023.10.19)
+ *  Version: 1.7 (2023.11.07)
  *
  *  Author
  *      Arime-chan
@@ -183,6 +183,22 @@ P24Utils.reloadAllTooltips = function () {
 
 // ==================================================
 // datetime
+
+P24Utils.DateTime = {
+    toLocal: function (_utcDate) {
+        let minuteOffset = new Date(0).getTimezoneOffset();
+        _utcDate.setMinutes(_utcDate.getMinutes() - minuteOffset);
+
+        return _utcDate;
+    },
+
+    toUtc: function (_localDate) {
+        let minuteOffset = new Date(0).getTimezoneOffset();
+        _localDate.setMinutes(_localDate.getMinutes() + minuteOffset);
+
+        return _localDate;
+    },
+};
 
 P24Utils.formatDateString_endsAtMinute = function (_date) {
     let year = _date.getFullYear();

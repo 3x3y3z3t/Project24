@@ -1,4 +1,9 @@
 
+### v-core6-0.9.6 (2023.10.30)
+- Added `P24DesignMap` to track development progress more accurately (will be removed on release).
+- Updated Simulator > FinancialManagement scripts to support Card Payment.
+- Fixed issue with time display due to time zone offset in Simulator > FinancialManagement List page.
+
 ### v-core6-0.9.5 (2023.10.30)
 - Fixed leftover issue with button greyed out in Simulator > FinancialManagement List page.
 

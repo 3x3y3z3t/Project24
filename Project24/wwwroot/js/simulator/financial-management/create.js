@@ -1,5 +1,5 @@
 /*  simulator/financial-management/create.js
-    Version: v1.3 (2023.10.29)
+    Version: v1.4 (2023.10.30)
 
     Author
         Arime-chan
@@ -44,7 +44,7 @@ window.FinManCreatePage = {
 
     // ==================================================
 
-    addRecord: function (_addedDate, _category, _amount, _details) {
+    addRecord: function (_addedDate, _category, _amount, _details = "") {
         this.Data.addRecord(_addedDate, _category, +_amount, _details);
         this.UI.addRecord(_addedDate, _category, +_amount, _details);
     },
@@ -192,7 +192,7 @@ FinManCreatePage.Data = {
 
     // ==================================================
 
-    addRecord: function (_date, _category, _amount, _details) {
+    addRecord: function (_date, _category, _amount, _details = "") {
         this.AddedData.push(new Record(_date, _category, _amount, _details));
     },
 
@@ -270,7 +270,7 @@ FinManCreatePage.UI = {
 
     // ==================================================
 
-    addRecord: function (_date, _category, _amount, _details) {
+    addRecord: function (_date, _category, _amount, _details = "") {
         let dateString = DotNetString.formatCustomDateTime("yyyy/MM/dd HH:mm", _date);
 
         let classAmount = "success";
@@ -340,9 +340,13 @@ FinManCreatePage.UI = {
         }
 
         if (this.m_CheckCard.prop("checked")) {
+            if (!FinManCreatePage.Data.containsCategory("Card Pay")) {
+                this.m_DataListCategories.append("<option value=\"Card Pay\"></option>");
+            }
+
             // add a dummy as card withdrawal;
             let cardDate = new Date(date.getTime() - 1);
-            FinManCreatePage.addRecord(cardDate, category, -amount, details);
+            FinManCreatePage.addRecord(cardDate, "Card Pay", -amount);
         }
 
         FinManCreatePage.addRecord(date, category, amount, details);

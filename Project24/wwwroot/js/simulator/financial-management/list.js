@@ -1,5 +1,5 @@
 /*  simulator/financial-management/list.js
-    Version: v1.5 (2023.10.30)
+    Version: v1.6 (2023.11.07)
 
     Author
         Arime-chan
@@ -190,7 +190,7 @@ window.FinManListPage = {
         let id = +arr[0];
         let transaction = null;
         let newArray = [];
-        
+
         for (const item of this.Data.PageData.Transactions) {
             if (item.Id != id) {
                 newArray.push(item);
@@ -253,8 +253,33 @@ FinManListPage.Data = {
     processPageData: function (_json) {
         let parsedData = JSON.parse(_json);
 
+        let nonCardPayRecord = [];
+        let cardPayAmount = 0;
+        let lastAddedDate = new Date(0);
+
         for (record of parsedData.Transactions) {
-            record.AddedDate = new Date(record.AddedDate);
+            let utcDate = new Date(record.AddedDate);
+            record.AddedDate = P24Utils.DateTime.toLocal(utcDate);
+
+            if (record.Category != "Card Pay") {
+                nonCardPayRecord.push(record);
+            } else {
+                cardPayAmount += record.Amount
+                if (lastAddedDate < record.AddedDate)
+                    lastAddedDate = record.AddedDate;
+            }
+        }
+
+        if (cardPayAmount != 0) {
+            nonCardPayRecord.push({
+                AddedDate: lastAddedDate,
+                Amount: cardPayAmount,
+                Category: "Card Pay",
+                Details: "",
+                Id: null
+            });
+
+            parsedData.Transactions = nonCardPayRecord;
         }
 
         //console.log(_json);
@@ -453,14 +478,29 @@ FinManListPage.UI = {
             }
         }
 
-        let html = "<div id=\"r" + _record.Id + "\" class=\"d-flex flex-nowrap border-bottom py-1\">"
+        // ==========;
+        let classRow = "";
+        if (_record.Category == "Card Pay")
+            classRow = " bg-light";
+
+        // ==========;
+        let idSection = "";
+        let removeBtn = "";
+        if (_record.Id != null) {
+            idSection = " id=\"r" + _record.Id + "\"";
+            removeBtn = "<a href=\"#\" class=\"text-danger\" onclick=\"FinManListPage.confirmRemoveRecord('" + _record.Id + "')\">" + P24Utils.svg("x-lg") + "</a>";
+        }
+        else {
+            removeBtn = "<div style=\"opacity:0\">" + P24Utils.svg("x-lg") + "</div";
+        }
+
+        let html = "<div" + idSection + " class=\"d-flex flex-nowrap border-bottom" + classRow + " py-1\">"
             + "<div class=\"px-2\" style=\"width:" + this.m_RowStyles[0] + "\">" + dateString + "</div>"
             + "<div class=\"px-2\" style=\"width:" + this.m_RowStyles[1] + "\">" + _record.Category + "</div>"
             + "<div class=\"px-2 text-end text-" + classAmount + "\" style=\"width:" + this.m_RowStyles[2] + "\">" + amountString + "</div>"
             + "<div class=\"px-2\" style=\"width:" + this.m_RowStyles[3] + "\">" + details + "</div>"
-            + "<div style=\"width:" + this.m_RowStyles[4] + "\">"
-            + "<a href=\"#\" class=\"text-danger\" onclick=\"FinManListPage.confirmRemoveRecord('" + _record.Id + "')\">" + P24Utils.svg("x-lg") + "</a>"
-            + "</div></div>";
+            + "<div style=\"width:" + this.m_RowStyles[4] + "\">" + removeBtn + "</div>"
+            + "</div>";
 
         return html;
     },
