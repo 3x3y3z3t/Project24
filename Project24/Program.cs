@@ -1,7 +1,7 @@
 /*  Project24
  *  
  *  Program.cs
- *  Version: v1.8 (2023.11.07)
+ *  Version: v1.9 (2023.11.19)
  *  
  *  Author
  *      Arime-chan
@@ -32,7 +32,6 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Project24.App;
-using Project24.App.Identity;
 using Project24.App.Services;
 using Project24.App.Utils;
 using Project24.Data;
@@ -50,10 +49,6 @@ namespace Project24
         public static string AppsettingsVersion { get; private set; }
         public static bool IsDevelopment { get; private set; }
 
-        /// <summary>
-        ///     Do NOT write to this list outside of <see cref="DbSeedDataValidator"/>.
-        /// </summary>
-        public static HashSet<string> RolesDirtyUser { get; set; }
 
 
 

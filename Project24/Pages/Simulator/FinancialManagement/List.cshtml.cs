@@ -25,7 +25,7 @@ using Project24.App.Utils;
 using Project24.Data;
 using Project24.Model.Identity;
 using Project24.Model.Simulator.FinancialManagement;
-using Project24.SerializerContext;
+using Project24.Serializer;
 
 namespace Project24.Pages.Simulator.FinancialManagement
 {

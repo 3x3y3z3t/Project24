@@ -1,4 +1,8 @@
 
+### v-core6-0.9.7 (2023.11.19) (dev)
+- Added Account List page.
+- Added Account Manager page.
+
 ### v-core6-0.9.6 (2023.10.30)
 - Added `P24DesignMap` to track development progress more accurately (will be removed on release).
 - Updated Simulator > FinancialManagement scripts to support Card Payment.

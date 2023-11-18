@@ -1,0 +1,63 @@
+@*  Home/Account/Manage.cshtml
+ *  Version: v1.0 (2023.11.19)
+ *
+ *  Contributor
+ *      Arime-chan
+*@
+
+@page
+
+@model Project24.Pages.Home.Account.ManageModel
+@{
+    Layout = P24PageLayout.CommonLayout;
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_HOME_ACCOUNT_MANAGE];
+     /*  Manage page.
+     *      - Account Details
+     *      - Roles setting
+     *
+     *
+     *
+             *
+    */
+
+
+
+
+
+
+
+
+}
+
+<div id="div-error" class="fs-3 text-danger mb-2" hidden></div>
+
+<div>
+    <a asp-page="List">Back to list</a>
+</div>
+
+<div id="div-main">
+
+    <h3 class="border-bottom border-2 py-1">Account Details</h3>
+    <div id="div-acc-details"></div>
+    <br />
+
+    <h3 class="border-bottom border-2 py-1">Access</h3>
+    <div id="div-acc-access"></div>
+    <button type="button" class="btn btn-primary ms-2 my-2" onclick="AccManagePage.UI.btnSave_onclick()">Update</button>
+    <br />
+
+
+
+
+
+</div>
+
+@Html.AntiForgeryToken()
+
+<partial name="Shared/Modal/_ModalCommon" />
+
+
+@section Scripts {
+    <script type="text/javascript" src="~/js/modals.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/home/account/manage.js" asp-append-version="false"></script>
+}

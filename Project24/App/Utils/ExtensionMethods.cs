@@ -1,5 +1,5 @@
 /*  App/Utils/ExtensionMethods.cs
- *  Version: v1.3 (2023.10.29)
+ *  Version: v1.4 (2023.11.19)
  *  
  *  Author
  *      Arime-chan
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Project24.App.Services;
 using Microsoft.Extensions.Logging;
 using Project24.Model.Identity;
-using Project24.SerializerContext;
+using Project24.Serializer;
 using Project24.Model;
 using Microsoft.AspNetCore.Builder;
 using Project24.App.Middlewares;
@@ -89,13 +89,13 @@ namespace Project24.App
             return false;
         }
 
-        public static async Task<bool> ValidateModelState(this PageModel _page, ApplicationDbContext _dbContext, P24IdentityUser _currentUser, string _operation)
+        public static bool ValidateModelState(this PageModel _page, ApplicationDbContext _dbContext, P24IdentityUser _currentUser, string _operation)
         {
             if (_page.ModelState.IsValid)
                 return true;
 
             _dbContext.RecordUserAction(
-                _currentUser.UserName,
+                _currentUser != null? _currentUser.UserName : null,
                 _operation,
                 UserAction.OperationStatus_.Failed,
                 new Dictionary<string, string>() { { CustomInfoKeys.Error, Message.InvalidModelState } }

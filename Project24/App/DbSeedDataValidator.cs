@@ -1,5 +1,5 @@
 /*  App/DbSeedDataValidator.cs
- *  Version: v1.0 (2023.11.07)
+ *  Version: v1.1 (2023.11.19)
  *  
  *  Author
  *      Arime-chan
@@ -14,7 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Project24.App;
-using Project24.App.Identity;
+using Project24.App.Utils.Identity;
 using Project24.Data;
 using Project24.Model.Identity;
 
@@ -38,7 +38,7 @@ namespace Project24
 
             ValidateManually();
 
-            Program.RolesDirtyUser = new();
+            P24RoleUtils.RolesDirtyUser = new();
 
             flag &= ValidateRoles();
             flag &= ValidatePowerUser();
@@ -54,7 +54,7 @@ namespace Project24
                          select _role.Name)
                         .ToList();
 
-            foreach (string roleName in P24RoleName.AllRoleNames)
+            foreach (string roleName in P24RoleUtils.AllRoleNames)
             {
                 if (roles.Contains(roleName))
                     continue;
@@ -93,7 +93,7 @@ namespace Project24
                 }
 
                 m_logger.LogInformation("Power user was not found and has been created.");
-                return ValidatePowerUserRoles(powerUser, P24RoleName.AllRoleNames, true);
+                return ValidatePowerUserRoles(powerUser, P24RoleUtils.AllRoleNames, true);
             }
 
             // correct user password if incorrect;
@@ -132,7 +132,7 @@ namespace Project24
                 }
             }
 
-            return ValidatePowerUserRoles(powerUser, P24RoleName.AllRoleNames);
+            return ValidatePowerUserRoles(powerUser, P24RoleUtils.AllRoleNames);
         }
 
         private bool ValidatePowerUserRoles(P24IdentityUser _user, List<string> _roles, bool _bypassCheck = false)
@@ -171,7 +171,7 @@ namespace Project24
                 return false;
             }
 
-            _ = Program.RolesDirtyUser.Add(_user.UserName);
+            _ = P24RoleUtils.RolesDirtyUser.Add(_user.UserName);
 
             m_logger.LogInformation("Power user's missing roles has been added.");
             return true;

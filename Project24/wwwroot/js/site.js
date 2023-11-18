@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.7 (2023.11.07)
+ *  Version: 1.8 (2023.11.19)
  *
  *  Author
  *      Arime-chan
@@ -30,6 +30,13 @@ const P24_MSG_TAG_EXCEPTION = "<excp>";
 const P24_ARG_DATA_TYPE_STRING = "AnnouncementArgDataString";
 const P24_ARG_DATA_TYPE_DATETIME = "AnnouncementArgDataDateTime";
 const P24_ARG_DATA_TYPE_TIMESPAN = "AnnouncementArgDataTimeSpan";
+
+// ==================================================
+
+const CONFIG_PANEL_ITEM_STATUS_NO_CHANGE = "CONFIG_PANEL_ITEM_STATUS_NO_CHANGE";
+const CONFIG_PANEL_ITEM_STATUS_MODIFIED = "CONFIG_PANEL_ITEM_STATUS_MODIFIED";
+const CONFIG_PANEL_ITEM_STATUS_SAVED = "CONFIG_PANEL_ITEM_STATUS_SAVED";
+const CONFIG_PANEL_ITEM_STATUS_ERROR = "CONFIG_PANEL_ITEM_STATUS_ERROR";
 
 // ==================================================
 
@@ -285,6 +292,46 @@ P24Utils.formatDataLength = function (_length) {
 
     return (_length).toFixed(0) + " B";
 }
+
+P24Utils.Visual = {
+    refreshHighlightSingleItem: function (_element, _status) {
+        if (_element == null)
+            return;
+
+        if (_status == CONFIG_PANEL_ITEM_STATUS_NO_CHANGE) {
+            _element.removeClass("border-success border-danger border-warning border-start border-end");
+            _element.css({
+                "padding-left": "2px",
+                "padding-right": "2px"
+            });
+        }
+        else if (_status == CONFIG_PANEL_ITEM_STATUS_MODIFIED) {
+            _element.removeClass("border-success border-danger");
+            _element.addClass("border-warning border-start border-end");
+            _element.css({
+                "padding-left": "0px",
+                "padding-right": "0px"
+            });
+        }
+        else if (_status == CONFIG_PANEL_ITEM_STATUS_SAVED) {
+            _element.removeClass("border-warning border-danger");
+            _element.addClass("border-success border-start border-end");
+            _element.css({
+                "padding-left": "0px",
+                "padding-right": "0px"
+            });
+        }
+        else if (_status == CONFIG_PANEL_ITEM_STATUS_ERROR) {
+            _element.removeClass("border-warning border-success");
+            _element.addClass("border-danger border-start border-end");
+            _element.css({
+                "padding-left": "0px",
+                "padding-right": "0px"
+            });
+        }
+    },
+
+};
 
 // ==================================================
 // html
