@@ -1,5 +1,5 @@
 /*  Model/UserAction.cs
- *  Version: v1.0 (2023.10.07)
+ *  Version: v1.1 (2023.11.19)
  *  
  *  Author
  *      Arime-chan
@@ -29,6 +29,7 @@ namespace Project24.Model
             public const string Updater_UpdateStaticFiles = "Update Static Files";
             public const string Updater_PurgeNextFiles = "Purge Next version files";
 
+            public const string Home_Account_Manage_UpdateRole = nameof(Home_Account_Manage_UpdateRole);
         }
 
         public static class OperationStatus_

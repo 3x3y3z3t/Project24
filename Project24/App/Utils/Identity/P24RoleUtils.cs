@@ -1,22 +1,22 @@
-/*  App/Identity/P24RoleName.cs
- *  Version: v1.2 (2023.10.29)
+/*  App/Identity/P24RoleUtils.cs
+ *  Version: v1.3 (2023.11.19)
  *  
  *  Author
  *      Arime-chan
  */
 
 using System.Collections.Generic;
-using Project24.App.Utils;
 
-namespace Project24.App.Identity
+namespace Project24.App.Utils.Identity
 {
-    public static class P24RoleName
+    public static class P24RoleUtils
     {
         public static readonly List<string> AllRoleNames = new()
         {
             PageCollection.Home.Index,
 
             PageCollection.Home.Account.List,
+            PageCollection.Home.Account.Manage,
 
             PageCollection.Home.Management.ConfigPanel,
             PageCollection.Home.Management.Updater,
@@ -27,6 +27,12 @@ namespace Project24.App.Identity
 
 
         };
+
+        /// <summary>
+        ///     NOTE: Only write to this list when you change a user's role.
+        ///     Any user in this list will be force-signed out.
+        /// </summary>
+        public static HashSet<string> RolesDirtyUser { get; set; }
     }
 
 }

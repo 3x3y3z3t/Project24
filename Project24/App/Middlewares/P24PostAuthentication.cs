@@ -1,5 +1,5 @@
 /*  App/Middlewares/P24AuthenticationMiddleware.cs
- *  Version: v1.0 (2023.10.15)
+ *  Version: v1.1 (2023.10.19)
  *  
  *  Author
  *      Arime-chan
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Project24.App.Utils.Identity;
 using Project24.Model.Identity;
 using System;
 using System.Threading.Tasks;
@@ -29,13 +30,13 @@ namespace Project24.App.Middlewares
         {
             var identity = _httpContext.User.Identity;
             if (identity == null || !identity.IsAuthenticated || string.IsNullOrWhiteSpace(identity.Name)
-                || Program.RolesDirtyUser.Count <= 0)
+                || P24RoleUtils.RolesDirtyUser.Count <= 0)
             {
                 await m_NextMiddleware(_httpContext);
                 return;
             }
 
-            foreach (string username in Program.RolesDirtyUser)
+            foreach (string username in P24RoleUtils.RolesDirtyUser)
             {
                 if (_httpContext.User.Identity.Name != username)
                     continue;
@@ -47,7 +48,7 @@ namespace Project24.App.Middlewares
                 m_Logger.LogInformation("Force signed out user {_username} due to role changed.", username);
                 // TODO: maybe let user know that they have been signed out due to role changes;
 
-                Program.RolesDirtyUser.Remove(username);
+                P24RoleUtils.RolesDirtyUser.Remove(username);
                 break;
             }
 

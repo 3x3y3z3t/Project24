@@ -1,5 +1,5 @@
 /*  Model/Identity/P24IdentityExtendedModel.cs
- *  Version: v1.0 (2023.10.07)
+ *  Version: v1.1 (2023.11.19)
  *  
  *  Author
  *      Arime-chan
@@ -38,16 +38,22 @@ namespace Project24.Model.Identity
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(FirstName) && string.IsNullOrWhiteSpace(LastName))
+                string name = "";
+
+                if (!string.IsNullOrWhiteSpace(LastName))
+                    name += LastName.ToUpper();
+
+                if (!string.IsNullOrWhiteSpace(FirstName))
+                {
+                    if (name != "")
+                        name += ", ";
+                    name += FirstName;
+                }
+
+                if (name == "")
                     return "[null]";
 
-                if (string.IsNullOrWhiteSpace(LastName))
-                    return FirstName;
-
-                if (string.IsNullOrWhiteSpace(FirstName))
-                    return LastName;
-
-                return FirstName + " " + LastName;
+                return name;
             }
         }
 

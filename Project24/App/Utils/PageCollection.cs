@@ -1,5 +1,5 @@
 /*  App/Utils/PageCollection.cs
- *  Version: v1.1 (2023.10.19)
+ *  Version: v1.2 (2023.11.19)
  *  
  *  Author
  *      Arime-chan
@@ -12,6 +12,14 @@ namespace Project24.App.Utils
         public static class Home
         {
             private const string c_Me = nameof(Home);
+
+            public static class Account
+            {
+                private const string c_Me = nameof(Account);
+
+                public const string List = $"{Home.c_Me}/{c_Me}/{nameof(List)}";
+                public const string Manage = $"{Home.c_Me}/{c_Me}/{nameof(Manage)}";
+            }
 
             public static class Management
             {
