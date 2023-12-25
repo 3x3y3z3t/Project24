@@ -1,5 +1,6 @@
 /*  Model/Identity/P24IdentityExtendedModel.cs
- *  Version: v1.1 (2023.11.19)
+ *  Version: v1.1 (2023.12.24)
+ *  Spec:    v0.1
  *  
  *  Author
  *      Arime-chan
@@ -9,13 +10,15 @@ using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System;
 using System.Text.Json.Serialization;
+using Project24.App.Services;
 
 namespace Project24.Model.Identity
 {
     /// <summary>
     ///     Project24's customized <see cref="IdentityUser"/>, which contains extra information about the user.<br />
-    ///     <c>P24IdentityUser</c> is also a syncable object (see <see cref="ISyncable"/>).
+    ///     <c>P24IdentityUser</c> is a syncable object (see <see cref="ISyncable"/>).
     /// </summary>
+    #region Identity User
     public class P24IdentityUser : IdentityUser, ISyncable
     {
         /* Frist Name includes Family and Middle name. */
@@ -25,7 +28,7 @@ namespace Project24.Model.Identity
         [StringLength(16)]
         public string LastName { get; set; }
 
-        public string PreferredLocale { get; set; }
+        public string PreferredLocale { get; set; } = LocalizationSvc.SupportedLocale.EN_US;
 
         public string Status { get; set; }
 
@@ -62,7 +65,9 @@ namespace Project24.Model.Identity
 
 
         public P24IdentityUser()
-        { }
+        {
+            AddedDateTime = DateTime.Now;
+        }
 
         public P24IdentityUser(DateTime _addedDateTime)
         {
@@ -98,12 +103,13 @@ namespace Project24.Model.Identity
         private ulong m_Version = 0UL;
         private string m_Hash = null;
     }
-
+    #endregion
 
     /// <summary>
     ///     Project24's customized <see cref="IdentityRole"/>, which contains extra information about the role.<br />
-    ///     <c>P24IdentityRole</c> is also a syncable object (see <see cref="ISyncable"/>).
+    ///     <c>P24IdentityRole</c> is a syncable object (see <see cref="ISyncable"/>).
     /// </summary>
+    #region Identity Role
     public class P24IdentityRole : IdentityRole, ISyncable
     {
         public ulong Version { get => m_Version; set => m_Version = value; }
@@ -130,5 +136,6 @@ namespace Project24.Model.Identity
         private ulong m_Version = 0UL;
         private string m_Hash = null;
     }
+    #endregion
 
 }

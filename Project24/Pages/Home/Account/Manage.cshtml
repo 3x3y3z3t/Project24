@@ -11,22 +11,6 @@
 @{
     Layout = P24PageLayout.CommonLayout;
     ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_HOME_ACCOUNT_MANAGE];
-     /*  Manage page.
-     *      - Account Details
-     *      - Roles setting
-     *
-     *
-     *
-             *
-    */
-
-
-
-
-
-
-
-
 }
 
 <div id="div-error" class="fs-3 text-danger mb-2" hidden></div>
@@ -57,7 +41,8 @@
 <partial name="Shared/Modal/_ModalCommon" />
 
 
-@section Scripts {
+@section Scripts
+{
     <script type="text/javascript" src="~/js/modals.js" asp-append-version="true"></script>
     <script type="text/javascript" src="~/js/home/account/manage.js" asp-append-version="false"></script>
 }

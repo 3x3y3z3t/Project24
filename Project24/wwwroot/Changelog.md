@@ -1,4 +1,8 @@
 
+### v-core6-0.10.0 (2023.12.24)
+- Added Account Create page.
+- Added [Identity] Change Password page.
+
 ### v-core6-0.9.7 (2023.11.19) (dev)
 - Added Account List page.
 - Added Account Manager page.

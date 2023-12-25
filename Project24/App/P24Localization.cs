@@ -1,5 +1,5 @@
 /*  App/Utils/P24Localization.cs
- *  Version: v1.6 (2023.10.29)
+ *  Version: v1.7 (2023.12.24)
  *  
  *  Contributor
  *      Arime-chan
@@ -104,11 +104,15 @@ namespace Project24.App
     public static class LOCL
     {
         #region Button Labels
+        public const string BTN_CLEAR = nameof(BTN_CLEAR);
+
         public const string BTN_RELOAD = nameof(BTN_RELOAD);
         public const string BTN_SAVE = nameof(BTN_SAVE);
 
         public const string BTN_LOGIN = nameof(BTN_LOGIN);
         public const string BTN_LOGOUT = nameof(BTN_LOGOUT);
+
+        public const string BTN_CREATE_USER = nameof(BTN_CREATE_USER);
         #endregion
 
         #region Labels
@@ -122,6 +126,9 @@ namespace Project24.App
         public const string LBL_USERNAME = nameof(LBL_USERNAME);
         public const string LBL_PASSWORD = nameof(LBL_PASSWORD);
         public const string LBL_LOGIN_REMEMBER = nameof(LBL_LOGIN_REMEMBER);
+
+        public const string LBL_FIRSTNAME = nameof(LBL_FIRSTNAME);
+        public const string LBL_LASTNAME = nameof(LBL_LASTNAME);
 
         public const string LBL_BACK_TO_HOME = nameof(LBL_BACK_TO_HOME);
 
@@ -172,6 +179,7 @@ namespace Project24.App
 
         public const string PAGE_HOME_ACCOUNT_LIST = nameof(PAGE_HOME_ACCOUNT_LIST);
         public const string PAGE_HOME_ACCOUNT_MANAGE = nameof(PAGE_HOME_ACCOUNT_MANAGE);
+        public const string PAGE_HOME_ACCOUNT_CREATE = nameof(PAGE_HOME_ACCOUNT_CREATE);
 
 
 

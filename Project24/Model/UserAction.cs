@@ -1,8 +1,9 @@
 /*  Model/UserAction.cs
- *  Version: v1.1 (2023.11.19)
+ *  Version: v1.2 (2023.12.24)
+ *  Spec:    v0.1
  *  
- *  Author
- *      Arime-chan
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 using System.ComponentModel.DataAnnotations;
@@ -30,6 +31,9 @@ namespace Project24.Model
             public const string Updater_PurgeNextFiles = "Purge Next version files";
 
             public const string Home_Account_Manage_UpdateRole = nameof(Home_Account_Manage_UpdateRole);
+            public const string Home_Account_Create = nameof(Home_Account_Create);
+
+            public const string IdentityAcc_Manage_ChangePass = nameof(IdentityAcc_Manage_ChangePass);
         }
 
         public static class OperationStatus_

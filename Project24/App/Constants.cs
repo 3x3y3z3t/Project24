@@ -1,5 +1,5 @@
 /*  App/Constants.cs
- *  Version: v1.4 (2023.10.07)
+ *  Version: v1.5 (2023.12.24)
  *  
  *  Author
  *      Arime-chan
@@ -30,6 +30,8 @@ namespace Project24.App
 
     public static class Constants
     {
+        public const string DefaultPassword = "12345@Aa"; // TODO: move this to AppHelper;
+
         public const string AppMainDir = "/main";
         public const string AppNextDir = "/next";
         public const string AppPrevDir = "/prev";
@@ -45,8 +47,8 @@ namespace Project24.App
         public const int MaxRequestSize = 32 * 1024 * 1024;
         public const long MaxLogFileSize = 50 * 1024 * 1024;
 
-        public static DateTime Epoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        public static DateTime AppReleaseDate = new DateTime(2022, 8, 31, 2, 18, 37, 135);
+        public static readonly DateTime Epoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        public static readonly DateTime AppReleaseDate = new DateTime(2022, 8, 31, 2, 18, 37, 135);
     }
 
     public static class ErrCode

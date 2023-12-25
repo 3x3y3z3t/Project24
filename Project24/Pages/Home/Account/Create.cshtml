@@ -1,0 +1,65 @@
+@*  Home/Account/Manage.cshtml
+ *  Version: v1.0 (2023.11.19)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
+*@
+
+@page
+
+@model Project24.Pages.Home.Account.CreateModel
+@{
+    Layout = P24PageLayout.CommonLayout;
+    ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_HOME_ACCOUNT_CREATE];
+
+    string classFormInput = "form-floating my-1";
+}
+
+<div>
+    <a asp-page="List">Back to list</a>
+</div>
+
+<div id="div-main">
+    <div class="col-5">
+        <form class="needs-validation" novalidate>
+            <div class="@classFormInput">
+                <input id="input-username" type="text" class="form-control" placeholder="" required />
+                <label for="input-username">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_USERNAME])</label>
+            </div>
+            <br />
+
+            <div class="@classFormInput">
+                <input id="input-firstname" type="text" class="form-control" placeholder="" />
+                <label for="input-firstname">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_FIRSTNAME])</label>
+            </div>
+
+            <div class="@classFormInput">
+                <input id="input-lastname" type="text" class="form-control" placeholder="" />
+                <label for="input-lastname">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.LBL_LASTNAME])</label>
+            </div>
+
+        </form>
+        <br />
+
+        <div>
+            <button id="btn-submit" type="button" class="btn btn-primary" onclick="AccCreatePage.UI.btnSubmit_onclick()">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.BTN_CREATE_USER])</button>
+            <button id="btn-clear" type="button" class="btn btn-secondary mx-1" onclick="AccCreatePage.UI.btnClear_onclick()">@MiscUtils.HtmlDisplay(m_LocalizationSvc[LOCL.BTN_CLEAR])</button>
+        </div>
+
+
+
+    </div>
+
+</div>
+
+@Html.AntiForgeryToken()
+
+<partial name="Shared/Modal/_ModalCommon" />
+
+
+@section Scripts
+{
+    <script type="text/javascript" src="~/js/modals.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/home/account/create.js" asp-append-version="false"></script>
+}

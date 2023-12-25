@@ -1,7 +1,9 @@
 @*  Areas/Identity/Pages/Account/Manage/TwoFactorAuthentication.cshtml
- *  Version: v1.0 (2023.10.10)
+ *  Version: v1.1 (2023.12.24)
+ *  Spec:    v0.1
  *
  *  Contributor
+ *      The .NET Foundation (Author)
  *      Arime-chan
 *@
 
@@ -10,28 +12,35 @@
 @model IndexModel
 @{
     ViewData[ViewDataKeys.Title] = m_LocalizationSvc[LOCL.PAGE_IDENTITY_ACC_MANAGE_INDEX];
-    ViewData["ActivePage"] = ManageNavPages.Index;
+    ViewData[ViewDataKeys.NavActive] = LOCL.PAGE_IDENTITY_ACC_MANAGE_INDEX;
+
+    string classFormInput = "form-floating my-1";
 }
 
-<h3>@ViewData["Title"]</h3>
 <partial name="_StatusMessage" for="StatusMessage" />
+
 <div class="row">
     <div class="col-md-6">
         <form id="profile-form" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-floating">
-                <input asp-for="Username" class="form-control" disabled />
+            <div class="@classFormInput">
+                <input asp-for="Username" class="form-control" placeholder="" disabled />
                 <label asp-for="Username" class="form-label"></label>
             </div>
-            <div class="form-floating">
+@*             <div class="@classFormInput">
                 <input asp-for="Input.PhoneNumber" class="form-control" />
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
-            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+            </div> *@
+            <hr />
+
+            <div class="fs-4">Access: @Model.AccessCount</div>
+
+            @* <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button> *@
         </form>
     </div>
 </div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
