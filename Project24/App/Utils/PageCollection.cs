@@ -1,14 +1,25 @@
 /*  App/Utils/PageCollection.cs
- *  Version: v1.2 (2023.11.19)
+ *  Version: v1.3 (2023.12.24)
  *  
  *  Author
  *      Arime-chan
  */
 
+using System.Runtime.CompilerServices;
+
 namespace Project24.App.Utils
 {
     public static class PageCollection
     {
+        public static class IdentityAccount
+        {
+            public static class Manage
+            {
+                public const string Index = "Identity/Account/Manage";
+                public const string ChangePassword = "Identity/Account/Manage/ChangePassword";
+            }
+        }
+
         public static class Home
         {
             private const string c_Me = nameof(Home);
@@ -19,6 +30,7 @@ namespace Project24.App.Utils
 
                 public const string List = $"{Home.c_Me}/{c_Me}/{nameof(List)}";
                 public const string Manage = $"{Home.c_Me}/{c_Me}/{nameof(Manage)}";
+                public const string Create = $"{Home.c_Me}/{c_Me}/{nameof(Create)}";
             }
 
             public static class Management

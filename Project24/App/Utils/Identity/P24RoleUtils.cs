@@ -17,6 +17,7 @@ namespace Project24.App.Utils.Identity
 
             PageCollection.Home.Account.List,
             PageCollection.Home.Account.Manage,
+            PageCollection.Home.Account.Create,
 
             PageCollection.Home.Management.ConfigPanel,
             PageCollection.Home.Management.Updater,

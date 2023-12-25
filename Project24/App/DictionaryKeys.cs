@@ -1,8 +1,9 @@
 /*  App/DictionaryKeys.cs
- *  Version: v1.2 (2023.11.19)
+ *  Version: v1.3 (2023.12.24)
+ *  Spec:    v0.1
  *  
  *  Contributor
- *      Arime-chan
+ *      Arime-chan (Author)
  */
 
 namespace Project24.App
@@ -12,6 +13,7 @@ namespace Project24.App
         public const string Title = "Title";
         public const string Flags = "ViewDataFlags";
         public const string Locale = "Locale";
+        public const string NavActive = "NavActive";
     }
 
     public static class CustomInfoKeys

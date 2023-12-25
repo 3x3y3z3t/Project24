@@ -1,8 +1,9 @@
 /*  App/Enums.cs
- *  Version: v1.4 (2023.10.07)
+ *  Version: v1.5 (2023.12.24)
+ *  Spec:    v0.1
  *  
- *  Author
- *      Arime-chan
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 namespace Project24.App
@@ -85,11 +86,41 @@ namespace Project24.App
     {
         public const int TagLength = 6;
 
+        /// <summary>Don't use this tag.</summary>
         public const string Info = "<info>";
+
+        /// <summary>Attach this tag when the operation was a success.</summary>
         public const string Success = "<done>";
+
+        /// <summary>
+        /// Attach this tag when the operation could have caused data corruption, or could
+        /// have lead to fauty states of main program. You can accept the data or reject it.
+        /// </summary>
         public const string Warning = "<warn>";
+
+        /// <summary>
+        /// Attach this tag when the operation would have caused an error (of any kind),
+        /// but the data have been checked and the operation have been rejected properly.<br />
+        /// Use <see cref="Critical"/> if the error would cause main program to crash
+        /// (e.g error not caught by ExceptionHandler middleware).<br />
+        /// Use <see cref="Exception"/> instead if the error was an exception and was caught
+        /// in a <c>try..catch</c> block.
+        /// </summary>
         public const string Error = "<fail>";
 
+        /// <summary>
+        /// Attach this tag when the operation would have caused main program to crash,
+        /// but the data have been check and the operation have been reject properly.<br />
+        /// Use <see cref="Error"/> if the error would not cause main program to crash
+        /// (e.g caught by ExceptionHandler middleware).<br />
+        /// Use <see cref="Exception"/> instead if the error was an exception and was caught
+        /// in a <c>try..catch</c> block.
+        /// </summary>
+        public const string Critical = "<crit>";
+
+        /// <summary>
+        /// Attach this tag when the operation caused an exception and it have been caught.
+        /// </summary>
         public const string Exception = "<excp>";
     }
 

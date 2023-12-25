@@ -1,10 +1,9 @@
 /*  Areas/Identity/Pages/Account/Manage/ChangePassword.cshtml.cs
- *  Version: v1.0 (2023.10.13)
- *  
- *  Author
- *      The .NET Foundation
+ *  Version: v1.1 (2023.12.24)
+ *  Spec:    v0.1
  *  
  *  Contributor
+ *      The .NET Foundation (Author)
  *      Arime-chan
  */
 // Licensed to the .NET Foundation under one or more agreements.
@@ -12,13 +11,16 @@
 
 #nullable disable
 
-using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Project24.App;
+using Project24.Data;
+using Project24.Model;
 using Project24.Model.Identity;
 
 namespace Project24.Areas.Identity.Pages.Account.Manage
@@ -52,25 +54,24 @@ namespace Project24.Areas.Identity.Pages.Account.Manage
         public string StatusMessage { get; set; }
 
 
-        public ChangePasswordModel(SignInManager<P24IdentityUser> _signInManager, UserManager<P24IdentityUser> _userManager, ILogger<ChangePasswordModel> _logger)
+        public ChangePasswordModel(SignInManager<P24IdentityUser> _signInManager, UserManager<P24IdentityUser> _userManager, ApplicationDbContext _dbContext, ILogger<ChangePasswordModel> _logger)
         {
             m_SignInManager = _signInManager;
             m_UserManager = _userManager;
+            m_DbContext = _dbContext;
             m_Logger = _logger;
         }
 
 
         public async Task<IActionResult> OnGetAsync()
         {
-            return NotFound();
-
-            var user = await m_UserManager.GetUserAsync(User);
+            P24IdentityUser user = await m_UserManager.GetUserAsync(User);
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{m_UserManager.GetUserId(User)}'.");
             }
 
-            var hasPassword = await m_UserManager.HasPasswordAsync(user);
+            bool hasPassword = await m_UserManager.HasPasswordAsync(user);
             if (!hasPassword)
             {
                 return RedirectToPage("./SetPassword");
@@ -81,30 +82,52 @@ namespace Project24.Areas.Identity.Pages.Account.Manage
 
         public async Task<IActionResult> OnPostAsync()
         {
-            return NotFound();
+            P24IdentityUser user = await m_UserManager.GetUserAsync(User);
+            if (user == null)
+                return NotFound($"Unable to load user with ID '{m_UserManager.GetUserId(User)}'.");
 
-            if (!ModelState.IsValid)
+            if (!this.ValidateModelState(m_DbContext, user, UserAction.Operation_.IdentityAcc_Manage_ChangePass))
             {
                 return Page();
             }
 
-            var user = await m_UserManager.GetUserAsync(User);
-            if (user == null)
+            if (!await m_UserManager.CheckPasswordAsync(user, Input.OldPassword))
             {
-                return NotFound($"Unable to load user with ID '{m_UserManager.GetUserId(User)}'.");
+                ModelState.AddModelError(string.Empty, "Incorrect Password.");
+                m_DbContext.RecordUserAction(
+                    user.UserName,
+                    UserAction.Operation_.IdentityAcc_Manage_ChangePass,
+                    UserAction.OperationStatus_.Failed,
+                    new Dictionary<string, string>() { { CustomInfoKeys.Error, "Incorrect Password" } }
+                );
+
+                return Page();
             }
 
-            var changePasswordResult = await m_UserManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
-            if (!changePasswordResult.Succeeded)
+            IdentityResult result = await m_UserManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
+            if (!result.Succeeded)
             {
-                foreach (var error in changePasswordResult.Errors)
+                foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
+
+                m_DbContext.RecordUserAction(
+                    user.UserName,
+                    UserAction.Operation_.IdentityAcc_Manage_ChangePass,
+                    UserAction.OperationStatus_.Failed
+                );
+
                 return Page();
             }
 
             await m_SignInManager.RefreshSignInAsync(user);
+
+            m_DbContext.RecordUserAction(
+                user.UserName,
+                UserAction.Operation_.IdentityAcc_Manage_ChangePass,
+                UserAction.OperationStatus_.Success
+            );
             m_Logger.LogInformation("User changed their password successfully.");
             StatusMessage = "Your password has been changed.";
 
@@ -114,6 +137,7 @@ namespace Project24.Areas.Identity.Pages.Account.Manage
 
         private readonly SignInManager<P24IdentityUser> m_SignInManager;
         private readonly UserManager<P24IdentityUser> m_UserManager;
+        private readonly ApplicationDbContext m_DbContext;
         private readonly ILogger<ChangePasswordModel> m_Logger;
     }
 

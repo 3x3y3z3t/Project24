@@ -1,8 +1,9 @@
 /*  App/Utils/MiscUtils.cs
- *  Version: v1.5 (2023.10.10)
+ *  Version: v1.6 (2023.12.24)
+ *  Spec:    v0.1
  *  
- *  Author
- *      Arime-chan
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 using System;
@@ -11,6 +12,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Project24.App.BackendData;
 
 namespace Project24.App
@@ -121,7 +123,7 @@ namespace Project24.App
         public static string WhereAmI() => Directory.GetCurrentDirectory();
         #endregion
 
-        public static HtmlString HtmlDisplay(string _content) => new HtmlString(_content);
+        public static HtmlString HtmlDisplay(string _content) => new(_content);
 
 
         // https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
@@ -150,6 +152,24 @@ namespace Project24.App
             return 4294967296 * (2097151 & h2) + (uint)h1;
         }
 
+    }
+
+    public static class NavUtils
+    {
+        public static string GetClass(ViewContext _viewContext, string _pageName)
+        {
+            string activePage = _viewContext.ViewData[ViewDataKeys.NavActive] as string;
+            //if (activePage != null)
+            //{
+            //    int pos = activePage.LastIndexOf('_');
+            //    activePage = activePage[(pos + 1)..];
+            //}
+
+            if (string.Equals(activePage, _pageName, StringComparison.OrdinalIgnoreCase))
+                return "active";
+
+            return null;
+        }
     }
 
 }

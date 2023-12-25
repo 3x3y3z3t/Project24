@@ -1,5 +1,5 @@
 /*  site.js
- *  Version: 1.8 (2023.11.19)
+ *  Version: 1.9 (2023.12.24)
  *
  *  Author
  *      Arime-chan
@@ -120,6 +120,76 @@ P24Utils.Ajax = {
         }
     },
 
+    //successContentCheckCommon: function (_params) {
+
+    //    if (_params.Content.startsWith(P24_MSG_TAG_INFO)) {
+    //        successContentCheckCommonInternal({
+    //            Content: _params.Content,
+    //            Func: _params.Func,
+    //            Key: LOCL_STR_INFO,
+    //            ConsoleLogFunc: console.info,
+    //            ModalFunc: Modal.Common.openOneBtnModal,
+    //            ModalIcon: MODAL_ICON_INFO
+    //        });
+
+    //        return true;
+    //    }
+
+
+
+    //    //_content, _infoFunc = null, _successFunc = null, _warningFunc = null, _errorFunc = null, _criticalFunc = null, _exceptionFunc = null) {
+    //    let body = _content.substring(6);
+
+    //    if (_content.startsWith(P24_MSG_TAG_INFO) && _infoFunc != false) {
+    //        if (_infoFunc == false)
+    //            return true;
+
+    //        if (_infoFunc != null)
+    //            return _infoFunc(_content);
+
+                
+
+    //        if (_infoFunc != null) {
+    //            _infoFunc(_content);
+    //        } else {
+    //            let title = P24Localization[LOCL_STR_INFO];
+    //            if (window.Modal == null) {
+    //                console.info(title + ":\n" + body);
+    //            } else {
+    //                Modal.Common.openOneBtnModal(title, body, MODAL_ICON_INFO);
+    //            }
+    //        }
+
+    //        return true;
+    //    }
+
+
+
+
+
+
+    //},
+
+    //successContentCheckCommonInternal(_params) {
+    //    if (_params.Func == false)
+    //        return;
+
+    //    if (_params.Func != null) {
+    //        _params.Func(_params.Content);
+    //        return;
+    //    }
+        
+    //    let body = _params.Content.substring(6);
+    //    let title = P24Localization[_params.Key];
+
+    //    if (window.Modal == null) {
+    //        _params.ConsoleLogFunc(title + ":\n" + body);
+    //        return;
+    //    }
+
+    //    _params.ModalFunc(title, body, _params.ModalIcon);
+    //}
+
     successContentCheckCommon: function (_content, _body) {
         if (_content.startsWith(P24_MSG_TAG_ERROR)) {
             if (window.Modal == null) {
@@ -153,6 +223,8 @@ P24Utils.Ajax = {
 
         return true;
     },
+
+
 };
 
 P24Utils.ajax_error = function (_xhr, _textStatus, _errorThrown) {

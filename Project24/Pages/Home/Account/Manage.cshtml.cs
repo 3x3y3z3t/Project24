@@ -24,7 +24,7 @@ using Project24.Serializer;
 
 namespace Project24.Pages.Home.Account
 {
-    [Authorize(Roles = PageCollection.Home.Account.Manage)]// TODO: role = Manage;
+    [Authorize(Roles = PageCollection.Home.Account.Manage)]
     public class ManageModel : PageModel
     {
         internal class UserManageViewModel
@@ -70,7 +70,6 @@ namespace Project24.Pages.Home.Account
         // ==================================================
         // AJAX Handler
 
-        // ajax handler;
         public IActionResult OnGetFetchPageData(string _id)
         {
             if (string.IsNullOrWhiteSpace(_id))
@@ -176,6 +175,7 @@ namespace Project24.Pages.Home.Account
             {
                 _ = P24RoleUtils.RolesDirtyUser.Add(user.UserName);
             }
+            // TODO: try m_UserManager.RefreshSignInUser(user);
 
             string jsonData = JsonSerializer.Serialize(resultsList);
             return Content(MessageTag.Success + jsonData, MediaTypeNames.Text.Plain);
