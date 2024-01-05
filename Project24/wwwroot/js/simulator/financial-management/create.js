@@ -1,8 +1,9 @@
 /*  simulator/financial-management/create.js
-    Version: v1.4 (2023.10.30)
-
-    Author
-        Arime-chan
+ *  Version: v1.5 (2023.12.26)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 class Record {
@@ -60,7 +61,17 @@ window.FinManCreatePage = {
             + "<div>Details: <code>" + record.Details + "</code></div>"
             + "</div>";
 
-        Modal.Common.openTwoBtnModal("Remove Record", html, MODAL_ICON_QUESTION, "Yes", "FinManCreatePage.removeRecord(" + _index + ")");
+        Modal.openModal({
+            ButtonsData: [{
+                Class: BTN_CLASS_PRIMARY,
+                DismissModal: true,
+                Label: "Yes",
+                OnClickText: "FinManCreatePage.removeRecord(" + _index + ")"
+            }],
+            Content: html,
+            IconData: Modal.IconData.Question,
+            TitleHtml: "Remove Record"
+        });
     },
 
     removeRecord: function (_index) {
@@ -76,13 +87,27 @@ window.FinManCreatePage = {
     },
 
     // ==================================================
-
+    
     openSyncInProgressModal: function () {
-        Modal.Common.openOneBtnModal("Sync In Progress", "Sync in progress. Please wait until data is done being sync.", MODAL_ICON_INFO);
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: "Sync in progress. Please wait until data is done being sync.",
+            IconData: Modal.IconData.Info,
+            TitleHtml: "Sync In Progress"
+        });
     },
 
     openImportInProgressModal: function () {
-        Modal.Common.openOneBtnModal("Import In Progress", "Import in progress. Please wait until data is done being imported.", MODAL_ICON_INFO);
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: "Import in progress. Please wait until data is done being imported.",
+            IconData: Modal.IconData.Info,
+            TitleHtml: "Import In Progress"
+        });
     },
 
     // ==================================================
@@ -169,8 +194,14 @@ window.FinManCreatePage = {
         if (processData != null)
             this.UI.refreshPage(processData);
 
-        Modal.Common.openOneBtnModal("Success", "Data has been added.", MODAL_ICON_SUCCESS);
-
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: "Data has been submitted.",
+            IconData: Modal.IconData.Success,
+            TitleHtml: "Success"
+        });
     },
 
     ajax_submit_error: function (_xhr, _textStatus, _errorThrow) {

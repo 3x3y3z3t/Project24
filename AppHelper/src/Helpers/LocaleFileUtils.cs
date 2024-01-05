@@ -1,5 +1,6 @@
 /*  Helpers/LocaleFileUtils.cs
- *  Version: v1.1 (2023.10.29)
+ *  Version: v1.2 (2023.12.26)
+ *  Spec:    v0.1
  *  
  *  Author
  *      Arime-chan
@@ -257,7 +258,10 @@ namespace AppHelper.Helpers
                 if (entry.IsValid)
                     entries[entry.Key] = entry;
                 else
-                    invalidEntries.Add(entry);
+                {
+                    if (!entry.RawString.StartsWith("get"))
+                        invalidEntries.Add(entry);
+                }
             }
 
             return new LocaleFile()

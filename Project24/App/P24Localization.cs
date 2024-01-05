@@ -1,5 +1,6 @@
 /*  App/Utils/P24Localization.cs
- *  Version: v1.7 (2023.12.24)
+ *  Version: v1.8 (2023.12.26)
+ *  Spec:    v0.1
  *  
  *  Contributor
  *      Arime-chan
@@ -188,6 +189,8 @@ namespace Project24.App
         #endregion
 
         #region Short Strings
+        public const string STR_WARNING = nameof(STR_WARNING);
+
         public const string STR_UPDATER_MAIN_VER = nameof(STR_UPDATER_MAIN_VER);
         public const string STR_UPDATER_PREV_VER = nameof(STR_UPDATER_PREV_VER);
         public const string STR_UPDATER_NEXT_VER = nameof(STR_UPDATER_NEXT_VER);

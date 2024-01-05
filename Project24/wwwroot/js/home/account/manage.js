@@ -1,8 +1,9 @@
 /*  home/account/manage.js
-    Version: v1.0 (2023.11.19)
-
-    Author
-        Arime-chan
+ *  Version: v1.1 (2024.01.02)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 window.AccManagePage = {
@@ -48,11 +49,11 @@ window.AccManagePage = {
         });
     },
 
-    ajax_updateRole: function (_modified) {
+    ajax_updateRole: function (_data) {
         if (this.m_AwaitingData)
             return;
 
-        let data = JSON.stringify(_modified);
+        let data = JSON.stringify(_data);
         if (data == "{}") {
             console.log("Nothing to update.");
             return;
@@ -83,6 +84,9 @@ window.AccManagePage = {
     ajax_fetchPageData_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content, Error: { Check: false } }))
+            return;
+
         let body = _content.substring(6);
 
         if (_content.startsWith(P24_MSG_TAG_ERROR)) {
@@ -94,9 +98,6 @@ window.AccManagePage = {
             return;
         }
 
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
-            return;
-
         let processedData = this.Data.processPageData(body);
         if (processedData == null)
             return;
@@ -107,11 +108,10 @@ window.AccManagePage = {
     ajax_updateRole_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
-        let body = _content.substring(6);
-
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content }))
             return;
 
+        let body = _content.substring(6);
         let result = JSON.parse(body);
 
         this.Data.refreshModifies(result);
@@ -142,7 +142,7 @@ AccManagePage.Data = {
         if (parsedData.User.RemovedDate != null)
             parsedData.User.RemovedDate = new Date(parsedData.User.RemovedDate);
 
-        console.log(parsedData);
+        //console.log(parsedData);
         this.PageData = parsedData;
         this.RolesModState = parsedData.Roles;
 
@@ -267,7 +267,7 @@ AccManagePage.UI = {
             AccManagePage.Data.RolesModState[role] = newState;
         }
 
-        AccManagePage.ajax_updateRole(modified);
+        AccManagePage.ajax_updateRole({ User: { Id: AccManagePage.m_Id }, Roles: modified });
     },
 
     changeRecord: function (_id) {

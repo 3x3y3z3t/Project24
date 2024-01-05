@@ -1,8 +1,9 @@
 /*  home/management/updater.js
-    Version: v1.4 (2023.10.29)
-
-    Author
-        Arime-chan
+ *  Version: v1.5 (2024.01.01)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 const UPDATER_HEADER_BUFFER = 5 * 1024 * 1024; // max header buffer size is 5 KiB;
@@ -68,6 +69,7 @@ window.UpdaterPage = {
             return;
         }
 
+        this.Data.Metadata.Status = UPDATER_BATCH_STATUS_IN_PROGRESS;
         this.UI.refreshUploadBlock("Metadata");
         this.ajax_uploadMetadata();
     },
@@ -111,8 +113,18 @@ window.UpdaterPage = {
                 return;
         }
 
-        let content = P24Localization[LOCL_DESC_UPDATER_UPLOAD_SUCCESS];
-        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], content, MODAL_ICON_SUCCESS, "OK", "UpdaterPage.ajax_fetchPageData()");
+        Modal.openModal({
+            AddCloseBtn: true,
+            ButtonsData: [{
+                Class: BTN_CLASS_PRIMARY,
+                DismissModal: true,
+                Label: "OK",
+                OnClickText: "UpdaterPage.ajax_fetchPageData()",
+            }],
+            Content: P24Localization.get(LOCL_DESC_UPDATER_UPLOAD_SUCCESS),
+            IconData: Modal.IconData.Success,
+            TitleHtml: P24Localization.get(LOCL_STR_SUCCESS)
+        });
     },
 
     // ==================================================
@@ -285,9 +297,8 @@ window.UpdaterPage = {
     ajax_fetchPageData_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
-        let body = _content.substring(6);
-
-        if (P24Utils.Ajax.successContentCheckCommon(_content, body)) {
+        if (P24Utils.Ajax.successContentCheckCommon({ Content: _content })) {
+            let body = _content.substring(6);
             let processedData = this.Data.processPageData(body);
             if (processedData == null)
                 return;
@@ -310,9 +321,7 @@ window.UpdaterPage = {
     ajax_uploadMetadata_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
-        let body = _content.substring(6);
-
-        if (P24Utils.Ajax.successContentCheckCommon(_content, body)) {
+        if (P24Utils.Ajax.successContentCheckCommon({ Content: _content })) {
             this.Data.Metadata.Status = UPDATER_BATCH_STATUS_SUCCESS;
             UpdaterPage.UI.refreshUploadBlock("Metadata");
             this.startUploadBatches();
@@ -345,16 +354,25 @@ window.UpdaterPage = {
         let obj = JSON.parse(body);
         let id = obj[0];
         if (_content.startsWith(P24_MSG_TAG_ERROR)) {
-            let msg = "<div>Có lỗi xảy ra khi upload batch " + id + ". Vui lòng upload lại.</div><div><b>Msg:</b> " + obj[1] + "</div>";
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_FAIL], msg, "error");
+            let msg = "<div>" + P24Localization.get(LOCL_DESC_UPDATER_BATCH_ERROR) + "</div>"
+                + "<div><b>Batch Id:</b> " + id + "</div>"
+                + "<div><b>Msg:</b> " + obj[1] + "</div>";
+            Modal.openModal({
+                ButtonsData: [{
+                    DismissModal: true,
+                }],
+                Content: msg,
+                IconData: Modal.IconData.Error,
+                TitleHtml: P24Localization.get(LOCL_STR_FAIL)
+            });
+        } else {
+            P24Utils.Ajax.successContentCheckCommon({
+                Content: _content,
+                Success: { Check: false },
+                Error: { Check: false },
+            });
         }
-        else if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + body + "</pre>");
-        }
-        else {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_UNKNOWN_ERR], "<pre>" + _content + "</pre>", "error");
-        }
-
+        
         this.Data.Metadata.BatchesMetadata[id].Status = UPDATER_BATCH_STATUS_ERROR;
         UpdaterPage.UI.refreshUploadBlock(id);
     },
@@ -400,16 +418,18 @@ window.UpdaterPage = {
                 descKey = LOCL_DESC_UPDATER_NEXT_PURGE_QUEUED;
                 break;
             default:
-                let htmlInner = "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code></div><div>fn: <code>" + fname + "Common</code></div>";
-                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], htmlInner, MODAL_ICON_WARNING);
+                Modal.openModal({
+                    Content: "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code></div><div>fn: <code>" + fname + "Common</code></div>",
+                    IconData: Modal.IconData.Warning,
+                    TitleHtml: P24Localization.get(LOCL_STR_WARN)
+                });
                 return;
         }
 
-        let body = _content.substring(6);
-
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content }))
             return;
 
+        let body = _content.substring(6);
         let err = true;
         let status = UPDATER_STATUS_NONE;
 
@@ -423,13 +443,24 @@ window.UpdaterPage = {
         }
 
         if (err) {
-            let htmlInner = "<div>" + P24Localization[LOCL_DESC_MALFORMED] + "</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], htmlInner, MODAL_ICON_WARNING);
+            Modal.openModal({
+                Content: "<div>" + P24Localization.get(LOCL_DESC_MALFORMED) + "</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>",
+                IconData: Modal.IconData.Warning,
+                TitleHtml: P24Localization.get(LOCL_STR_WARN)
+            });
             return;
         }
 
         if (status == statusCode && body[0] != '0') {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], P24Localization[descKey], MODAL_ICON_SUCCESS, "OK", "location.reload()");
+            Modal.openModal({
+                ButtonsData: [{
+                    Class: BTN_CLASS_PRIMARY,
+                    OnClickText: "location.reload()"
+                }],
+                Content: P24Localization.get(descKey),
+                IconData: Modal.IconData.Success,
+                TitleHtml: P24Localization.get(LOCL_STR_SUCCESS)
+            });
             return;
         }
 
@@ -437,7 +468,11 @@ window.UpdaterPage = {
             + "<div>fn: <code>" + fname + "</code></div>"
             + "<div>body: <code>" + body + "</code></div>"
             + "<div>pageData.Status: <code>" + this.Data.PageData.Status + "</code></div>";
-        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
+        Modal.openModal({
+            Content: html,
+            IconData: Modal.IconData.Warning,
+            TitleHtml: P24Localization.get(LOCL_STR_WARN)
+        });
     },
 
     ajax_applyCommon_success: function (_content, _textStatus, _xhr, _blockName) {
@@ -457,16 +492,18 @@ window.UpdaterPage = {
                 descKey = LOCL_DESC_UPDATER_NEXT_APPLY_QUEUED;
                 break;
             default:
-                let htmlInner = "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code></div><div>fn: <code>" + fname + "Common</code></div>";
-                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], htmlInner, MODAL_ICON_WARNING);
+                Modal.openModal({
+                    Content: "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code></div><div>fn: <code>" + fname + "Common</code></div>",
+                    IconData: Modal.IconData.Warning,
+                    TitleHtml: P24Localization.get(LOCL_STR_WARN)
+                });
                 return;
         }
 
-        let body = _content.substring(6);
-
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content }))
             return;
 
+        let body = _content.substring(6);
         let err = true;
         let status = UPDATER_STATUS_NONE;
 
@@ -480,13 +517,24 @@ window.UpdaterPage = {
         }
 
         if (err) {
-            let htmlInner = "<div>" + P24Localization[LOCL_DESC_MALFORMED] + "</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], htmlInner, MODAL_ICON_WARNING);
+            Modal.openModal({
+                Content: "<div>" + P24Localization.get(LOCL_DESC_MALFORMED) + "</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>",
+                IconData: Modal.IconData.Warning,
+                TitleHtml: P24Localization.get(LOCL_STR_WARN)
+            });
             return;
         }
 
         if (status == statusCode && body[0] != '0') {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], P24Localization[descKey], MODAL_ICON_SUCCESS, "OK", "location.reload()");
+            Modal.openModal({
+                ButtonsData: [{
+                    Class: BTN_CLASS_PRIMARY,
+                    OnClickText: "location.reload()"
+                }],
+                Content: P24Localization.get(descKey),
+                IconData: Modal.IconData.Success,
+                TitleHtml: P24Localization.get(LOCL_STR_SUCCESS)
+            })
             return;
         }
 
@@ -494,7 +542,11 @@ window.UpdaterPage = {
             + "<div>fn: <code>" + fname + "</code></div>"
             + "<div>body: <code>" + body + "</code></div>"
             + "<div>pageData.Status: <code>" + this.Data.PageData.Status + "</code></div>";
-        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
+        Modal.openModal({
+            Content: html,
+            IconData: Modal.IconData.Warning,
+            TitleHtml: P24Localization.get(LOCL_STR_WARN)
+        });
     },
 
     ajax_abortCommon_success: function (_content, _textStatus, _xhr, _blockName) {
@@ -506,16 +558,18 @@ window.UpdaterPage = {
             case UPDATER_BLOCK_NAME_PREV: break;
             case UPDATER_BLOCK_NAME_NEXT: break;
             default:
-                let htmlInner = "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code></div><div>fn: <code>" + fname + "Common</code></div>";
-                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], htmlInner, MODAL_ICON_WARNING);
+                Modal.openModal({
+                    Content: "<div><code>" + ERRCODE_UPDATER_INVALID_BLOCK_NAME + "</code></div><div>fn: <code>" + fname + "Common</code></div>",
+                    IconData: Modal.IconData.Warning,
+                    TitleHtml: P24Localization.get(LOCL_STR_WARN)
+                });
                 return;
         }
 
-        let body = _content.substring(6);
-
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content }))
             return;
 
+        let body = _content.substring(6);
         let err = true;
         let status = UPDATER_STATUS_NONE;
 
@@ -529,18 +583,33 @@ window.UpdaterPage = {
         }
 
         if (err) {
-            let htmlInner = "<div>" + P24Localization[LOCL_DESC_MALFORMED] + ".</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>";
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], htmlInner, MODAL_ICON_WARNING);
+            Modal.openModal({
+                Content: "<div>" + P24Localization.get(LOCL_DESC_MALFORMED) + "</div><div>fn: <code>" + fname + "</code></div><div>body: <code>" + body + "</code></div>",
+                IconData: Modal.IconData.Warning,
+                TitleHtml: P24Localization.get(LOCL_STR_WARN)
+            });
             return;
         }
 
         if (status == UPDATER_STATUS_PREV_PURGE_RUNNING || status == UPDATER_STATUS_NEXT_PURGE_RUNNING) {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], P24Localization[LOCL_DESC_UPDATER_PURGE_CANNOT_ABORT], MODAL_ICON_WARNING);
+            Modal.openModal({
+                Content: P24Localization.get(LOCL_DESC_UPDATER_PURGE_CANNOT_ABORT),
+                IconData: Modal.IconData.Warning,
+                TitleHtml: P24Localization.get(LOCL_STR_WARN)
+            });
             return;
         }
 
         if (status == UPDATER_STATUS_NONE && body[0] != '0') {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], P24Localization[LOCL_DESC_UPDATER_ABORT_SUCCESS], MODAL_ICON_SUCCESS, "OK", "location.reload()");
+            Modal.openModal({
+                ButtonsData: [{
+                    Class: BTN_CLASS_PRIMARY,
+                    OnClickText: "location.reload()"
+                }],
+                Content: P24Localization.get(LOCL_DESC_UPDATER_ABORT_SUCCESS),
+                IconData: Modal.IconData.Success,
+                TitleHtml: P24Localization.get(LOCL_STR_SUCCESS)
+            });
             return;
         }
 
@@ -548,7 +617,11 @@ window.UpdaterPage = {
             + "<div>fn: <code>" + fname + "</code></div>"
             + "<div>body: <code>" + body + "</code></div>"
             + "<div>pageData.Status: <code>" + this.Data.PageData.Status + "</code></div>";
-        Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_WARN], html, MODAL_ICON_WARNING);
+        Modal.openModal({
+            Content: html,
+            IconData: Modal.IconData.Warning,
+            TitleHtml: P24Localization.get(LOCL_STR_WARN)
+        });
     },
 };
 
@@ -572,7 +645,15 @@ UpdaterPage.Data = {
         let parsedData = JSON.parse(_json);
 
         if (parsedData == null || parsedData.MainVer == null) {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_ERR], P24Localization[LOCL_DESC_UPDATER_NOMAIN], MODAL_ICON_ERROR);
+            Modal.openModal({
+                ButtonsData: [{
+                    DismissModal: true,
+                }],
+                Content: P24Localization.get(LOCL_DESC_UPDATER_NOMAIN),
+                IconData: Modal.IconData.Error,
+                TitleHtml: P24Localization.get(LOCL_STR_ERR),
+
+            });
             return null;
         }
 
@@ -781,7 +862,7 @@ UpdaterPage.UI = {
 
         m_Timer = setInterval(function () {
             $("#div-files-table-head").css("padding-right", P24Utils.getScrollbarWidth());
-        }, 10 * 1000);
+        }, 5 * 1000);
     },
 
     // ==================================================
@@ -924,7 +1005,23 @@ UpdaterPage.UI = {
 
         // open modal if there is error message;
         if (UpdaterPage.Data.PageData.Message != null && UpdaterPage.Data.PageData.Message != "") {
-            Modal.Common.openTwoBtnModal("Internal Message", UpdaterPage.Data.PageData.Message, MODAL_ICON_ERROR, "Clear Message", "UpdaterPage.ajax_clearInternalError()", "Close");
+            Modal.openModal({
+                ButtonsData: [
+                    {
+                        Class: BTN_CLASS_PRIMARY,
+                        DismissModal: true,
+                        Label: "Clear Message",
+                        OnClickText: "UpdaterPage.ajax_clearInternalError()",
+                    },
+                    {
+                        Class: BTN_CLASS_SECONDARY,
+                        DismissModal: true,
+                    }
+                ],
+                Content: UpdaterPage.Data.PageData.Message,
+                IconData: Modal.IconData.Error,
+                TitleHtml: "Internal Message"
+            });
         }
 
         this.m_DivLblUpdaterStatus.html(this.constructLblUpdaterStatusHtml(_data));
@@ -1045,8 +1142,7 @@ UpdaterPage.UI = {
             html += "<div class=\"" + colClass0 + "\">&times;</div><div class=\"" + colClass1 + "\">" + this.constructVersionPanelButton("", true) + "</div>";
         } else {
             html += "<div class=\"" + colClass0 + "\">" + data + "</div>";
-
-            // TODO: fix svg icon;
+            
             if (_blockName == "main") {
                 html += "<div class=\"" + colClass1 + "\">" + this.constructVersionPanelButton("arrow-clockwise", "primary", "UpdaterPage.ajax_fetchPageData()") + "</div>";
             } else {
@@ -1061,7 +1157,7 @@ UpdaterPage.UI = {
         element.html(html);
     },
 
-    refreshUploadBlock: function (_id, _blockText, _status) {
+    refreshUploadBlock: function (_id, _blockText) {
         let element = null;
         let status = null;
         let blockText = null;
@@ -1092,9 +1188,8 @@ UpdaterPage.UI = {
                 blockClass = "alert-danger";
                 break;
         }
-
-        // TODO: svg is now classes;
-        let html = this.constructUploadBlockSvg(_status) + blockText;
+        
+        let html = this.constructUploadBlockSvg(status) + blockText;
         element.html(html);
 
         element.removeClass("alert-secondary alert-warning alert-success alert-danger");
@@ -1112,9 +1207,8 @@ UpdaterPage.UI = {
             attr = " disabled";
 
         let html = "<button type=\"button\" class=\"btn" + _subClass + " m-1 px-2 py-1\" onclick=\"" + _onClick + "\"" + attr + ">"
-            + "<svg width=\"16\" height=\"16\" fill=\"currentColor\">"
-            + "<use xlink:href=\"/lib/bootstrap-icons/bootstrap-icons.svg#" + _bsIconClass + "\" />"
-            + "</svg></button>";
+            + P24Utils.svg(_bsIconClass, "text-" + _subClass)
+            + "</button>";
 
         return html;
     },
@@ -1171,8 +1265,7 @@ UpdaterPage.UI = {
 
     constructUploadBlockHtml: function (_blockId, _blockText, _status, _tooltipText = null) {
         let blockClass = "alert ";
-
-        // TODO; construct svgContent;
+        
         switch (_status) {
             case UPDATER_BATCH_STATUS_NOT_STARTED:
                 blockClass += "alert-secondary";
@@ -1190,41 +1283,43 @@ UpdaterPage.UI = {
                 blockClass += "alert-info";
                 break;
         }
-
-        blockClass += " m-1 py-1 px-3";
-
+        
         let tooltipHtml = "";
         if (_tooltipText != null)
             tooltipHtml = " data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"" + _tooltipText + "\"";
 
-        let html = "<div id=\"" + _blockId + "\" class=\"" + blockClass + "\"" + tooltipHtml + ">"
-            + this.constructUploadBlockSvg(_status)
+        let html = "<div id=\"" + _blockId + "\" class=\"" + blockClass + " m-1 py-1 px-3\"" + tooltipHtml + ">"
+            + this.constructUploadBlockSvg(_status, true)
             + " " + _blockText
             + "</div>";
 
         return html;
     },
 
-    constructUploadBlockSvg: function (_status) {
+    constructUploadBlockSvg: function (_status, _ignoreDefault = false) {
         let bsIconClass = "";
+        let bsColorClass = "";
 
         switch (_status) {
             case UPDATER_BATCH_STATUS_IN_PROGRESS:
                 bsIconClass = "box-arrow-up";
+                bsColorClass = "text-warning";
                 break;
             case UPDATER_BATCH_STATUS_SUCCESS:
                 bsIconClass = "check-lg";
+                bsColorClass = "text-success";
                 break;
             case UPDATER_BATCH_STATUS_ERROR:
                 bsIconClass = "x-lg";
+                bsColorClass = "text-danger";
                 break;
+            default:
+                if (!_ignoreDefault)
+                    console.warn("Invalid status " + _status);
+                return "";
         }
-
-        let html = "<svg width=\"16\" height=\"16\" fill=\"currentColor\">"
-            + "<use xlink:href=\"/lib/bootstrap-icons/bootstrap-icons.svg#" + bsIconClass + "\" />"
-            + "</svg>";
-
-        return html;
+        
+        return "<span class=\"me-1\">" + P24Utils.svg(bsIconClass, bsColorClass) + "</span>";
     },
 
     clearUploadPanel: function () {
@@ -1242,13 +1337,26 @@ UpdaterPage.UI = {
     // ==================================================
 
     openConfirmationModal: function (_content, _actionName0, _actionName1) {
-        Modal.Common.openTwoBtnModal(
-            P24Localization[LOCL_STR_CONFIRM],
-            _content,
-            MODAL_ICON_QUESTION,
-            P24Localization[LOCL_STR_CONFIRM], _actionName0,
-            P24Localization[LOCL_STR_CANCEL], _actionName1,
-            false);
+        Modal.openModal({
+            AddCloseBtn: false,
+            ButtonsData: [
+                {
+                    Class: BTN_CLASS_PRIMARY,
+                    DismissModal: true,
+                    Label: P24Localization.get(LOCL_STR_CONFIRM),
+                    OnClickText: _actionName0,
+                },
+                {
+                    Class: BTN_CLASS_SECONDARY,
+                    DismissModal: true,
+                    Label: P24Localization.get(LOCL_STR_CANCEL),
+                    OnClickText: _actionName1,
+                }
+            ],
+            Content: _content,
+            IconData: Modal.IconData.Question,
+            TitleHtml: P24Localization.get(LOCL_STR_CONFIRM)
+        });
     },
 
     computePanelVerBtnStatus: function (_blockName) {
@@ -1257,7 +1365,7 @@ UpdaterPage.UI = {
         let crosAQ = 0;
 
         let status = UpdaterPage.Data.PageData.Status;
-        
+
 
         // If any Purge task or Apply task is in progress: No action is available.
         switch (status) {

@@ -1,14 +1,16 @@
 /*  Home/Account/List.cshtml
- *  Version: v1.0 (2023.11.19)
+ *  Version: v1.1 (2024.01.02)
+ *  Spec:    v0.1
  *  
- *  Author
- *      Arime-chan
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 using System;
 using System.Collections.Generic;
 using System.Net.Mime;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +29,7 @@ namespace Project24.Pages.Home.Account
     [Authorize(Roles = PageCollection.Home.Account.Manage)]
     public class ManageModel : PageModel
     {
-        internal class UserManageViewModel
+        public class UserManageViewModel
         {
             public P24IdentityUserViewModel User { get; set; }
 
@@ -37,7 +39,7 @@ namespace Project24.Pages.Home.Account
             { }
         }
 
-        internal class P24IdentityUserViewModel
+        public class P24IdentityUserViewModel
         {
             public string Id { get; set; }
             public string Username { get; set; }
@@ -112,18 +114,24 @@ namespace Project24.Pages.Home.Account
             return Content(MessageTag.Success + jsonData, MediaTypeNames.Text.Plain);
         }
 
-        public IActionResult OnPostUpdateRole([FromBody] Dictionary<string, bool> _modifiedList)
+        public async Task<IActionResult> OnPostUpdateRoleAsync([FromBody] UserManageViewModel _data)
         {
-            P24IdentityUser user = m_UserManager.FindByNameAsync(User.Identity.Name).Result;
+            P24IdentityUser user = await m_UserManager.GetUserAsync(User);
             if (!this.ValidateModelState(m_DbContext, user, UserAction.Operation_.Home_Account_Manage_UpdateRole))
             {
                 return Content(MessageTag.Error + "Invalid ModelState.", MediaTypeNames.Text.Plain);
             }
 
-            Dictionary<string, bool> resultsList = new(_modifiedList.Count);
+            P24IdentityUser modUser = await m_UserManager.FindByIdAsync(_data.User.Id);
+            if (modUser == null)
+            {
+                return Content(MessageTag.Error + "User " + _data.User.Id + " not found.", MediaTypeNames.Text.Plain);
+            }
+
+            Dictionary<string, bool> resultsList = new(_data.Roles.Count);
             string details = "";
             bool hasRoleChanges = false;
-            foreach (var pair in _modifiedList)
+            foreach (var pair in _data.Roles)
             {
                 if (!P24RoleUtils.AllRoleNames.Contains(pair.Key))
                 {
@@ -132,9 +140,9 @@ namespace Project24.Pages.Home.Account
                     continue;
                 }
 
-                if (pair.Value && !m_UserManager.IsInRoleAsync(user, pair.Key).Result)
+                if (pair.Value && !m_UserManager.IsInRoleAsync(modUser, pair.Key).Result)
                 {
-                    var result = m_UserManager.AddToRoleAsync(user, pair.Key).Result;
+                    var result = m_UserManager.AddToRoleAsync(modUser, pair.Key).Result;
                     if (result.Succeeded)
                     {
                         resultsList[pair.Key] = true;
@@ -148,9 +156,9 @@ namespace Project24.Pages.Home.Account
                     }
                 }
 
-                if (!pair.Value && m_UserManager.IsInRoleAsync(user, pair.Key).Result)
+                if (!pair.Value && m_UserManager.IsInRoleAsync(modUser, pair.Key).Result)
                 {
-                    var result = m_UserManager.RemoveFromRoleAsync(user, pair.Key).Result;
+                    var result = m_UserManager.RemoveFromRoleAsync(modUser, pair.Key).Result;
                     if (result.Succeeded)
                     {
                         resultsList[pair.Key] = true;
@@ -173,9 +181,9 @@ namespace Project24.Pages.Home.Account
 
             if (hasRoleChanges)
             {
-                _ = P24RoleUtils.RolesDirtyUser.Add(user.UserName);
+                _ = P24RoleUtils.RolesDirtyUser.Add(modUser.UserName);
             }
-            // TODO: try m_UserManager.RefreshSignInUser(user);
+            // TODO: try m_UserManager.RefreshSignInUser(modUser);
 
             string jsonData = JsonSerializer.Serialize(resultsList);
             return Content(MessageTag.Success + jsonData, MediaTypeNames.Text.Plain);

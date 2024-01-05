@@ -1,8 +1,9 @@
 /*  site.js
- *  Version: 1.9 (2023.12.24)
+ *  Version: v1.10 (2024.01.02)
+ *  Spec:    v0.1
  *
- *  Author
- *      Arime-chan
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 // Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
@@ -20,9 +21,11 @@ const P24_TEXT_COLOR_GREEN = 3;
 const P24_TEXT_COLOR_BLUE = 4;
 const P24_TEXT_COLOR_YELLOW = 5;
 
+const P24_MSG_TAG_INFO = "<info>";
 const P24_MSG_TAG_SUCCESS = "<done>";
 const P24_MSG_TAG_WARNING = "<warn>";
 const P24_MSG_TAG_ERROR = "<fail>";
+const P24_MSG_TAG_CRITICAL = "<crit>";
 const P24_MSG_TAG_EXCEPTION = "<excp>";
 
 // ==================================================
@@ -37,6 +40,14 @@ const CONFIG_PANEL_ITEM_STATUS_NO_CHANGE = "CONFIG_PANEL_ITEM_STATUS_NO_CHANGE";
 const CONFIG_PANEL_ITEM_STATUS_MODIFIED = "CONFIG_PANEL_ITEM_STATUS_MODIFIED";
 const CONFIG_PANEL_ITEM_STATUS_SAVED = "CONFIG_PANEL_ITEM_STATUS_SAVED";
 const CONFIG_PANEL_ITEM_STATUS_ERROR = "CONFIG_PANEL_ITEM_STATUS_ERROR";
+
+// ==================================================
+
+const BTN_CLASS_PRIMARY = "btn-primary";
+const BTN_CLASS_SECONDARY = "btn-secondary";
+const BTN_CLASS_WARNING = "btn-warning";
+const BTN_CLASS_DANGER = "btn-danger";
+const BTN_CLASS_INFO = "btn-info";
 
 // ==================================================
 
@@ -85,22 +96,27 @@ var HttpStatusCodeName = {
 };
 
 
-$(document).ready(function () {
+$(function () {
     P24Utils.reloadAllTooltips();
 });
 
 
 // =====
-window.P24Utils = {};
+window.P24Utils = {
+    Ajax: null,
 
-P24Utils.svg = function (_name, _colorClass = null) {
-    let html = "<svg width=\"16\" height=\"16\" fill=\"currentColor\"";
-    if (_colorClass != null)
-        html += " class=\"" + _colorClass + "\"";
-    html += "><use xlink:href=\"/lib/bootstrap-icons/bootstrap-icons.svg#" + _name + "\" /></svg>";
 
-    return html;
+    svg: function (_bsIconName, _colorClass = null, _size = 16) {
+        let html = "<svg width=\"" + _size + "\" height=\"" + _size + "\" fill=\"currentColor\"";
+        if (_colorClass != null)
+            html += " class=\"" + _colorClass + "\"";
+        html += "><use xlink:href=\"/lib/bootstrap-icons/bootstrap-icons.svg#" + _bsIconName + "\" /></svg>";
+
+        return html;
+    },
+
 };
+
 
 P24Utils.Ajax = {
     error: function (_xhr, _textStatus, _errorThrown) {
@@ -116,123 +132,240 @@ P24Utils.Ajax = {
                 + "<div>jq Status: <code>" + _textStatus + "</code></div>"
                 + "<div>Message: " + _errorThrown.message + "</div>";
 
-            Modal.Common.openOneBtnModal("Ajax request error", body, MODAL_ICON_ERROR);
+            Modal.openModal({
+                TitleHtml: "Ajax request error",
+                Content: body,
+                IconData: Modal.IconData.Error
+            });   
         }
     },
 
-    //successContentCheckCommon: function (_params) {
-
-    //    if (_params.Content.startsWith(P24_MSG_TAG_INFO)) {
-    //        successContentCheckCommonInternal({
-    //            Content: _params.Content,
-    //            Func: _params.Func,
-    //            Key: LOCL_STR_INFO,
-    //            ConsoleLogFunc: console.info,
-    //            ModalFunc: Modal.Common.openOneBtnModal,
-    //            ModalIcon: MODAL_ICON_INFO
-    //        });
-
-    //        return true;
-    //    }
-
-
-
-    //    //_content, _infoFunc = null, _successFunc = null, _warningFunc = null, _errorFunc = null, _criticalFunc = null, _exceptionFunc = null) {
-    //    let body = _content.substring(6);
-
-    //    if (_content.startsWith(P24_MSG_TAG_INFO) && _infoFunc != false) {
-    //        if (_infoFunc == false)
-    //            return true;
-
-    //        if (_infoFunc != null)
-    //            return _infoFunc(_content);
-
-                
-
-    //        if (_infoFunc != null) {
-    //            _infoFunc(_content);
-    //        } else {
-    //            let title = P24Localization[LOCL_STR_INFO];
-    //            if (window.Modal == null) {
-    //                console.info(title + ":\n" + body);
-    //            } else {
-    //                Modal.Common.openOneBtnModal(title, body, MODAL_ICON_INFO);
-    //            }
-    //        }
-
-    //        return true;
-    //    }
-
-
-
-
-
-
-    //},
-
-    //successContentCheckCommonInternal(_params) {
-    //    if (_params.Func == false)
-    //        return;
-
-    //    if (_params.Func != null) {
-    //        _params.Func(_params.Content);
-    //        return;
-    //    }
-        
-    //    let body = _params.Content.substring(6);
-    //    let title = P24Localization[_params.Key];
-
-    //    if (window.Modal == null) {
-    //        _params.ConsoleLogFunc(title + ":\n" + body);
-    //        return;
-    //    }
-
-    //    _params.ModalFunc(title, body, _params.ModalIcon);
-    //}
-
-    successContentCheckCommon: function (_content, _body) {
-        if (_content.startsWith(P24_MSG_TAG_ERROR)) {
-            if (window.Modal == null) {
-                console.error(P24Localization[LOCL_STR_FAIL] + ":\n" + _body);
-            } else {
-                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_FAIL], _body, MODAL_ICON_ERROR);
-            }
-
+    /**
+     * 
+     * @param {any} _data
+     *  {
+     *      Content:
+     *      Info: {
+     *          Check:          {boolean}   default true
+     *          Return:         {boolean}   default true
+     *      }
+     *      Success: {
+     *          Check:          {boolean}   default true
+     *          Return:         {boolean}   default true
+     *      }
+     *      Warning: {
+     *          Check:          {boolean}   default true
+     *          Return:         {boolean}   default false
+     *      }
+     *      Error: {
+     *          Check:          {boolean}   default true
+     *          Return:         {boolean}   default false
+     *      }
+     *      Critical: {
+     *          Check:          {boolean}   default true
+     *          Return:         {boolean}   default true
+     *      }
+     *      Exception: {
+     *          Check:          {boolean}   default true
+     *          Return:         {boolean}   default false
+     *      }
+     *      Unknown: {
+     *          Check:          {boolean}   default true
+     *          Return:         {boolean}   default false
+     *      }
+     *  }
+     */
+    successContentCheckCommon: function (_data) {
+        _data = this.validateDataObject(_data);
+        if (_data == null)
             return false;
+
+        switch (_data.Tag) {
+            case P24_MSG_TAG_INFO:
+                if (_data.Info.Check) {
+                    console.info(_data.Body);
+                    return _data.Info.Return;
+                }
+                return true;
+
+            case P24_MSG_TAG_SUCCESS:
+                if (_data.Success.Check) {
+
+                    return _data.Success.Return;
+                }
+                return true;
+
+            case P24_MSG_TAG_WARNING:
+                if (_data.Warning.Check) {
+                    this.successContentCheckCommonInternal({
+                        Body: _data.Body,
+                        ConsoleLogFunc: console.warn,
+                        ConsoleLogMsg: "Warning:\n" + _data.Body,
+                        ModalIconData: Modal.IconData.Warning,
+                        ModalTitle: P24Localization[LOCL_STR_WARN],
+                    });
+
+                    return _data.Warning.Return;
+                }
+                return true;
+
+            case P24_MSG_TAG_ERROR:
+                if (_data.Error.Check) {
+                    this.successContentCheckCommonInternal({
+                        Body: _data.Body,
+                        ConsoleLogFunc: console.error,
+                        ConsoleLogMsg: "Error:\n" + _data.Body,
+                        ModalIconData: Modal.IconData.Error,
+                        ModalTitle: P24Localization[LOCL_STR_FAIL],
+                    });
+
+                    return _data.Error.Return;
+                }
+                return true;
+
+            case P24_MSG_TAG_CRITICAL:
+                if (_data.Critical.Check) {
+                    this.successContentCheckCommonInternal({
+                        Body: _data.Body,
+                        ConsoleLogFunc: console.error,
+                        ConsoleLogMsg: "Critical error:\n" + _data.Body,
+                        ModalIconData: Modal.IconData.Error,
+                        ModalTitle: P24Localization.get(LOCL_STR_CRIT),
+                    });
+
+                    return _data.Critical.Return;
+                }
+                return true;
+
+            case P24_MSG_TAG_EXCEPTION:
+                if (_data.Exception.Check) {
+                    this.successContentCheckCommonInternal({
+                        Body: "<pre>" + _data.Body + "</pre>",
+                        ConsoleLogFunc: console.error,
+                        ConsoleLogMsg: "Exception:\n" + HtmlUtils.escape(_data.Body),
+                        ModalTitle: P24Localization[LOCL_STR_EXCEPTION],
+                    });
+
+                    return _data.Exception.Return;
+                }
+                return true;
         }
 
-        if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
-            if (window.Modal == null) {
-                console.error(P24Localization[LOCL_STR_EXCEPTION] + ":\n" + HtmlUtils.escape(_body));
-            } else {
-                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + _body + "</pre>");
-            }
+        if (_data.Unknown.Check) {
+            this.successContentCheckCommonInternal({
+                Body: "<pre>" + _data.Body + "</pre>",
+                ConsoleLogFunc: console.error,
+                ConsoleLogMsg: "Unknown error:\n" + HtmlUtils.escape(_data.Body),
+                ModalTitle: P24Localization[LOCL_STR_UNKNOWN_ERR],
+            });
 
-            return false;
-        }
-
-        if (!_content.startsWith(P24_MSG_TAG_SUCCESS)) {
-            if (window.Modal == null) {
-                console.error(P24Localization[LOCL_STR_UNKNOWN_ERR] + ":\n" + _content);
-            } else {
-                Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_UNKNOWN_ERR], "<pre>" + HtmlUtils.escape(_content) + "</pre>", MODAL_ICON_ERROR);
-            }
-
-            return false;
+            return _data.Unknown.Return;
         }
 
         return true;
     },
+        
+    validateDataObject: function (_data) {
+        if (_data == null || _data.Content == null)
+            return null;
+
+        if (_data.Info == null)
+            _data.Info = { Check: true };
+        if (_data.Info.Return == null)
+            _data.Info.Return = true;
+
+        if (_data.Success == null)
+            _data.Success = { Check: true };
+        if (_data.Success.Return == null)
+            _data.Success.Return = true;
+
+        if (_data.Warning == null)
+            _data.Warning = { Check: true };
+        if (_data.Warning.Return == null)
+            _data.Warning.Return = false;
+
+        if (_data.Error == null)
+            _data.Error = { Check: true };
+        if (_data.Error.Return == null)
+            _data.Error.Return = false;
+
+        if (_data.Critical == null)
+            _data.Critical = { Check: true };
+        if (_data.Critical.Return == null)
+            _data.Critical.Return = false;
+
+        if (_data.Exception == null)
+            _data.Exception = { Check: true };
+        if (_data.Exception.Return == null)
+            _data.Exception.Return = false;
+
+        if (_data.Unknown == null)
+            _data.Unknown = { Check: true };
+        if (_data.Unknown.Return == null)
+            _data.Unknown.Return = false;
+
+        _data.Tag = _data.Content.substring(0, 6);
+        _data.Body = _data.Content.substring(6);
+
+        return _data;
+    },
+
+    successContentCheckCommonInternal: function (_data) {
+        if (window.Modal == null) {
+            _data.ConsoleLogFunc(_data.ConsoleLogMsg);
+        } else {
+            Modal.openModal({
+                Content: _data.Body,
+                IconData: _data.ModalIconData,
+                TitleHtml: _data.ModalTitle,
+            });
+        }
+    },
+
+    
+    //successContentCheckCommon: function (_content, _body) {
+    //    if (_content.startsWith(P24_MSG_TAG_ERROR)) {
+    //        if (window.Modal == null) {
+    //            console.error(P24Localization[LOCL_STR_FAIL] + ":\n" + _body);
+    //        } else {
+    //            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_FAIL], _body, MODAL_ICON_ERROR);
+    //        }
+
+    //        return false;
+    //    }
+
+    //    if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
+    //        if (window.Modal == null) {
+    //            console.error(P24Localization[LOCL_STR_EXCEPTION] + ":\n" + HtmlUtils.escape(_body));
+    //        } else {
+    //            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_EXCEPTION], "<pre>" + _body + "</pre>");
+    //        }
+
+    //        return false;
+    //    }
+
+    //    if (!_content.startsWith(P24_MSG_TAG_SUCCESS)) {
+    //        if (window.Modal == null) {
+    //            console.error(P24Localization[LOCL_STR_UNKNOWN_ERR] + ":\n" + _content);
+    //        } else {
+    //            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_UNKNOWN_ERR], "<pre>" + HtmlUtils.escape(_content) + "</pre>", MODAL_ICON_ERROR);
+    //        }
+
+    //        return false;
+    //    }
+
+    //    return true;
+    //},
 
 
 };
 
-P24Utils.ajax_error = function (_xhr, _textStatus, _errorThrown) {
-    let body = "<div>Status Code: <code>" + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "</code></div>"
-        + "<div>jq Status: <code>" + _textStatus + "</code></div>"
-        + "<div>Message: " + _errorThrown.message + "</div>";
-    Modal.Common.openOneBtnModal("Ajax request error", body, "error", "OK");
-}
+//P24Utils.ajax_error = function (_xhr, _textStatus, _errorThrown) {
+//    let body = "<div>Status Code: <code>" + _xhr.status + " - " + HttpStatusCodeName[_xhr.status] + "</code></div>"
+//        + "<div>jq Status: <code>" + _textStatus + "</code></div>"
+//        + "<div>Message: " + _errorThrown.message + "</div>";
+//    Modal.Common.openOneBtnModal("Ajax request error", body, "error", "OK");
+//}
 
 // https://stackoverflow.com/a/13382873;
 P24Utils.getScrollbarWidth = function () {

@@ -1,8 +1,9 @@
 /*  simulator/financial-management/list.js
-    Version: v1.6 (2023.11.07)
-
-    Author
-        Arime-chan
+ *  Version: v1.7 (2023.12.26)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 window.FinManListPage = {
@@ -54,7 +55,17 @@ window.FinManListPage = {
             + "<div>Details: <code>" + record.Details + "</code></div>"
             + "</div>";
 
-        Modal.Common.openTwoBtnModal("Remove Record", html, MODAL_ICON_QUESTION, "Yes", "FinManListPage.removeRecord(" + _id + ")");
+        Modal.openModal({
+            ButtonsData: [{
+                Class: BTN_CLASS_PRIMARY,
+                DismissModal: true,
+                Label: "Yes",
+                OnClickText: "FinManListPage.removeRecord(" + _id + ")"
+            }],
+            Content: html,
+            IconData: Modal.IconData.Question,
+            TitleHtml: "Remove Record"
+        });
     },
 
     removeRecord: function (_id) {
@@ -64,11 +75,25 @@ window.FinManListPage = {
     // ==================================================
 
     openSyncInProgressModal: function () {
-        Modal.Common.openOneBtnModal("Sync In Progress", "Sync in progress. Please wait until data is done being sync.", MODAL_ICON_INFO);
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: "Sync in progress. Please wait until data is done being sync.",
+            IconData: Modal.IconData.Info,
+            TitleHtml: "Sync In Progress"
+        });
     },
 
     openImportInProgressModal: function () {
-        Modal.Common.openOneBtnModal("Import In Progress", "Import in progress. Please wait until data is done being imported.", MODAL_ICON_INFO);
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: "Import in progress. Please wait until data is done being imported.",
+            IconData: Modal.IconData.Info,
+            TitleHtml: "Import In Progress"
+        });
     },
 
     // ==================================================
@@ -184,8 +209,16 @@ window.FinManListPage = {
         }
 
         let arr = body.split(",");
-
-        Modal.Common.openOneBtnModal("Success", arr[1], MODAL_ICON_SUCCESS);
+        
+        Modal.openModal({
+            ButtonsData: [{
+                Class: BTN_CLASS_PRIMARY,
+                DismissModal: true,
+            }],
+            Content: arr[1],
+            IconData: Modal.IconData.Success,
+            TitleHtml: "Success"
+        });
 
         let id = +arr[0];
         let transaction = null;
@@ -223,12 +256,27 @@ window.FinManListPage = {
         this.UI.refreshPageButtons(false);
 
         if (body == "Import") {
-            Modal.Common.openOneBtnModal("Success", "Import success. Please wait while data is being imported.", MODAL_ICON_SUCCESS);
+            Modal.openModal({
+                ButtonsData: [{
+                    Class: BTN_CLASS_PRIMARY,
+                    DismissModal: true,
+                }],
+                Content: "Import success. Please wait while data is being imported.",
+                IconData: Modal.IconData.Success,
+                TitleHtml: "Success"
+            });
             return;
         }
 
         if (body == "ImportInProgress") {
-            Modal.Common.openOneBtnModal("Import In Progress", "Another import is in progress. Please wait until data is done being imported. This import will be discarded.", MODAL_ICON_SUCCESS);
+            Modal.openModal({
+                ButtonsData: [{
+                    DismissModal: true,
+                }],
+                Content: "Another import is in progress. Please wait until data is done being imported. This import will be discarded.",
+                IconData: Modal.IconData.Success,
+                TitleHtml: "Import In Progress"
+            });
             return;
         }
 

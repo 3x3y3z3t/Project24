@@ -1,4 +1,9 @@
 
+### v-core6-0.10.1 (2024.01.05)
+- Reworked common data validation for AJAX's response data.
+- Reworked Modal.
+- Updated Server Announcement to display warning when user is still using default password.
+
 ### v-core6-0.10.0 (2023.12.24)
 - Added Account Create page.
 - Added [Identity] Change Password page.

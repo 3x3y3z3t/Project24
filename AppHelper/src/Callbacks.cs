@@ -1,5 +1,6 @@
 /*  Callbacks.cs
- *  Version: v1.1 (2023.10.29)
+ *  Version: v1.2 (2023.12.26)
+ *  Spec:    v0.1
  *  
  *  Author
  *      Arime-chan
@@ -242,6 +243,7 @@ namespace AppHelper
                         continue;
                     }
 
+                    writeEntries += "    ";
                     if (localeFile.Entries.ContainsKey(key))
                         writeEntries += localeFile.Entries[key].ToString(-alignLength);
                     else
@@ -262,9 +264,10 @@ namespace AppHelper
                 // ==================== write ====================;
                 string content = localeFile.Header
                     + "\r\n"
-                    + "window." + _className + " = {\r\n\r\n"
+                    + "window." + _className + " = {\r\n"
+                    + "    get: function (_key) { if (this[_key] == null || this[_key].trim() == \"\") return \"<code>{\" + _key + \"}</code>\"; return this[_key]; },\r\n"
                     + writeEntries
-                    + "\r\n}\r\n";
+                    + "\r\n};\r\n";
 
                 try
                 {

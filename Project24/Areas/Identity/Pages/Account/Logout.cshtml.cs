@@ -1,10 +1,9 @@
 /*  Areas/Identity/Pages/Account/Logout.cshtml.cs
- *  Version: v1.0 (2023.10.08)
- *  
- *  Author
- *      The .NET Foundation
+ *  Version: v1.1 (2023.12.26)
+ *  Spec:    v0.1
  *  
  *  Contributor
+ *      The .NET Foundation (Author)
  *      Arime-chan
  */
 // Licensed to the .NET Foundation under one or more agreements.
@@ -17,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Project24.App.Utils;
 using Project24.Model.Identity;
 
 namespace Project24.Areas.Identity.Pages.Account
@@ -45,7 +45,8 @@ namespace Project24.Areas.Identity.Pages.Account
             {
                 // This needs to be a redirect so that the browser performs a new
                 // request and the identity for the user gets updated.
-                return RedirectToPage();
+                //return RedirectToPage();
+                return Redirect(PageCollection.IdentityAccount.Login);
             }
         }
 

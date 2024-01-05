@@ -1,8 +1,9 @@
 /*  server-announcement.js
-    Version: v1.1 (2023.09.22)
-
-    Author
-        Arime-chan
+ *  Version: v1.2 (2023.12.26)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 window.ServerAnnouncementPage = {
@@ -66,6 +67,8 @@ window.ServerAnnouncementPage = {
         });
     },
 
+    // ==================================================
+
     ajax_error: function(_xhr, _textStatus, _errorThrown) {
         this.m_AwaitingData = false;
         P24Utils.Ajax.error(_xhr, _textStatus, _errorThrown);
@@ -76,8 +79,11 @@ window.ServerAnnouncementPage = {
 
         let body = _content.substring(6);
 
-        if (P24Utils.Ajax.successContentCheckCommon(_content, body)) {
-            let processedData = this.Data.processPageData(body);
+        let success = P24Utils.Ajax.successContentCheckCommon({
+            Content: _content
+        });
+        if (success) {
+            let processedData = this.Data.processPageData(body.substring(1), body[0]);
             if (processedData == null)
                 return;
 
@@ -99,11 +105,11 @@ ServerAnnouncementPage.Data = {
 
     },
 
-    processPageData: function (_json) {
-
+    processPageData: function (_json, _flag) {
         let parsedData = JSON.parse(_json);
 
         this.Announcements = parsedData;
+        this.Announcements.DefaultPasswordAlert = (_flag == 1);
 
 
 
@@ -304,12 +310,11 @@ ServerAnnouncementPage.Data = {
 */
 ServerAnnouncementPage.UI = {
     m_DivSvrMsg: null,
-    m_DivSvrMsgModal: null,
+    m_ModalSvrMsg: null,
 
 
     init: function () {
         this.m_DivSvrMsg = $("#div-svr-msg");
-        this.m_DivSvrMsgModal = $("#div-svr-msg-modal");
     },
 
     refreshPage: function (_data) {
@@ -326,18 +331,45 @@ ServerAnnouncementPage.UI = {
         }
 
         this.m_DivSvrMsg.html(html);
+
+        if (_data.DefaultPasswordAlert && location.pathname != "/Identity/Account/Manage/ChangePassword") {
+            this.displayPasswordAlertModal();
+        }
+    },
+
+    displayPasswordAlertModal: function () {
+        if (this.m_ModalSvrMsg == null) {
+            let iconHtml = P24Utils.svg("exclamation-triangle", "text-warning", 48);
+
+            let html = "<div id=\"modal-svr-msg\" class=\"modal\" data-bs-backdrop=\"static\" tabindex=\"-1\">"
+                + "<div class=\"modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg\">"
+                + "<div class=\"modal-content\">"
+
+                + "<div class=\"modal-header\"><h5>" + P24Localization.get(LOCL_STR_WARN) + "</h5></div>"
+
+                + "<div class=\"modal-body d-flex\">"
+                + "<div class=\"col-2 text-center align-self-center\">" + iconHtml + "</div>"
+                + "<div class=\"col-10\">" + P24Localization.get(LOCL_DESC_DEFAULT_PASSWORD_USAGE) + "</div>"
+                + "</div>"
+
+                + "<div class=\"modal-footer\">"
+                + "<a href=\"/Identity/Account/Manage/ChangePassword\" class=\"btn btn-primary\">" + P24Localization.get(LOCL_BTN_CHANGE_PASS) + "</a>"
+                + "</div> "
+
+                + "</div></div></div>";
+
+            $(document.body).append(html);
+            this.m_ModalSvrMsg = bootstrap.Modal.getOrCreateInstance($("#modal-svr-msg")[0], { focus: true });
+        }
+        
+        this.m_ModalSvrMsg.show();
     },
 
     constructSingleAnnouncementHtml(_announcement) {
         //let html = "<div class=\"alert-" + _announcement.Severity + " rounded-3 px-2 py-2 my-1\">"
         let html = "<div class=\"alert-" + _announcement.Severity + " border border-" + _announcement.Severity + " border-1 rounded-3 px-2 py-2 my-1\">"
 
-
             + DotNetString.format(_announcement.FormatString, _announcement.Arguments)
-
-
-
-
 
             + "</div>";
 
@@ -352,14 +384,3 @@ $(function () {
     ServerAnnouncementPage.reload();
 
 });
-
-
-
-
-
-
-
-
-
-
-

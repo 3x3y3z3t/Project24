@@ -1,8 +1,8 @@
 /*  home/changelog.js
-    Version: v1.1 (2023.05.16)
-
-    Contributor
-        Arime-chan
+ *  Version: v1.2 (2023.12.27)
+ * 
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 window.ChangelogPage = {};
@@ -72,13 +72,27 @@ ChangelogPage.ajax_fetchUpdateNotes_success = function (_content, _textStatus, _
     ChangelogPage.Elements.m_BtnUpdateNotes.removeAttr("disabled");
     let body = _content.substring(6);
 
-    if (_content.startsWith("<fail>")) {
-        Modal.Common.openOneBtnModal("Thất bại", body, "error");
+    if (_content.startsWith(P24_MSG_TAG_ERROR)) {
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: body,
+            IconData: Modal.IconData.Error,
+            TitleHtml: P24Localization.get(LOCL_STR_FAIL)
+        });
         return;
     }
 
-    if (_content.startsWith("<excp>")) {
-        Modal.Common.openOneBtnModal("Exception", "<pre>" + body + "</pre>");
+    if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: "<pre>" + body + "</pre>",
+            IconData: Modal.IconData.Error,
+            TitleHtml: P24Localization.get(LOCL_STR_EXCEPTION)
+        });
         return;
     }
 
@@ -92,13 +106,27 @@ ChangelogPage.ajax_fetchChangelog_success = function (_content, _textStatus, _xh
     ChangelogPage.Elements.m_BtnChangelog.removeAttr("disabled");
     let body = _content.substring(6);
 
-    if (_content.startsWith("<fail>")) {
-        Modal.Common.openOneBtnModal("Thất bại", body, "error");
+    if (_content.startsWith(P24_MSG_TAG_ERROR)) {
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: body,
+            IconData: Modal.IconData.Error,
+            TitleHtml: P24Localization.get(LOCL_STR_FAIL)
+        });
         return;
     }
 
-    if (_content.startsWith("<excp>")) {
-        Modal.Common.openOneBtnModal("Exception", "<pre>" + body + "</pre>");
+    if (_content.startsWith(P24_MSG_TAG_EXCEPTION)) {
+        Modal.openModal({
+            ButtonsData: [{
+                DismissModal: true,
+            }],
+            Content: "<pre>" + body + "</pre>",
+            IconData: Modal.IconData.Error,
+            TitleHtml: P24Localization.get(LOCL_STR_EXCEPTION)
+        });
         return;
     }
 

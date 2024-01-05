@@ -1,9 +1,9 @@
 /*  home/account/create.js
-    Version: v1.0 (2023.12.24)
-    Spec:    v0.1
-
-    Contributor
-        Arime-chan (Author)
+ *  Version: v1.1 (2024.01.02)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 //class Record {
@@ -96,28 +96,54 @@ window.AccCreatePage = {
     ajax_checkUsername_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
-        let body = _content.substring(6);
-
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content, Success: { Check: false } }))
             return;
 
+        let body = _content.substring(6);
         if (_content.startsWith(P24_MSG_TAG_SUCCESS)) {
             this.UI.m_InputUsername.val(body);
-            let msg = "Do you want to create account <code>" + body + "</code>?";
-            Modal.Common.openTwoBtnModal(P24Localization[LOCL_STR_CONFIRM], msg, MODAL_ICON_QUESTION, "Yes", "AccCreatePage.confirmCreate('" + body + "')");
+            Modal.openModal({
+                AddCloseBtn: false,
+                ButtonsData: [
+                    {
+                        Class: BTN_CLASS_PRIMARY,
+                        DismissModal: true,
+                        Label: P24Localization.get(LOCL_STR_ACCEPT),
+                        OnClickText: "AccCreatePage.confirmCreate('" + body + "')"
+                    },
+                    {
+                        DismissModal: true,
+                        Label: P24Localization.get(LOCL_STR_NO),
+                    }
+                ],
+                Content: "Do you want to create account <code>" + body + "</code>?",
+                IconData: Modal.IconData.Question,
+                TitleHtml: P24Localization.get(LOCL_STR_CONFIRM),
+            });
         }
     },
 
     ajax_create_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
-        let body = _content.substring(6);
-
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content, Success: { Check: false } }))
             return;
-
+            
+        let body = _content.substring(6);
         if (_content.startsWith(P24_MSG_TAG_SUCCESS)) {
-            Modal.Common.openOneBtnModal(P24Localization[LOCL_STR_SUCCESS], body, MODAL_ICON_SUCCESS, "Back to List", "AccCreatePage.backToList()", false);
+            this.UI.clearInputs();
+
+            Modal.openModal({
+                AddCloseBtn: true,
+                ButtonsData: [{
+                    Class: BTN_CLASS_PRIMARY,
+                    Label: "Back to List",
+                    OnClickText: "AccCreatePage.backToList()",
+                }],
+                Content: body,
+                IconData: Modal.IconData.Success,
+                TitleHtml: P24Localization.get(LOCL_STR_SUCCESS),
+            });
         }
     },
 
@@ -219,6 +245,12 @@ AccCreatePage.UI = {
     },
 
     // ==================================================
+
+    clearInputs: function () {
+        this.m_InputUsername.val("");
+        this.m_InputFirstName.val("");
+        this.m_InputLastName.val("");
+    },
 };
 
 

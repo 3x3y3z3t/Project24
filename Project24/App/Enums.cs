@@ -1,5 +1,5 @@
 /*  App/Enums.cs
- *  Version: v1.5 (2023.12.24)
+ *  Version: v1.6 (2023.12.28)
  *  Spec:    v0.1
  *  
  *  Contributor
@@ -127,7 +127,7 @@ namespace Project24.App
     public static class P24PageLayout
     {
         public const string CommonLayout = "_LayoutCommon";
-        public const string NoScrollLayout = "_NoScrollLayout";
+        public const string NoScrollLayout = "_LayoutNoScroll";
     }
 
 

@@ -1,8 +1,9 @@
 /*  home/account/list.js
-    Version: v1.0 (2023.10.29)
-
-    Author
-        Arime-chan
+ *  Version: v1.1 (2024.01.02)
+ *  Spec:    v0.1
+ *
+ *  Contributor
+ *      Arime-chan (Author)
  */
 
 window.AccManagePage = {
@@ -47,23 +48,10 @@ window.AccManagePage = {
     ajax_fetchPageData_success: function (_content, _textStatus, _xhr) {
         this.m_AwaitingData = false;
 
-        let body = _content.substring(6);
-
-        if (!P24Utils.Ajax.successContentCheckCommon(_content, body))
+        if (!P24Utils.Ajax.successContentCheckCommon({ Content: _content }))
             return;
 
-        //if (body == "ImportInProgress") {
-        //    this.Data.PageData = body;
-        //    this.openImportInProgressModal();
-        //    return;
-        //}
-
-        //if (body == "SyncInProgress") {
-        //    this.Data.PageData = body;
-        //    this.openSyncInProgressModal();
-        //    return;
-        //}
-
+        let body = _content.substring(6);
         let processedData = this.Data.processPageData(body);
         if (processedData == null)
             return;
